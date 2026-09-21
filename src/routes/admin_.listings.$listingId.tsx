@@ -1,0 +1,191 @@
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { ArrowLeft, Check, RotateCcw, ShieldOff, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { ListingPreview } from "@/components/admin/ListingPreview";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LISTING_REJECTION_REASONS } from "@/lib/listingRejectionReasons";
+import { adminApi } from "@/api/http/platform.http";
+import { propertiesApi } from "@/api/http/platform.http";
+import { backendEnabled, toProperty } from "@/api/backend";
+import { setPlatform, usePlatform } from "@/hooks/usePlatform";
+import { useAllProperties } from "@/hooks/useAllProperties";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import type { Property } from "@/models/property";
+import { privatePageMeta } from "@/lib/seo";
+
+export const Route = createFileRoute("/admin_/listings/$listingId")({
+  head: () => ({
+    meta: privatePageMeta(
+      "Listing review — RoomEasy back office",
+      "Full listing preview for moderators, with approval controls.",
+    ),
+  }),
+  component: AdminListingDetail,
+});
+
+function AdminListingDetail() {
+  const { listingId } = Route.useParams();
+  const { t } = useLanguage();
+  const { listings } = usePlatform();
+  const allProperties = useAllProperties();
+  const listing = listings.find((item) => item.id === listingId);
+  const [property, setProperty] = useState<Property | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+
+  const propertyId = listing?.propertyId;
+  const known = allProperties.find((item) => item.id === propertyId);
+
+  // Listings awaiting approval are missing from the public catalogue, so the
+  // back office loads the full record straight from the API.
+  useEffect(() => {
+    if (known) {
+      setProperty(known);
+      return;
+    }
+    if (!backendEnabled || !propertyId) return;
+    let active = true;
+    void propertiesApi
+      .get(propertyId)
+      .then((dto) => {
+        if (active) setProperty(toProperty(dto));
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [known, propertyId]);
+
+  const act = async (
+    run: () => Promise<unknown>,
+    patch: { approved?: boolean; status?: "draft" | "published" | "suspended" },
+    message: string,
+  ) => {
+    setBusy(true);
+    try {
+      await run();
+      setPlatform((s) => ({
+        listings: s.listings.map((l) => (l.id === listingId ? { ...l, ...patch } : l)),
+      }));
+      toast.success(message);
+    } catch {
+      toast.error("The action could not be completed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-background pb-16">
+      <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <Button asChild variant="ghost" size="sm" className="justify-self-start">
+            <Link to="/admin">
+              <ArrowLeft className="size-4" aria-hidden />
+              {t.app.admin.title}
+            </Link>
+          </Button>
+
+
+        {listing ? (
+          <div className="flex flex-wrap gap-2">
+            {listing.approved ? null : (
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() =>
+                  act(
+                    () => adminApi.approveListing(listing.id),
+                    { approved: true, status: "published" },
+                    t.app.admin.approved,
+                  )
+                }
+              >
+                <Check className="size-4" aria-hidden />
+                {t.app.admin.approve}
+              </Button>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" disabled={busy}>
+                  <X className="size-4" aria-hidden />
+                  {t.app.admin.reject}
+                </Button>
+              </DropdownMenuTrigger>
+              {/* Refusals use the standard reason list so hosts always get a clear motive. */}
+              <DropdownMenuContent align="end" className="max-w-xs">
+                <DropdownMenuLabel>{t.app.admin.reject}</DropdownMenuLabel>
+                {LISTING_REJECTION_REASONS.map((reason) => (
+                  <DropdownMenuItem
+                    key={reason.code}
+                    className="whitespace-normal"
+                    onSelect={() =>
+                      act(
+                        () =>
+                          adminApi.rejectListing(
+                            listing.id,
+                            reason.code,
+                            reason.code === "other" ? "Reviewed by a moderator." : undefined,
+                          ),
+                        { status: "suspended" },
+                        t.app.admin.rejected,
+                      )
+                    }
+                  >
+                    {reason.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {listing.status === "suspended" ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  act(
+                    () => adminApi.restoreListing(listing.id),
+                    { status: "published" },
+                    t.app.admin.reinstate,
+                  )
+                }
+              >
+                <RotateCcw className="size-4" aria-hidden />
+                {t.app.admin.reinstate}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  act(() => adminApi.suspendListing(listing.id), { status: "suspended" }, t.app.admin.suspend)
+                }
+              >
+                <ShieldOff className="size-4" aria-hidden />
+                {t.app.admin.suspend}
+              </Button>
+            )}
+          </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
+        {listing && property ? (
+          <ListingPreview listing={listing} property={property} />
+        ) : (
+          <p className="py-16 text-center text-sm text-muted-foreground">…</p>
+        )}
+      </div>
+    </main>
+  );
+}

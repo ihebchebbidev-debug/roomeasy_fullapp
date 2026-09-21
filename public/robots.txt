@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dev-admin
+Disallow: /checkout
+Disallow: /profile
+Disallow: /trips
+Disallow: /messages
+Disallow: /favourites
+Disallow: /support
+Disallow: /booking/
+Disallow: /host
+Disallow: /auth
+Disallow: /forgot-password
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+Sitemap: https://www.roomeasy.fr/sitemap.xml

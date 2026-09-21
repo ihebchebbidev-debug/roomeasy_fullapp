@@ -1,0 +1,1190 @@
+[
+  {
+    "id": "swimming-pool",
+    "group": "general",
+    "en": "Swimming pool",
+    "fr": "Piscine"
+  },
+  {
+    "id": "children-s-pool",
+    "group": "general",
+    "en": "Children's pool",
+    "fr": "Piscine pour enfants"
+  },
+  {
+    "id": "garden",
+    "group": "general",
+    "en": "Garden",
+    "fr": "Jardin"
+  },
+  {
+    "id": "terrace",
+    "group": "general",
+    "en": "Terrace",
+    "fr": "Terrasse"
+  },
+  {
+    "id": "sun-terrace",
+    "group": "general",
+    "en": "Sun terrace",
+    "fr": "Terrasse bien exposée"
+  },
+  {
+    "id": "non-smoking-rooms",
+    "group": "general",
+    "en": "Non-smoking rooms",
+    "fr": "Chambres non-fumeurs"
+  },
+  {
+    "id": "family-rooms",
+    "group": "general",
+    "en": "Family rooms",
+    "fr": "Chambres familiales"
+  },
+  {
+    "id": "air-conditioning",
+    "group": "general",
+    "en": "Air conditioning",
+    "fr": "Climatisation"
+  },
+  {
+    "id": "heating",
+    "group": "general",
+    "en": "Heating",
+    "fr": "Chauffage"
+  },
+  {
+    "id": "lift",
+    "group": "general",
+    "en": "Lift",
+    "fr": "Ascenseur"
+  },
+  {
+    "id": "soundproof-rooms",
+    "group": "general",
+    "en": "Soundproof rooms",
+    "fr": "Chambres insonorisées"
+  },
+  {
+    "id": "allergy-free-rooms",
+    "group": "general",
+    "en": "Allergy-free rooms",
+    "fr": "Chambres anti-allergie"
+  },
+  {
+    "id": "entirely-non-smoking-property",
+    "group": "general",
+    "en": "Entirely non-smoking property",
+    "fr": "Établissement entièrement non-fumeurs"
+  },
+  {
+    "id": "designated-smoking-area",
+    "group": "general",
+    "en": "Designated smoking area",
+    "fr": "Espace fumeurs"
+  },
+  {
+    "id": "adults-only",
+    "group": "general",
+    "en": "Adults only",
+    "fr": "Réservé aux adultes"
+  },
+  {
+    "id": "outdoor-furniture",
+    "group": "general",
+    "en": "Outdoor furniture",
+    "fr": "Mobilier extérieur"
+  },
+  {
+    "id": "picnic-area",
+    "group": "general",
+    "en": "Picnic area",
+    "fr": "Aire de pique-nique"
+  },
+  {
+    "id": "indoor-fireplace",
+    "group": "general",
+    "en": "Indoor fireplace",
+    "fr": "Cheminée intérieure"
+  },
+  {
+    "id": "outdoor-fireplace",
+    "group": "general",
+    "en": "Outdoor fireplace",
+    "fr": "Cheminée extérieure"
+  },
+  {
+    "id": "shared-kitchen",
+    "group": "general",
+    "en": "Shared kitchen",
+    "fr": "Cuisine commune"
+  },
+  {
+    "id": "shared-lounge-tv-area",
+    "group": "general",
+    "en": "Shared lounge / TV area",
+    "fr": "Salon commun/salle de télévision"
+  },
+  {
+    "id": "sun-loungers-or-beach-chairs",
+    "group": "general",
+    "en": "Sun loungers or beach chairs",
+    "fr": "Chaises longues ou de plage"
+  },
+  {
+    "id": "sun-umbrellas",
+    "group": "general",
+    "en": "Sun umbrellas",
+    "fr": "Parasols"
+  },
+  {
+    "id": "water-slide",
+    "group": "general",
+    "en": "Water slide",
+    "fr": "Toboggan aquatique"
+  },
+  {
+    "id": "beach",
+    "group": "general",
+    "en": "Beach",
+    "fr": "Plage"
+  },
+  {
+    "id": "safe",
+    "group": "general",
+    "en": "Safe",
+    "fr": "Coffre-fort"
+  },
+  {
+    "id": "sauna",
+    "group": "wellness",
+    "en": "Sauna",
+    "fr": "Sauna"
+  },
+  {
+    "id": "turkish-bath-hammam",
+    "group": "wellness",
+    "en": "Turkish bath / hammam",
+    "fr": "Hammam"
+  },
+  {
+    "id": "hot-tub-jacuzzi",
+    "group": "wellness",
+    "en": "Hot tub / jacuzzi",
+    "fr": "Bain à remous/jacuzzi"
+  },
+  {
+    "id": "steam-room",
+    "group": "wellness",
+    "en": "Steam room",
+    "fr": "Bain à vapeur"
+  },
+  {
+    "id": "spa",
+    "group": "wellness",
+    "en": "Spa",
+    "fr": "Spa"
+  },
+  {
+    "id": "spa-and-wellness-centre",
+    "group": "wellness",
+    "en": "Spa and wellness centre",
+    "fr": "Spa et centre de bien-être"
+  },
+  {
+    "id": "spa-relaxation-area",
+    "group": "wellness",
+    "en": "Spa / relaxation area",
+    "fr": "Coin spa/relaxation"
+  },
+  {
+    "id": "foot-bath",
+    "group": "wellness",
+    "en": "Foot bath",
+    "fr": "Bain de pieds"
+  },
+  {
+    "id": "spa-wellness-packages",
+    "group": "wellness",
+    "en": "Spa / wellness packages",
+    "fr": "Forfaits spa/bien-être"
+  },
+  {
+    "id": "massage-chair",
+    "group": "wellness",
+    "en": "Massage chair",
+    "fr": "Fauteuil massant"
+  },
+  {
+    "id": "massages",
+    "group": "wellness",
+    "en": "Massages",
+    "fr": "Massages"
+  },
+  {
+    "id": "beauty-services",
+    "group": "wellness",
+    "en": "Beauty services",
+    "fr": "Services beauté"
+  },
+  {
+    "id": "hair-or-beauty-salon",
+    "group": "wellness",
+    "en": "Hair or beauty salon",
+    "fr": "Salon de coiffure/institut de beauté"
+  },
+  {
+    "id": "solarium",
+    "group": "wellness",
+    "en": "Solarium",
+    "fr": "Solarium"
+  },
+  {
+    "id": "thermal-bath-onsen",
+    "group": "wellness",
+    "en": "Thermal bath / onsen",
+    "fr": "Bain thermal/onsen"
+  },
+  {
+    "id": "open-air-bath",
+    "group": "wellness",
+    "en": "Open-air bath",
+    "fr": "Bain en plein air"
+  },
+  {
+    "id": "public-bath",
+    "group": "wellness",
+    "en": "Public bath",
+    "fr": "Bain public"
+  },
+  {
+    "id": "fitness",
+    "group": "wellness",
+    "en": "Fitness",
+    "fr": "Fitness"
+  },
+  {
+    "id": "fitness-centre",
+    "group": "wellness",
+    "en": "Fitness centre",
+    "fr": "Centre de remise en forme"
+  },
+  {
+    "id": "fitness-classes",
+    "group": "wellness",
+    "en": "Fitness classes",
+    "fr": "Cours de fitness"
+  },
+  {
+    "id": "yoga-classes",
+    "group": "wellness",
+    "en": "Yoga classes",
+    "fr": "Cours de yoga"
+  },
+  {
+    "id": "personal-trainer",
+    "group": "wellness",
+    "en": "Personal trainer",
+    "fr": "Coach sportif personnel"
+  },
+  {
+    "id": "gym-spa-changing-rooms",
+    "group": "wellness",
+    "en": "Gym / spa changing rooms",
+    "fr": "Vestiaires salle de sport/spa"
+  },
+  {
+    "id": "breakfast",
+    "group": "food",
+    "en": "Breakfast",
+    "fr": "Petit-déjeuner",
+    "paid": true
+  },
+  {
+    "id": "lunch",
+    "group": "food",
+    "en": "Lunch",
+    "fr": "Déjeuner",
+    "paid": true
+  },
+  {
+    "id": "dinner",
+    "group": "food",
+    "en": "Dinner",
+    "fr": "Dîner",
+    "paid": true
+  },
+  {
+    "id": "bar",
+    "group": "food",
+    "en": "Bar",
+    "fr": "Bar"
+  },
+  {
+    "id": "snack-bar",
+    "group": "food",
+    "en": "Snack bar",
+    "fr": "Snack-bar"
+  },
+  {
+    "id": "coffee-shop-on-site",
+    "group": "food",
+    "en": "Coffee shop on site",
+    "fr": "Café sur place"
+  },
+  {
+    "id": "restaurant",
+    "group": "food",
+    "en": "Restaurant",
+    "fr": "Restaurant"
+  },
+  {
+    "id": "breakfast-in-the-room",
+    "group": "food",
+    "en": "Breakfast in the room",
+    "fr": "Petit-déjeuner en chambre"
+  },
+  {
+    "id": "room-service",
+    "group": "food",
+    "en": "Room service",
+    "fr": "Service d'étage"
+  },
+  {
+    "id": "kids-meals",
+    "group": "food",
+    "en": "Kids' meals",
+    "fr": "Menus enfants"
+  },
+  {
+    "id": "buffet-with-kids-options",
+    "group": "food",
+    "en": "Buffet with kids' options",
+    "fr": "Buffet avec options enfants"
+  },
+  {
+    "id": "special-diet-menus-on-request",
+    "group": "food",
+    "en": "Special diet menus (on request)",
+    "fr": "Menus pour régimes spéciaux (sur demande)"
+  },
+  {
+    "id": "wine-or-champagne",
+    "group": "food",
+    "en": "Wine or champagne",
+    "fr": "Vin/champagne",
+    "paid": true
+  },
+  {
+    "id": "fruit",
+    "group": "food",
+    "en": "Fruit",
+    "fr": "Fruits",
+    "paid": true
+  },
+  {
+    "id": "grocery-delivery",
+    "group": "food",
+    "en": "Grocery delivery",
+    "fr": "Livraison de courses"
+  },
+  {
+    "id": "packed-lunches",
+    "group": "food",
+    "en": "Packed lunches",
+    "fr": "Paniers-repas"
+  },
+  {
+    "id": "bbq-facilities",
+    "group": "food",
+    "en": "BBQ facilities",
+    "fr": "Installations pour barbecue"
+  },
+  {
+    "id": "vending-machine-drinks",
+    "group": "food",
+    "en": "Vending machine (drinks)",
+    "fr": "Distributeur automatique (boissons)"
+  },
+  {
+    "id": "vending-machine-snacks",
+    "group": "food",
+    "en": "Vending machine (snacks)",
+    "fr": "Distributeur automatique (collations)"
+  },
+  {
+    "id": "meal-delivery-to-the-accommodation",
+    "group": "food",
+    "en": "Meal delivery to the accommodation",
+    "fr": "Livraison de repas possible dans l'hébergement"
+  },
+  {
+    "id": "takeaway-breakfast-containers",
+    "group": "food",
+    "en": "Takeaway breakfast containers",
+    "fr": "Récipients pour petit-déjeuner à emporter"
+  },
+  {
+    "id": "tennis-equipment",
+    "group": "activities",
+    "en": "Tennis equipment",
+    "fr": "Matériel de tennis"
+  },
+  {
+    "id": "tennis-court",
+    "group": "activities",
+    "en": "Tennis court",
+    "fr": "Court de tennis"
+  },
+  {
+    "id": "badminton-equipment",
+    "group": "activities",
+    "en": "Badminton equipment",
+    "fr": "Matériel de badminton"
+  },
+  {
+    "id": "billiards",
+    "group": "activities",
+    "en": "Billiards",
+    "fr": "Billard"
+  },
+  {
+    "id": "table-tennis",
+    "group": "activities",
+    "en": "Table tennis",
+    "fr": "Tennis de table"
+  },
+  {
+    "id": "darts",
+    "group": "activities",
+    "en": "Darts",
+    "fr": "Fléchettes"
+  },
+  {
+    "id": "squash",
+    "group": "activities",
+    "en": "Squash",
+    "fr": "Squash"
+  },
+  {
+    "id": "bowling",
+    "group": "activities",
+    "en": "Bowling",
+    "fr": "Bowling"
+  },
+  {
+    "id": "mini-golf",
+    "group": "activities",
+    "en": "Mini golf",
+    "fr": "Minigolf"
+  },
+  {
+    "id": "golf-course-within-3-km",
+    "group": "activities",
+    "en": "Golf course (within 3 km)",
+    "fr": "Parcours de golf (à moins de 3 km)"
+  },
+  {
+    "id": "archery",
+    "group": "activities",
+    "en": "Archery",
+    "fr": "Tir à l'arc"
+  },
+  {
+    "id": "aerobics",
+    "group": "activities",
+    "en": "Aerobics",
+    "fr": "Aérobic"
+  },
+  {
+    "id": "bingo",
+    "group": "activities",
+    "en": "Bingo",
+    "fr": "Bingo"
+  },
+  {
+    "id": "karaoke",
+    "group": "activities",
+    "en": "Karaoke",
+    "fr": "Karaoké"
+  },
+  {
+    "id": "water-park",
+    "group": "activities",
+    "en": "Water park",
+    "fr": "Parc aquatique"
+  },
+  {
+    "id": "water-sports-facilities-on-site",
+    "group": "activities",
+    "en": "Water sports facilities on site",
+    "fr": "Installations de sports nautiques sur place"
+  },
+  {
+    "id": "windsurfing",
+    "group": "activities",
+    "en": "Windsurfing",
+    "fr": "Planche à voile"
+  },
+  {
+    "id": "diving",
+    "group": "activities",
+    "en": "Diving",
+    "fr": "Plongée sous-marine"
+  },
+  {
+    "id": "snorkelling",
+    "group": "activities",
+    "en": "Snorkelling",
+    "fr": "Plongée avec tuba"
+  },
+  {
+    "id": "canoeing",
+    "group": "activities",
+    "en": "Canoeing",
+    "fr": "Canoë-kayak"
+  },
+  {
+    "id": "fishing",
+    "group": "activities",
+    "en": "Fishing",
+    "fr": "Pêche"
+  },
+  {
+    "id": "horse-riding",
+    "group": "activities",
+    "en": "Horse riding",
+    "fr": "Équitation"
+  },
+  {
+    "id": "cycling",
+    "group": "activities",
+    "en": "Cycling",
+    "fr": "Cyclisme"
+  },
+  {
+    "id": "hiking",
+    "group": "activities",
+    "en": "Hiking",
+    "fr": "Randonnée"
+  },
+  {
+    "id": "skiing",
+    "group": "activities",
+    "en": "Skiing",
+    "fr": "Ski"
+  },
+  {
+    "id": "walking-tours",
+    "group": "activities",
+    "en": "Walking tours",
+    "fr": "Balades à pied"
+  },
+  {
+    "id": "bike-tours",
+    "group": "activities",
+    "en": "Bike tours",
+    "fr": "Visites à vélo"
+  },
+  {
+    "id": "temporary-art-galleries",
+    "group": "activities",
+    "en": "Temporary art galleries",
+    "fr": "Galeries d'art temporaires"
+  },
+  {
+    "id": "bar-crawls",
+    "group": "activities",
+    "en": "Bar crawls",
+    "fr": "Tournées des bars"
+  },
+  {
+    "id": "stand-up-comedy",
+    "group": "activities",
+    "en": "Stand-up comedy",
+    "fr": "Spectacles d'humoristes"
+  },
+  {
+    "id": "movie-nights",
+    "group": "activities",
+    "en": "Movie nights",
+    "fr": "Soirées film"
+  },
+  {
+    "id": "themed-dinner-nights",
+    "group": "activities",
+    "en": "Themed dinner nights",
+    "fr": "Dîners à thème"
+  },
+  {
+    "id": "happy-hour",
+    "group": "activities",
+    "en": "Happy hour",
+    "fr": "Happy hour"
+  },
+  {
+    "id": "local-culture-tour-or-class",
+    "group": "activities",
+    "en": "Local culture tour or class",
+    "fr": "Visite ou cours autour de la culture locale"
+  },
+  {
+    "id": "cooking-class",
+    "group": "activities",
+    "en": "Cooking class",
+    "fr": "Cours de cuisine"
+  },
+  {
+    "id": "live-music-performances",
+    "group": "activities",
+    "en": "Live music / performances",
+    "fr": "Concerts/Spectacles"
+  },
+  {
+    "id": "live-sport-events-screening",
+    "group": "activities",
+    "en": "Live sport events screening",
+    "fr": "Diffusion d'événements sportifs"
+  },
+  {
+    "id": "evening-entertainment",
+    "group": "activities",
+    "en": "Evening entertainment",
+    "fr": "Animations en soirée"
+  },
+  {
+    "id": "nightclub-dj",
+    "group": "activities",
+    "en": "Nightclub / DJ",
+    "fr": "Discothèque/DJ"
+  },
+  {
+    "id": "casino",
+    "group": "activities",
+    "en": "Casino",
+    "fr": "Casino"
+  },
+  {
+    "id": "entertainment-team",
+    "group": "activities",
+    "en": "Entertainment team",
+    "fr": "Équipe d'animation"
+  },
+  {
+    "id": "games-room",
+    "group": "activities",
+    "en": "Games room",
+    "fr": "Salle de jeux"
+  },
+  {
+    "id": "chapel-shrine",
+    "group": "general",
+    "en": "Chapel / place of worship",
+    "fr": "Chapelle/lieu de culte"
+  },
+  {
+    "id": "board-games-puzzles",
+    "group": "activities",
+    "en": "Board games / puzzles",
+    "fr": "Jeux de société/puzzles"
+  },
+  {
+    "id": "parking",
+    "group": "transport",
+    "en": "Parking",
+    "fr": "Parking"
+  },
+  {
+    "id": "bicycle-parking",
+    "group": "transport",
+    "en": "Bicycle parking",
+    "fr": "Parking à vélos"
+  },
+  {
+    "id": "bicycle-rental",
+    "group": "transport",
+    "en": "Bicycle rental",
+    "fr": "Location de vélos"
+  },
+  {
+    "id": "car-rental",
+    "group": "transport",
+    "en": "Car rental",
+    "fr": "Location de voitures"
+  },
+  {
+    "id": "airport-shuttle",
+    "group": "transport",
+    "en": "Airport shuttle",
+    "fr": "Navette aéroport",
+    "paid": true
+  },
+  {
+    "id": "shuttle-service",
+    "group": "transport",
+    "en": "Shuttle service",
+    "fr": "Service de navette",
+    "paid": true
+  },
+  {
+    "id": "public-transport-tickets",
+    "group": "transport",
+    "en": "Public transport tickets",
+    "fr": "Tickets de transports en commun",
+    "paid": true
+  },
+  {
+    "id": "24-hour-front-desk",
+    "group": "services",
+    "en": "24-hour front desk",
+    "fr": "Réception ouverte 24h/24"
+  },
+  {
+    "id": "private-check-in-check-out",
+    "group": "services",
+    "en": "Private check-in / check-out",
+    "fr": "Enregistrement/départ privé"
+  },
+  {
+    "id": "express-check-in-check-out",
+    "group": "services",
+    "en": "Express check-in / check-out",
+    "fr": "Enregistrement/règlement rapide"
+  },
+  {
+    "id": "concierge-service",
+    "group": "services",
+    "en": "Concierge service",
+    "fr": "Service de concierge"
+  },
+  {
+    "id": "tour-desk",
+    "group": "services",
+    "en": "Tour desk",
+    "fr": "Bureau d'excursions"
+  },
+  {
+    "id": "currency-exchange",
+    "group": "services",
+    "en": "Currency exchange",
+    "fr": "Service de change"
+  },
+  {
+    "id": "atm-on-site",
+    "group": "services",
+    "en": "ATM on site",
+    "fr": "Distributeur automatique de billets sur place"
+  },
+  {
+    "id": "luggage-storage",
+    "group": "services",
+    "en": "Luggage storage",
+    "fr": "Bagagerie"
+  },
+  {
+    "id": "lockers",
+    "group": "services",
+    "en": "Lockers",
+    "fr": "Casiers"
+  },
+  {
+    "id": "invoice-provided-on-request",
+    "group": "services",
+    "en": "Invoice provided on request",
+    "fr": "Facture fournie sur demande"
+  },
+  {
+    "id": "dry-cleaning",
+    "group": "services",
+    "en": "Dry cleaning",
+    "fr": "Nettoyage à sec",
+    "paid": true
+  },
+  {
+    "id": "ironing-service",
+    "group": "services",
+    "en": "Ironing service",
+    "fr": "Service de repassage",
+    "paid": true
+  },
+  {
+    "id": "laundry",
+    "group": "services",
+    "en": "Laundry",
+    "fr": "Blanchisserie/laverie",
+    "paid": true
+  },
+  {
+    "id": "daily-housekeeping",
+    "group": "services",
+    "en": "Daily housekeeping",
+    "fr": "Service de ménage quotidien"
+  },
+  {
+    "id": "trouser-press",
+    "group": "services",
+    "en": "Trouser press",
+    "fr": "Presse à pantalons"
+  },
+  {
+    "id": "meeting-banquet-facilities",
+    "group": "services",
+    "en": "Meeting / banquet facilities",
+    "fr": "Salles de réunion/réception"
+  },
+  {
+    "id": "business-centre",
+    "group": "services",
+    "en": "Business centre",
+    "fr": "Centre d'affaires"
+  },
+  {
+    "id": "fax-photocopying",
+    "group": "services",
+    "en": "Fax / photocopying",
+    "fr": "Fax/photocopies"
+  },
+  {
+    "id": "mini-market-on-site",
+    "group": "services",
+    "en": "Mini-market on site",
+    "fr": "Supérette sur place"
+  },
+  {
+    "id": "cashless-payment-available",
+    "group": "services",
+    "en": "Cashless payment available",
+    "fr": "Paiement sans espèces disponible"
+  },
+  {
+    "id": "mobile-app-for-room-service",
+    "group": "services",
+    "en": "Mobile app for room service",
+    "fr": "Application mobile pour utiliser le service d'étage"
+  },
+  {
+    "id": "kids-club",
+    "group": "family",
+    "en": "Kids' club",
+    "fr": "Club pour enfants"
+  },
+  {
+    "id": "children-s-playground",
+    "group": "family",
+    "en": "Children's playground",
+    "fr": "Aire de jeux pour enfants"
+  },
+  {
+    "id": "indoor-play-area",
+    "group": "family",
+    "en": "Indoor play area",
+    "fr": "Aire de jeux intérieure"
+  },
+  {
+    "id": "outdoor-play-equipment",
+    "group": "family",
+    "en": "Outdoor play equipment",
+    "fr": "Jeux de plein air pour enfants"
+  },
+  {
+    "id": "babysitting-child-services",
+    "group": "family",
+    "en": "Babysitting / child services",
+    "fr": "Garde d'enfants",
+    "paid": true
+  },
+  {
+    "id": "baby-safety-gates",
+    "group": "family",
+    "en": "Baby safety gates",
+    "fr": "Barrières de sécurité pour bébés"
+  },
+  {
+    "id": "strollers",
+    "group": "family",
+    "en": "Strollers",
+    "fr": "Poussettes"
+  },
+  {
+    "id": "pet-basket",
+    "group": "family",
+    "en": "Pet basket",
+    "fr": "Panier pour animal de compagnie"
+  },
+  {
+    "id": "pet-bowls",
+    "group": "family",
+    "en": "Pet bowls",
+    "fr": "Gamelles pour animaux de compagnie"
+  },
+  {
+    "id": "24-hour-security",
+    "group": "safety",
+    "en": "24-hour security",
+    "fr": "Sécurité 24h/24"
+  },
+  {
+    "id": "security-alarm",
+    "group": "safety",
+    "en": "Security alarm",
+    "fr": "Alarme de sécurité"
+  },
+  {
+    "id": "smoke-alarms",
+    "group": "safety",
+    "en": "Smoke alarms",
+    "fr": "Détecteurs de fumée"
+  },
+  {
+    "id": "carbon-monoxide-detector",
+    "group": "safety",
+    "en": "Carbon monoxide detector",
+    "fr": "Détecteur de monoxyde de carbone"
+  },
+  {
+    "id": "carbon-monoxide-sources",
+    "group": "safety",
+    "en": "Carbon monoxide sources",
+    "fr": "Sources de monoxyde de carbone"
+  },
+  {
+    "id": "fire-extinguishers",
+    "group": "safety",
+    "en": "Fire extinguishers",
+    "fr": "Extincteurs"
+  },
+  {
+    "id": "cctv-in-common-areas",
+    "group": "safety",
+    "en": "CCTV in common areas",
+    "fr": "Caméras de surveillance dans les parties communes"
+  },
+  {
+    "id": "cctv-outside-the-property",
+    "group": "safety",
+    "en": "CCTV outside the property",
+    "fr": "Caméras de surveillance à l'extérieur de l'établissement"
+  },
+  {
+    "id": "facilities-for-disabled-guests",
+    "group": "safety",
+    "en": "Facilities for disabled guests",
+    "fr": "Équipements pour les personnes handicapées"
+  },
+  {
+    "id": "first-aid-kit-available",
+    "group": "safety",
+    "en": "First aid kit available",
+    "fr": "Trousse de secours disponible"
+  },
+  {
+    "id": "health-professionals-available",
+    "group": "safety",
+    "en": "Health professionals available",
+    "fr": "Professionnels de santé disponibles"
+  },
+  {
+    "id": "thermometers-provided-to-guests",
+    "group": "safety",
+    "en": "Thermometers provided to guests",
+    "fr": "Thermomètres fournis aux clients par l'établissement"
+  },
+  {
+    "id": "face-masks-available-for-guests",
+    "group": "safety",
+    "en": "Face masks available for guests",
+    "fr": "Masques à disposition des clients"
+  },
+  {
+    "id": "hand-sanitiser-in-the-accommodation-and-common-areas",
+    "group": "safety",
+    "en": "Hand sanitiser in the accommodation and common areas",
+    "fr": "Gel hydroalcoolique dans l'hébergement et les pièces fréquentées"
+  },
+  {
+    "id": "physical-distancing-rules-followed",
+    "group": "safety",
+    "en": "Physical distancing rules followed",
+    "fr": "Respect des règles de distanciation physique"
+  },
+  {
+    "id": "physical-barriers-or-screens-between-staff-and-guests",
+    "group": "safety",
+    "en": "Physical barriers or screens between staff and guests",
+    "fr": "Barrières physiques ou écrans placés entre le personnel et les clients"
+  },
+  {
+    "id": "staff-follow-local-authority-safety-protocols",
+    "group": "safety",
+    "en": "Staff follow local authority safety protocols",
+    "fr": "Le personnel respecte les protocoles de sécurité établis par les autorités locales"
+  },
+  {
+    "id": "physical-distancing-in-dining-areas",
+    "group": "safety",
+    "en": "Physical distancing in dining areas",
+    "fr": "Distanciation physique dans les espaces repas"
+  },
+  {
+    "id": "accommodation-disinfected-between-stays",
+    "group": "cleaning",
+    "en": "Accommodation disinfected between stays",
+    "fr": "Hébergement désinfecté après chaque séjour"
+  },
+  {
+    "id": "accommodation-sealed-after-cleaning",
+    "group": "cleaning",
+    "en": "Accommodation sealed after cleaning",
+    "fr": "Hébergement fermé après le nettoyage"
+  },
+  {
+    "id": "cleaning-by-professional-cleaning-companies",
+    "group": "cleaning",
+    "en": "Cleaning by professional cleaning companies",
+    "fr": "Le ménage est effectué par des sociétés de nettoyage professionnelles"
+  },
+  {
+    "id": "linen-and-towels-washed-per-local-guidelines",
+    "group": "cleaning",
+    "en": "Linen and towels washed per local guidelines",
+    "fr": "Serviettes et linge de lit lavés selon les recommandations locales"
+  },
+  {
+    "id": "guests-can-opt-out-of-cleaning-during-the-stay",
+    "group": "cleaning",
+    "en": "Guests can opt out of cleaning during the stay",
+    "fr": "Les clients peuvent refuser le service de nettoyage pendant leur séjour"
+  },
+  {
+    "id": "tableware-and-cutlery-disinfected",
+    "group": "cleaning",
+    "en": "Tableware and cutlery disinfected",
+    "fr": "Vaisselle et couverts désinfectés"
+  },
+  {
+    "id": "delivered-food-sealed",
+    "group": "cleaning",
+    "en": "Delivered food sealed",
+    "fr": "Protection hermétique des plats livrés"
+  },
+  {
+    "id": "use-of-cleaning-products-effective-against-coronavirus",
+    "group": "cleaning",
+    "en": "Use of cleaning products effective against coronavirus",
+    "fr": "Utilisation de produits d'entretien efficaces contre le coronavirus"
+  },
+  {
+    "id": "shared-items-such-as-menus-magazines-and-pens-removed",
+    "group": "cleaning",
+    "en": "Shared items such as menus, magazines and pens removed",
+    "fr": "Les accessoires partagés (menus, magazines, stylos) ont été retirés"
+  },
+  {
+    "id": "contactless-check-in-check-out",
+    "group": "access",
+    "en": "Contactless check-in / check-out",
+    "fr": "Enregistrement et départ sans contact"
+  },
+  {
+    "id": "check-in-kiosk-in-the-lobby",
+    "group": "access",
+    "en": "Check-in kiosk in the lobby",
+    "fr": "Borne d'enregistrement disponible dans le hall d'entrée"
+  },
+  {
+    "id": "keys-in-a-key-box-at-the-property",
+    "group": "access",
+    "en": "Keys in a key box at the property",
+    "fr": "Clés disponibles dans une boîte à clés dans l'établissement"
+  },
+  {
+    "id": "keys-in-a-key-box-nearby",
+    "group": "access",
+    "en": "Keys in a key box nearby",
+    "fr": "Clés disponibles dans une boîte à clés à proximité"
+  },
+  {
+    "id": "unlock-the-accommodation-with-a-phone-via-bluetooth",
+    "group": "access",
+    "en": "Unlock the accommodation with a phone via Bluetooth",
+    "fr": "Ouverture du logement avec un smartphone par Bluetooth"
+  },
+  {
+    "id": "unlock-the-accommodation-with-a-phone-via-the-internet",
+    "group": "access",
+    "en": "Unlock the accommodation with a phone via the internet",
+    "fr": "Ouverture du logement avec un smartphone via Internet"
+  },
+  {
+    "id": "unlock-the-accommodation-with-a-private-code",
+    "group": "access",
+    "en": "Unlock the accommodation with a private code",
+    "fr": "Ouverture du logement avec un code confidentiel"
+  },
+  {
+    "id": "unlock-the-accommodation-by-scanning-a-qr-code",
+    "group": "access",
+    "en": "Unlock the accommodation by scanning a QR code",
+    "fr": "Ouverture du logement en scannant un code QR"
+  },
+  {
+    "id": "unlock-the-accommodation-via-an-app",
+    "group": "access",
+    "en": "Unlock the accommodation via an app",
+    "fr": "Ouverture du logement via une application"
+  },
+  {
+    "id": "access-the-property-via-bluetooth",
+    "group": "access",
+    "en": "Access the property via Bluetooth",
+    "fr": "Accès à l'établissement par Bluetooth"
+  },
+  {
+    "id": "access-the-property-via-the-internet",
+    "group": "access",
+    "en": "Access the property via the internet",
+    "fr": "Accès à l'établissement via Internet"
+  },
+  {
+    "id": "access-with-a-private-code",
+    "group": "access",
+    "en": "Access with a private code",
+    "fr": "Accès avec un code confidentiel"
+  },
+  {
+    "id": "access-by-scanning-a-qr-code",
+    "group": "access",
+    "en": "Access by scanning a QR code",
+    "fr": "Accès en scannant un code QR"
+  },
+  {
+    "id": "access-via-a-downloadable-app",
+    "group": "access",
+    "en": "Access via a downloadable app",
+    "fr": "Accès via une application à télécharger"
+  },
+  {
+    "id": "access-keys",
+    "group": "access",
+    "en": "Access keys",
+    "fr": "Clés d'accès"
+  },
+  {
+    "id": "access-cards",
+    "group": "access",
+    "en": "Access cards",
+    "fr": "Cartes d'accès"
+  },
+  {
+    "id": "guest-id-details-collected-online-before-the-stay",
+    "group": "access",
+    "en": "Guest ID details collected online before the stay",
+    "fr": "Informations d'identité collectées en ligne avant le séjour"
+  },
+  {
+    "id": "guest-health-screening",
+    "group": "access",
+    "en": "Guest health screening",
+    "fr": "Contrôle de l'état de santé des clients"
+  }
+]
