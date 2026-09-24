@@ -12,3 +12,5 @@
 - [x] Search/filter/show-more on host listings, requests, payouts, reviews and guest trips
 - [ ] Annonces signalées: show listing images
 - [ ] Users (admin.tsx:374 area): add numbers the user pointed at
+- [x] Listing galleries: never mix in photos from other users or retain removed secondary photos
+- [x] New listing identifiers: generate collision-resistant ids on the server and block cross-host overwrites

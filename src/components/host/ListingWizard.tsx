@@ -32,7 +32,6 @@ import {
   MAX_PHOTOS,
   incompleteSteps,
   listingSteps,
-  slugifyListing,
   validateStep,
   type ListingDraft,
   type ListingStep,
@@ -204,15 +203,14 @@ export function ListingWizard({
       setStepIndex(listingSteps.indexOf(missing[0] as ListingStep));
       return;
     }
-    // On create, turn the title into a readable address for the listing page.
-    const suffix = draft.propertyId.split("-").pop() ?? "";
-    const createdId = `${slugifyListing(draft.title) || "listing"}-${suffix}`;
+    // New durable ids are assigned by the server to prevent two hosts from
+    // ever sharing a listing record. Existing ids are retained during edits.
     const payload: ListingDraft =
       mode === "create"
         ? {
             ...draft,
-            propertyId: createdId,
-            listingId: `hl-${createdId}`,
+            propertyId: "",
+            listingId: "",
             status: publish ? "published" : "draft",
           }
         : { ...draft, status: publish ? "published" : "draft" };

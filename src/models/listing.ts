@@ -205,8 +205,10 @@ export function propertyFromDraft(draft: ListingDraft, previous?: Property): Pro
     id: draft.propertyId,
     name: draft.title.trim(),
     location: { en: place, fr: place },
-    image: cover ?? previous?.image ?? "",
-    gallery: gallery.length ? gallery : (previous?.gallery ?? []),
+    image: cover ?? "",
+    // The wizard sends the complete photo set. An empty gallery therefore
+    // means all previous secondary photos were removed, not “keep them”.
+    gallery,
     category: draft.category,
     guests: draft.capacity.guests,
     rooms: draft.capacity.rooms,

@@ -415,13 +415,9 @@ function ListingDetail() {
     );
   }
 
-  const gallery = [
-    ...propertyPhotos(property),
-    ...allProperties
-      .filter((item) => item.id !== property.id)
-      .map((item) => item.image)
-      .slice(0, 4),
-  ];
+  // A listing gallery must contain only photos explicitly attached to that
+  // listing. Never fill empty slots with images from other properties.
+  const gallery = propertyPhotos(property).filter(Boolean);
 
   // A same-day range is not a stay: keep it at 0 so `reserve()` asks the guest
   // to pick real dates instead of sending check-in = check-out to the server.
