@@ -1,7 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, CalendarDays, CheckCircle2, CreditCard, Loader2, Lock, ShieldCheck, Users } from "lucide-react";
 import { brandLabel, detectBrand, formatCardNumber, formatCvc, formatExpiry, longDate } from "@/lib/cardFormat";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -160,13 +160,26 @@ function CheckoutPage() {
   const availability = useAvailability(property ? { propertyId: property.id, from, to } : null);
   const quoteQuery = useQuote(property ? { propertyId: property.id, from, to, guests, isMobile } : null);
   const createBooking = useCreateBooking();
+  const paySubmitting = useRef(false);
   const quote = quoteQuery.data;
   const sp = useSmartPricingCopy();
   const nights = quote?.nights ?? search.nights ?? 2;
 
   async function pay(event: React.FormEvent) {
     event.preventDefault();
+    // One submission at a time: a double click or double Enter never books twice.
+    if (paySubmitting.current) return;
     setError(null);
+    if (!property || !session) return;
+    paySubmitting.current = true;
+    try {
+      await payOnce();
+    } finally {
+      paySubmitting.current = false;
+    }
+  }
+
+  async function payOnce() {
     if (!property || !session) return;
 
     // Real card payment: reserve first, then let Stripe collect the card.

@@ -49,3 +49,6 @@
 - [ ] Admin editor for site texts/translations
 - [ ] Editable role permissions (currently fixed)
 - [ ] Profile photos moved to file storage
+
+- [x] Approved listings visible in categories + all-stays page
+- [x] Ratings: review submission updates listing rating/count correctly

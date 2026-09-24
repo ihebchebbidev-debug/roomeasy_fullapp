@@ -24,7 +24,7 @@ function ClickToPlace({ onChange }: { onChange: Props["onChange"] }) {
 function Recenter({ center }: { center: Props["center"] }) {
   const map = useMap();
   useEffect(() => {
-    map.setView([center.lat, center.lng], center.zoom);
+    map.flyTo([center.lat, center.lng], center.zoom, { duration: 0.8 });
   }, [map, center.lat, center.lng, center.zoom]);
   return null;
 }

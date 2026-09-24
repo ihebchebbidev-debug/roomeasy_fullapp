@@ -168,6 +168,7 @@ export function toProperty(dto: PropertyDto): Property {
     cleaningFee: dto.cleaningFee,
     minNights: dto.minNights,
     ...(dto.coords ? { coords: dto.coords } : {}),
+    ...(dto.createdAt ? { createdAt: dto.createdAt } : {}),
   };
 }
 
@@ -309,7 +310,7 @@ export function toBooking(dto: ServerBooking): Booking {
  * never downloads the whole catalogue however large it grows.
  */
 async function fetchAllStays() {
-  return propertiesApi.list(100, 0);
+  return propertiesApi.list(100, 0, "newest");
 }
 
 /**
@@ -611,8 +612,23 @@ export const remote = {
     remoteAccepted(() => hostApi.removeTeamMember(id), "This team member could not be removed."),
   replyToReview: (reviewId: string, reply: string) =>
     runRemote(() => reviewsApi.reply(reviewId, reply), "Your reply could not be saved."),
-  createReview: (bookingId: string, rating: number, body: string) =>
-    runRemote(() => reviewsApi.create({ bookingId, rating, body }), "Your review could not be published."),
+  createReview: async (bookingId: string, rating: number, body: string) => {
+    const created = await runRemote(() => reviewsApi.create({ bookingId, rating, body }), "Your review could not be published.");
+    // Reload the stay so its new average rating and review count show everywhere.
+    if (created && typeof created === "object" && "propertyId" in created) {
+      const id = (created as { propertyId: string }).propertyId;
+      const fresh = await runRemote(() => propertiesApi.get(id), "This stay could not be refreshed.");
+      if (fresh) {
+        const next = toProperty(fresh);
+        setPlatform((current) => ({
+          customProperties: current.customProperties.some((p) => p.id === id)
+            ? current.customProperties.map((p) => (p.id === id ? next : p))
+            : [...current.customProperties, next],
+        }));
+      }
+    }
+    return created;
+  },
 
   // Back-office actions answer true only when the server accepted the change,
   // so the screen never shows a success it did not get.
@@ -622,6 +638,12 @@ export const remote = {
     remoteAccepted(
       () => adminApi.rejectListing(listingId, reasonCode, details),
       "The listing could not be rejected.",
+    ),
+  /** Suspend takes the stay off the site; reinstate puts it back live. */
+  setListingSuspended: (listingId: string, suspended: boolean, reason?: string) =>
+    remoteAccepted(
+      () => (suspended ? adminApi.suspendListing(listingId, reason) : adminApi.restoreListing(listingId)),
+      "The listing could not be updated.",
     ),
   /** `until` is an ISO date/time; omit it to suspend with no end date. */
   setUserSuspended: (userId: string, suspended: boolean, reason?: string, until?: string | null) =>

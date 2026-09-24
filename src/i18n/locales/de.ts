@@ -424,6 +424,8 @@ export const de: DeepPartial<Dictionary> = {
       reinstate: "Wieder freigeben",
       approved: "Unterkunft genehmigt",
       rejected: "Unterkunft abgelehnt",
+      reinstated: "Unterkunft wieder freigegeben",
+      listingSuspended: "Unterkunft gesperrt",
       updated: "Konto aktualisiert",
       searchUsers: "Nach Name oder E-Mail suchen",
       noReports: "Noch keine Buchungsdaten für Berichte vorhanden.",

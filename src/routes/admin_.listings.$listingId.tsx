@@ -113,6 +113,40 @@ function AdminListingDetail() {
                 {t.app.admin.approve}
               </Button>
             )}
+            {/* Suspend only while the stay is live; reinstate only while suspended. */}
+            {listing.approved && listing.status === "published" ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  act(
+                    () => adminApi.suspendListing(listing.id),
+                    { status: "suspended" },
+                    t.app.admin.listingSuspended,
+                  )
+                }
+              >
+                <ShieldOff className="size-4" aria-hidden />
+                {t.app.admin.suspend}
+              </Button>
+            ) : null}
+            {listing.status === "suspended" ? (
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() =>
+                  act(
+                    () => adminApi.restoreListing(listing.id),
+                    { approved: true, status: "published" },
+                    t.app.admin.reinstated,
+                  )
+                }
+              >
+                <RotateCcw className="size-4" aria-hidden />
+                {t.app.admin.reinstate}
+              </Button>
+            ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline" disabled={busy}>
@@ -145,35 +179,6 @@ function AdminListingDetail() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {listing.status === "suspended" ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={busy}
-                onClick={() =>
-                  act(
-                    () => adminApi.restoreListing(listing.id),
-                    { status: "published" },
-                    t.app.admin.reinstate,
-                  )
-                }
-              >
-                <RotateCcw className="size-4" aria-hidden />
-                {t.app.admin.reinstate}
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={busy}
-                onClick={() =>
-                  act(() => adminApi.suspendListing(listing.id), { status: "suspended" }, t.app.admin.suspend)
-                }
-              >
-                <ShieldOff className="size-4" aria-hidden />
-                {t.app.admin.suspend}
-              </Button>
-            )}
           </div>
           ) : null}
         </div>

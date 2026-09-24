@@ -89,6 +89,7 @@ function deviceId(): string | undefined {
 
 export type PropertyDto = {
   id: string;
+  createdAt?: string;
   name: string;
   location: { en: string; city: string; country: string };
   category: string;
@@ -154,7 +155,7 @@ export type StayQueryDto = {
 
 export const propertiesApi = {
   // The server caps a page at 100 stays; hydration walks the pages.
-  list: (limit = 100, offset = 0) => request<PropertyDto[]>("/stays", { query: { limit, offset } }),
+  list: (limit = 100, offset = 0, sort?: string) => request<PropertyDto[]>("/stays", { query: { limit, offset, ...(sort ? { sort } : {}) } }),
   /** One page of search results, with the total so the page can say how many. */
   search: async (query: StayQueryDto, limit: number, offset: number) => {
     const { data, meta } = await requestWithMeta<PropertyDto[]>("/stays", {

@@ -1121,8 +1121,14 @@ function BookingPanel({
         </p>
         <p className="flex items-baseline gap-1.5 text-xs">
           <Star className="size-3.5 translate-y-0.5 fill-primary text-primary" aria-hidden />
-          <span className="font-semibold">{rating.toFixed(1)}</span>
-          <span className="text-muted-foreground">({reviewCount})</span>
+          {reviewCount > 0 && rating > 0 ? (
+            <>
+              <span className="font-semibold">{rating.toFixed(1)}</span>
+              <span className="text-muted-foreground">({reviewCount})</span>
+            </>
+          ) : (
+            <span className="font-semibold">★</span>
+          )}
         </p>
       </div>
 

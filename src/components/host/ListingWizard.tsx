@@ -1,3 +1,4 @@
+import { EuropePlacePicker } from "./EuropePlacePicker";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ArrowRight, Bath, BedDouble, Camera, Check, ChevronLeft, ChevronRight, DoorOpen, PartyPopper, RefreshCw, Ruler, Sparkles, Star, Trash2, Upload, Users } from "lucide-react";
@@ -590,12 +591,19 @@ export function ListingWizard({
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{c.locationHint}</p>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={c.city} error={showError("city")}>
-                  <Input value={draft.location.city} onChange={(e) => patchLocation({ city: e.target.value })} placeholder={c.cityPh} />
-                </Field>
-                <Field label={c.country} error={showError("country")}>
-                  <Input value={draft.location.country} onChange={(e) => patchLocation({ country: e.target.value })} placeholder={c.countryPh} />
-                </Field>
+                <EuropePlacePicker
+                  country={draft.location.country}
+                  city={draft.location.city}
+                  locale={locale}
+                  countryLabel={c.country}
+                  cityLabel={c.city}
+                  countryInvalid={Boolean(showError("country"))}
+                  cityInvalid={Boolean(showError("city"))}
+                  onCountry={(country) => patchLocation({ country })}
+                  onCity={(city, coords) =>
+                    patchLocation(coords ? { city, lat: coords.lat, lng: coords.lng } : { city })
+                  }
+                />
                 <Field label={c.postal}>
                   <Input value={draft.location.postal} onChange={(e) => patchLocation({ postal: e.target.value })} placeholder={c.postalPh} maxLength={16} />
                 </Field>
@@ -603,6 +611,21 @@ export function ListingWizard({
                   <Input value={draft.location.neighbourhood} onChange={(e) => patchLocation({ neighbourhood: e.target.value })} placeholder={c.neighbourhoodPh} />
                 </Field>
               </div>
+              {draft.location.city ? (
+                <LocationPicker
+                  city={draft.location.city}
+                  country={draft.location.country}
+                  value={draft.location.lat != null && draft.location.lng != null ? { lat: draft.location.lat, lng: draft.location.lng } : null}
+                  address={[draft.location.neighbourhood, draft.location.postal, draft.location.city, draft.location.country].filter(Boolean).join(", ")}
+                  onChange={(p) => patchLocation({ lat: p.lat, lng: p.lng })}
+                  invalid={Boolean(showError("coords"))}
+                />
+              ) : null}
+              {showError("coords") ? (
+                <p className="text-sm font-medium text-destructive">
+                  {{ fr: "Placez l'épingle sur la carte (cliquez sur la carte).", es: "Coloca el pin en el mapa (haz clic en el mapa).", de: "Setzen Sie die Stecknadel auf der Karte (auf die Karte klicken).", pt: "Coloque o pino no mapa (clique no mapa)." }[locale as "fr"] ?? "Place the pin on the map (click the map)."}
+                </p>
+              ) : null}
             </div>
           ) : null}
 

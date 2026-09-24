@@ -36,11 +36,43 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
+/**
+ * Guards against double clicks app-wide: when onClick returns a promise the
+ * button stays disabled until it settles, so the action cannot run twice.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, onClick, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+    const [pending, setPending] = React.useState(false);
+    const running = React.useRef(false);
+
+    const handleClick = onClick
+      ? (event: React.MouseEvent<HTMLButtonElement>) => {
+          if (running.current) {
+            event.preventDefault();
+            return;
+          }
+          const result = onClick(event) as unknown;
+          if (result && typeof (result as Promise<unknown>).then === "function") {
+            running.current = true;
+            setPending(true);
+            void (result as Promise<unknown>).finally(() => {
+              running.current = false;
+              setPending(false);
+            });
+          }
+        }
+      : undefined;
+
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        onClick={handleClick}
+        disabled={asChild ? disabled : disabled || pending}
+        aria-busy={pending || undefined}
+        {...props}
+      />
     );
   },
 );

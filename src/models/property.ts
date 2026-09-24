@@ -48,6 +48,8 @@ export type PropertyHost = {
 };
 
 export type Property = {
+  /** When the stay was first added; used to show new stays first. */
+  createdAt?: string;
   id: string;
   name: string;
   location: Partial<Record<Locale, string>> & { en: string };

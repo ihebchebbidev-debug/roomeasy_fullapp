@@ -421,6 +421,8 @@ export const es: DeepPartial<Dictionary> = {
       reinstate: "Reactivar",
       approved: "Anuncio aprobado",
       rejected: "Anuncio rechazado",
+      reinstated: "Anuncio reactivado",
+      listingSuspended: "Anuncio suspendido",
       updated: "Cuenta actualizada",
       searchUsers: "Buscar por nombre o correo",
       noReports: "Aún no hay actividad de reservas que mostrar.",

@@ -78,10 +78,14 @@ export function PropertyCard({ property, isFavorite, onToggleFavorite }: Props) 
           </h3>
           <span className="flex shrink-0 items-center gap-1 text-[13px] text-foreground">
             <Star className="size-3.5 fill-foreground text-foreground" aria-hidden />
-            {property.rating.toFixed(2)}
-            {property.reviewCount ? (
-              <span className="text-muted-foreground">({property.reviewCount})</span>
-            ) : null}
+            {property.reviewCount && property.rating > 0 ? (
+              <>
+                {property.rating.toFixed(2)}
+                <span className="text-muted-foreground">({property.reviewCount})</span>
+              </>
+            ) : (
+              ({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New"
+            )}
           </span>
         </div>
 
