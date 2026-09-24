@@ -226,12 +226,6 @@ function ProfilePage() {
                   ) : null}
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full border-0 bg-primary/10 text-[0.65rem] font-semibold tracking-[0.14em] text-primary uppercase"
-                  >
-                    {session?.role === "host" ? p.hostBadge : (session?.role ?? "guest")}
-                  </Badge>
                   {session?.verified ? (
                     <Badge className="rounded-full border-0 bg-emerald-500/15 text-[0.65rem] font-semibold tracking-[0.14em] text-emerald-700 uppercase">
                       {t.app.auth.verified}

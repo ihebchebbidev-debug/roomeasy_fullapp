@@ -151,16 +151,6 @@ function AdminPage() {
 
   const can = (capability: string) => me?.capabilities.includes(capability) ?? !backendEnabled;
   const accessResolved = accountDataStatus === "ready" && (!backendEnabled || me !== null);
-  const roleName = me?.roles.includes("admin")
-    ? ac.roleAdmin
-    : me?.roles.includes("moderator")
-      ? ac.roleModerator
-      : me?.roles.includes("support")
-        ? ac.roleSupport
-        : me?.roles.includes("accounting")
-          ? ac.roleAccounting
-          : null;
-
   const pending = listings.filter((l) => !l.approved);
 
   // Live "to do" counters for the sidebar, read from the server and refreshed every minute.
@@ -394,15 +384,6 @@ function AdminPage() {
               <BrandLogo className="h-14 max-w-[11rem]" />
             </div>
             {navigation()}
-            {roleName ? (
-              <div className="relative flex shrink-0 items-center gap-3 border-t border-sidebar-border bg-sidebar/35 px-5 py-4 backdrop-blur-sm">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold uppercase">{roleName.slice(0, 1)}</span>
-                <span className="min-w-0 font-sans">
-                  <span className="block truncate text-xs font-semibold">{roleName}</span>
-                  <span className="block truncate text-[10px] uppercase text-muted-foreground">{ac.roleLabel}</span>
-                </span>
-              </div>
-            ) : null}
           </aside>
 
           <div className="min-w-0 flex-1">
@@ -424,15 +405,6 @@ function AdminPage() {
                   <div className="relative border-t border-sidebar-border bg-sidebar/35 px-4 py-3 backdrop-blur-sm">
                     <CurrencySelector />
                   </div>
-                  {roleName ? (
-                    <div className="relative flex items-center gap-3 border-t border-sidebar-border bg-sidebar/35 p-4 backdrop-blur-sm">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold uppercase">{roleName.slice(0, 1)}</span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold">{roleName}</span>
-                        <span className="block text-[11px] text-muted-foreground uppercase">{ac.roleLabel}</span>
-                      </span>
-                    </div>
-                  ) : null}
                 </SheetContent>
               </Sheet>
               <span className="min-w-0"><span className="block truncate font-display text-sm font-semibold">{current.label}</span><span className="block truncate text-[10px] text-muted-foreground lg:hidden">{t.app.admin.title}</span></span>
@@ -447,7 +419,6 @@ function AdminPage() {
                    <h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{current.label}</h1>
                   <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t.app.admin.subtitle}</p>
                 </div>
-                {roleName ? <Badge variant="outline" className="hidden sm:inline-flex">{roleName}</Badge> : null}
               </header>
 
               <div className={cn("mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4", section !== "dashboard" && "hidden")}>
@@ -890,8 +861,6 @@ function ReportsPanel() {
     return <Empty text={t.app.admin.noReports} />;
   }
 
-  const listingPeak = Math.max(1, ...topListings.map((row) => row.revenueUsd));
-  const hostPeak = Math.max(1, ...topHosts.map((row) => row.revenueUsd));
   const cancelTotal = Math.max(1, cancellations.reduce((sum, row) => sum + row.count, 0));
   const rank = (i: number) => (
     <span className={cn(
@@ -942,9 +911,6 @@ function ReportsPanel() {
                       <span>{row.bookings} {t.app.admin.reportBookings}</span>
                       {row.rating > 0 ? <span className="inline-flex items-center gap-0.5"><Star className="size-3 fill-current" aria-hidden />{row.rating.toFixed(1)}</span> : null}
                     </span>
-                    <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-muted">
-                      <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.round((row.revenueUsd / listingPeak) * 100)}%` }} />
-                    </span>
                   </span>
                   <span className="shrink-0 text-sm font-semibold tabular-nums">{format(row.revenueUsd)}</span>
                 </Link>
@@ -965,9 +931,6 @@ function ReportsPanel() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{row.hostName}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{row.listings} {t.app.admin.reportListings}</span>
-                  <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-muted">
-                    <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.round((row.revenueUsd / hostPeak) * 100)}%` }} />
-                  </span>
                 </span>
                 <span className="shrink-0 text-sm font-semibold tabular-nums">{format(row.revenueUsd)}</span>
               </Link>

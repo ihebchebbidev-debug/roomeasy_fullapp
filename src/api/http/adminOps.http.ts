@@ -17,10 +17,12 @@ export type ListingReportDto = {
   id: string;
   listingId: string;
   propertyName: string | null;
+  propertyImage: string | null;
   hostId: string | null;
   hostName: string | null;
   reporterId: string | null;
   reporterName: string | null;
+  reporterAvatar: string | null;
   reason: "fraud" | "inappropriate" | "wrong_information" | "unavailable" | "safety" | "other";
   details: string | null;
   status: "open" | "reviewing" | "resolved" | "dismissed";

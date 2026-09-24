@@ -1,17 +1,17 @@
-import { Paged, rowText } from "@/components/admin/ListControls";
+import { ListToolbar, ShowMore, rowText, useListControls } from "@/components/admin/ListControls";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { API_BASE_URL } from "@/api/http/client";
 import { adminTeamApi, type AdminMemberRow, type GrantableRole } from "@/api/http/support.http";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useSupportCopy } from "@/i18n/supportCopy";
 
 /** Hands out and removes back-office access levels (multi-level admin roles). */
 export function TeamRolesPanel() {
   const c = useSupportCopy();
-  const [search, setSearch] = useState("");
   const [rows, setRows] = useState<AdminMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searched, setSearched] = useState("");
@@ -44,6 +44,12 @@ export function TeamRolesPanel() {
     { role: "accounting", label: c.roleAccounting },
     { role: "host", label: c.roleHost },
   ];
+  const list = useListControls(visible, {
+    text: rowText,
+    filters: roleOptions
+      .filter(({ role }) => STAFF.includes(role))
+      .map(({ role, label }) => ({ value: role, label, test: (row) => row.roles.includes(role) })),
+  });
 
   async function toggle(row: AdminMemberRow, role: GrantableRole, has: boolean) {
     try {
@@ -53,46 +59,48 @@ export function TeamRolesPanel() {
         return;
       }
       toast.success(has ? c.revoked : c.granted);
-      await load(search);
+      await load(searched);
     } catch (error) {
       toast.error(error instanceof Error && error.message ? error.message : c.failed);
     }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="mb-5">
         <h2 className="font-display text-lg font-semibold">{c.teamTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{c.teamHint}</p>
-        <form
-          className="mt-4 flex flex-wrap gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void load(search);
-          }}
-        >
-          <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={c.searchMember}
-            className="max-w-sm"
-          />
-          <Button type="submit" variant="outline">
-            {c.refresh}
-          </Button>
-        </form>
       </div>
 
-      {loading ? <p className="text-sm text-muted-foreground">{c.loading}</p> : null}
-      {!loading && visible.length === 0 ? <p className="text-sm text-muted-foreground">{c.empty}</p> : null}
+      <ListToolbar
+        controls={list}
+        placeholder={c.searchMember}
+        extra={
+          <Button type="button" variant="outline" onClick={() => void load(list.query)} disabled={loading}>
+            {c.refresh}
+          </Button>
+        }
+      />
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card divide-y divide-border">
-        <Paged rows={visible} text={rowText}>{(__rows) => __rows.map((row) => (
-          <div key={row.id} className="p-4 sm:p-5">
+      {loading ? <p className="border-y border-border py-6 text-center text-sm text-muted-foreground">{c.loading}</p> : null}
+      {!loading && list.total === 0 ? <p className="border-y border-border py-6 text-center text-sm text-muted-foreground">{c.empty}</p> : null}
+
+      {!loading && list.total > 0 ? (
+        <div className="divide-y divide-border border-y border-border">
+          {list.visible.map((row) => (
+          <div key={row.id} className="p-4 transition-colors hover:bg-muted/30 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="font-semibold">{row.fullName}</p>
-                <p className="text-sm text-muted-foreground">{row.email}</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <UserAvatar
+                  name={row.fullName}
+                  src={`${API_BASE_URL}/api/accounts/${encodeURIComponent(row.id)}/avatar`}
+                  className="size-11 shrink-0 text-base"
+                />
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{row.fullName}</p>
+                  <p className="truncate text-sm text-muted-foreground">{row.email}</p>
+                  <p className="text-xs text-muted-foreground">{row.joinedOn}</p>
+                </div>
               </div>
               <div className="flex flex-wrap gap-1">
                 {row.suspended ? <Badge variant="secondary">{c.suspendedBadge}</Badge> : null}
@@ -122,8 +130,10 @@ export function TeamRolesPanel() {
               })}
             </div>
           </div>
-        ))}</Paged>
-      </div>
+          ))}
+        </div>
+      ) : null}
+      <ShowMore controls={list} />
     </div>
   );
 }

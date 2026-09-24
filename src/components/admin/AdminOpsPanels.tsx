@@ -12,11 +12,15 @@ import { useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { ImageOff } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { API_BASE_URL } from "@/api/http/client";
 import { adminOpsApi } from "@/api/http/adminOps.http";
 import { ChartPanel, GroupedBars, RankingBars, StatTile } from "@/components/admin/AdminCharts";
 import type {
@@ -116,13 +120,41 @@ export function ListingReportsPanel() {
       <Paged rows={data} text={rowText}>{(__rows) => __rows.map((report) => (
         <div key={report.id} className="border-b border-border p-4 last:border-b-0 sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-semibold">{report.propertyName ?? report.listingId}</p>
+            <div className="flex min-w-0 items-center gap-3">
+              {report.propertyImage ? (
+                <img
+                  src={report.propertyImage}
+                  alt=""
+                  loading="lazy"
+                  className="h-14 w-20 shrink-0 rounded-lg border border-border object-cover"
+                />
+              ) : (
+                <span className="grid h-14 w-20 shrink-0 place-items-center rounded-lg border border-border bg-muted text-muted-foreground">
+                  <ImageOff className="size-5" aria-hidden />
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{report.propertyName ?? report.listingId}</p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <UserAvatar
+                    name={report.reporterName ?? "?"}
+                    src={
+                      report.reporterAvatar ??
+                      (report.reporterId
+                        ? `${API_BASE_URL}/api/accounts/${encodeURIComponent(report.reporterId)}/avatar`
+                        : null)
+                    }
+                    className="size-5"
+                  />
+                  <span className="truncate">
+                    {copy.reportedBy} {report.reporterName ?? "—"} · {new Date(report.createdAt).toLocaleDateString()} ·{" "}
+                    {report.reason}
+                  </span>
+                </p>
+              </div>
+            </div>
             <Badge className="border-0 bg-amber-500/15 text-amber-700">{copy.reportOpen}</Badge>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {copy.reportedBy} {report.reporterName ?? "—"} · {new Date(report.createdAt).toLocaleDateString()} ·{" "}
-            {report.reason}
-          </p>
           {report.details ? <p className="mt-2 text-sm text-muted-foreground">{report.details}</p> : null}
           <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
             <Input
