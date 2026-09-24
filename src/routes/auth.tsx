@@ -69,6 +69,8 @@ function AuthPage() {
   const [role, setRole] = useState<Role>("guest");
   const [pending, setPending] = useState<"signin" | "signup" | null>(null);
   const [signInToken, setSignInToken] = useState<string | null>(null);
+  const [otpStep, setOtpStep] = useState(false);
+  const [otp, setOtp] = useState("");
   const [welcome, setWelcome] = useState<string | null>(null);
   const [signUpToken, setSignUpToken] = useState<string | null>(null);
   const [newAccount, setNewAccount] = useState<{ name: string; to: "/admin" | "/host" | "/trips" } | null>(null);
@@ -122,7 +124,8 @@ function AuthPage() {
 
   async function signIn(displayName: string, created: boolean) {
     const token = created ? signUpToken : signInToken;
-    if (!token) {
+    const skipCheck = !created && otpStep;
+    if (!token && !skipCheck) {
       toast.error("Please complete the security check first.");
       return;
     }
@@ -133,7 +136,7 @@ function AuthPage() {
     }
     setPending(created ? "signup" : "signin");
     try {
-      await verifyTurnstileToken({ data: { token } });
+      if (!skipCheck && token) await verifyTurnstileToken({ data: { token } });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Security check failed. Please try again.",
@@ -148,8 +151,13 @@ function AuthPage() {
     if (backendEnabled) {
       const session = created
         ? await remote.signUp(safeName, email.trim(), password, role === "host")
-        : await remote.signIn(email.trim(), password);
+        : await remote.signIn(email.trim(), password, otpStep ? otp.trim() : undefined);
       setPending(null);
+      if (session === "otp_required") {
+        setOtpStep(true);
+        toast.message("Enter the 6-digit code from your authenticator app.");
+        return;
+      }
       if (!session) return;
       if (created && digits) {
         const account = await remote.saveProfile({ phone: `${dialCode} ${digits}` });
@@ -307,6 +315,23 @@ function AuthPage() {
                   </Link>
                 </div>
 
+                {otpStep ? (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signin-otp">Two-step code</Label>
+                    <Input
+                      id="signin-otp"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                      placeholder="123456"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">Open your authenticator app and type the current code.</p>
+                  </div>
+                ) : null}
+
                 <TurnstileCard
                   siteKey={TURNSTILE_SITE_KEY}
                   onVerify={setSignInToken}
@@ -320,7 +345,7 @@ function AuthPage() {
                   type="submit"
                   size="lg"
                   className="w-full rounded-full font-bold shadow-lift transition-transform hover:scale-[1.01] active:scale-[0.98]"
-                  disabled={pending === "signin" || !signInToken}
+                  disabled={pending === "signin" || (!signInToken && !otpStep)}
                 >
                   {pending === "signin" ? (
                     <Loader2 className="size-4 animate-spin" aria-hidden />

@@ -1,3 +1,9 @@
+import { catalogApi } from "@/api/http/catalog.http";
+import { setPropertyTypes } from "@/models/property";
+import { useEffect } from "react";
+import { loadEquipmentFromApi } from "@/data/equipment";
+import { equipmentApi } from "@/api/http/platform.http";
+import { backendEnabled } from "@/api/backend";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -132,6 +138,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const { locked } = Route.useLoaderData();
   useBackendHydration();
+  useEffect(() => {
+    if (!backendEnabled) return;
+    void loadEquipmentFromApi(() => equipmentApi.list());
+    catalogApi.publicPropertyTypes().then(setPropertyTypes).catch(() => undefined);
+  }, []);
 
   if (locked) {
     return <ComingSoonGate />;

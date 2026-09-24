@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { catalogApi } from "@/api/http/catalog.http";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -106,6 +108,33 @@ function AdminHostProfile() {
                     Suspended{data.host.suspendedUntil ? ` until ${new Date(data.host.suspendedUntil).toLocaleDateString()}` : ""}
                   </Badge>
                 ) : null}
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  type="button"
+                  className="rounded-md border border-border px-3 py-1 text-xs hover:bg-muted"
+                  onClick={() =>
+                    catalogApi
+                      .syncIdentity(userId)
+                      .then((r) => toast.success(`Stripe identity: ${r.stripeStatus}${r.requirements.length ? ` (${r.requirements.length} items due)` : ""}`))
+                      .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not reach Stripe."))
+                  }
+                >
+                  Refresh identity from Stripe
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md border border-border px-3 py-1 text-xs hover:bg-muted"
+                  onClick={() =>
+                    window.confirm("Turn off this member's two-step sign-in? They will sign in with password only until they set it up again.") &&
+                    catalogApi
+                      .resetTwoFactor(userId)
+                      .then(() => toast.success("Two-step sign-in reset."))
+                      .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Reset failed."))
+                  }
+                >
+                  Reset two-step sign-in
+                </button>
               </div>
             </header>
 

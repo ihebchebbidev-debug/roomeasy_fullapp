@@ -70,6 +70,7 @@ type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined>;
+  headers?: Record<string, string>;
 };
 
 /** Page information the list endpoints return next to the rows. */
@@ -94,6 +95,7 @@ export async function requestWithMeta<T>(
         Accept: "application/json",
         ...(options.body === undefined ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers ?? {}),
       },
       ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
       credentials: "include",

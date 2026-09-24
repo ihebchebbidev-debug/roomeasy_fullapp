@@ -482,8 +482,22 @@ async function mergeOwnProperties(listings: HostListing[]): Promise<void> {
 /* --------------------------------------------------------------- actions */
 
 export const remote = {
-  async signIn(email: string, password: string): Promise<SessionUser | null> {
-    const result = await runRemote(() => accountsApi.login({ email, password }), "Sign-in failed.");
+  /** Returns "otp_required" when the account has two-step sign-in and no/incorrect code was sent. */
+  async signIn(email: string, password: string, otp?: string): Promise<SessionUser | "otp_required" | null> {
+    let needsOtp = false;
+    const result = await runRemote(async () => {
+      try {
+        return await accountsApi.login({ email, password, ...(otp ? { otp } : {}) });
+      } catch (error) {
+        const code = (error as { details?: { serverCode?: string } })?.details?.serverCode;
+        if (code === "TWO_FACTOR_REQUIRED" && !otp) {
+          needsOtp = true;
+          return null;
+        }
+        throw error;
+      }
+    }, "Sign-in failed.");
+    if (needsOtp) return "otp_required";
     if (!result) return null;
     setAccessToken(result.token);
     const session = toSessionUser(result.account);
@@ -549,11 +563,11 @@ export const remote = {
 
   saveProfile: (patch: { fullName?: string; phone?: string | null }) =>
     runRemote(() => accountsApi.updateMe(patch), "Your details could not be saved."),
-  setTwoFactor: (enabled: boolean) =>
-    runRemote(
-      () => accountsApi.updateMe({ twoFactorEnabled: enabled }),
-      "Two-step sign-in could not be changed.",
-    ),
+  startTwoFactor: () => runRemote(() => accountsApi.twoFactorSetup(), "Two-step sign-in could not be started."),
+  enableTwoFactor: (code: string) =>
+    remoteAccepted(() => accountsApi.twoFactorEnable(code), "That code is not valid."),
+  disableTwoFactor: (code: string) =>
+    remoteAccepted(() => accountsApi.twoFactorDisable(code), "That code is not valid."),
   changePassword: (currentPassword: string, newPassword: string) =>
     remoteAccepted(
       () => accountsApi.changePassword({ currentPassword, newPassword }),

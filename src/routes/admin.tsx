@@ -1,6 +1,17 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { API_BASE_URL } from "@/api/http/client";
+import { mediaUrl } from "@/lib/images";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { ChartPanel, Donut, GroupedBars, StatTile } from "@/components/admin/AdminCharts";
 import {
   BadgeCheck,
+  LayoutDashboard,
+  Building2,
+  Globe,
+  Home,
+  FileText,
+  Languages,
+  ListChecks,
   BarChart3,
   CalendarClock,
   CalendarDays,
@@ -46,6 +57,8 @@ import {
   VerificationPanel,
 } from "@/components/admin/AdminOpsPanels";
 import { TeamRolesPanel } from "@/components/admin/TeamRolesPanel";
+import { DashboardPanel } from "@/components/admin/DashboardPanel";
+import { AmenitiesPanel, CitiesPanel, ContentPagesPanel, CountriesPanel, PropertyTypesPanel, TranslationsPanel } from "@/components/admin/CatalogPanels";
 import { adminOpsApi, type AdminMeDto } from "@/api/http/adminOps.http";
 import { useAdminCopy } from "@/i18n/adminCopy";
 import { useSupportCopy } from "@/i18n/supportCopy";
@@ -107,7 +120,7 @@ function AdminPage() {
   const { session, listings, users, payouts, commissionRate, reviews, adminOverview, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
   const [query, setQuery] = useState("");
-  const [section, setSection] = useState("approvals");
+  const [section, setSection] = useState("dashboard");
   const [commission, setCommission] = useState(String(commissionRate));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const ac = useAdminCopy();
@@ -186,10 +199,10 @@ function AdminPage() {
   const metric = (value: number | string) => accountDataStatus === "ready" ? value : "—";
 
   const overview = [
-    { label: t.app.admin.approvals, value: metric(adminOverview?.listings.awaitingApproval ?? pending.length), tone: "amber" as const },
-    { label: t.app.admin.users, value: metric(adminOverview?.users.total ?? users.length), tone: "primary" as const },
-    { label: t.app.admin.host, value: metric(hostsCount), tone: "emerald" as const },
-    { label: t.app.admin.payouts, value: metric(format(payoutsTotal)), tone: "primary" as const },
+    { label: t.app.admin.approvals, value: metric(adminOverview?.listings.awaitingApproval ?? pending.length), tone: "amber" as const, to: "approvals" },
+    { label: t.app.admin.users, value: metric(adminOverview?.users.total ?? users.length), tone: "primary" as const, to: "users" },
+    { label: t.app.admin.host, value: metric(hostsCount), tone: "emerald" as const, to: "users" },
+    { label: t.app.admin.payouts, value: metric(format(payoutsTotal)), tone: "primary" as const, to: "payouts" },
   ];
 
   // The back office is for administrators and the delegated roles the server
@@ -204,9 +217,10 @@ function AdminPage() {
     );
   }
 
-  type NavItem = { value: string; label: string; icon: typeof Users; group: "moderation" | "members" | "finance" | "insights" | "system" };
+  type NavItem = { value: string; label: string; icon: typeof Users; group: "overview" | "moderation" | "members" | "finance" | "insights" | "system" };
 
   const navItems: NavItem[] = [
+    { value: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "overview" },
     { value: "approvals", label: t.app.admin.approvals, icon: ClipboardCheck, group: "moderation" },
     ...(can("listings.moderate") ? [{ value: "listing-reports", label: ac.tabReports, icon: Flag, group: "moderation" as const }] : []),
     { value: "moderation", label: cc.reviewModeration, icon: Star, group: "moderation" },
@@ -232,6 +246,16 @@ function AdminPage() {
           { value: "emails", label: ac.tabEmails, icon: Mail, group: "system" as const },
         ]
       : []),
+    ...(can("content.manage")
+      ? [
+          { value: "amenities", label: "Amenities", icon: ListChecks, group: "system" as const },
+          { value: "property-types", label: "Property types", icon: Home, group: "system" as const },
+          { value: "countries", label: "Countries", icon: Globe, group: "system" as const },
+          { value: "cities", label: "Cities", icon: Building2, group: "system" as const },
+          { value: "pages", label: "Pages", icon: FileText, group: "system" as const },
+          { value: "translations", label: "Translations", icon: Languages, group: "system" as const },
+        ]
+      : []),
     ...(can("admins.manage") || can("users.manage") ? [{ value: "team", label: sc.tabTeam, icon: UserCog, group: "system" as const }] : []),
     { value: "settings", label: t.app.admin.settings, icon: Settings, group: "system" },
   ];
@@ -240,13 +264,13 @@ function AdminPage() {
   if (!current) return null;
 
   const groupLabels = {
-    en: ["Moderation", "Members", "Finance", "Insights", "Administration"],
-    fr: ["Modération", "Membres", "Finance", "Analyses", "Administration"],
-    es: ["Moderación", "Miembros", "Finanzas", "Análisis", "Administración"],
-    de: ["Moderation", "Mitglieder", "Finanzen", "Analysen", "Verwaltung"],
-    pt: ["Moderação", "Membros", "Finanças", "Análises", "Administração"],
+    en: ["Overview", "Moderation", "Members", "Finance", "Insights", "Administration"],
+    fr: ["Vue d'ensemble", "Modération", "Membres", "Finance", "Analyses", "Administration"],
+    es: ["Resumen", "Moderación", "Miembros", "Finanzas", "Análisis", "Administración"],
+    de: ["Übersicht", "Moderation", "Mitglieder", "Finanzen", "Analysen", "Verwaltung"],
+    pt: ["Visão geral", "Moderação", "Membros", "Finanças", "Análises", "Administração"],
   }[locale];
-  const groupOrder: NavItem["group"][] = ["moderation", "members", "finance", "insights", "system"];
+  const groupOrder: NavItem["group"][] = ["overview", "moderation", "members", "finance", "insights", "system"];
 
   const navigation = () => (
     <nav aria-label={t.app.admin.title} className="relative min-h-0 flex-1 overflow-y-auto px-3 py-4">
@@ -299,7 +323,7 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
-      <Tabs value={section} onValueChange={setSection} className="gap-0">
+      <Tabs value={section} onValueChange={setSection} className="min-w-0 gap-0">
         <div className="flex min-h-screen">
           <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
             <SidebarBackdrop />
@@ -363,12 +387,14 @@ function AdminPage() {
                 {roleName ? <Badge variant="outline" className="hidden sm:inline-flex">{roleName}</Badge> : null}
               </header>
 
-              <div className="mb-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                {overview.map(({ label, value, tone }) => (
-                  <div
+              <div className={cn("mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4", section === "dashboard" && "hidden")}>
+                {overview.map(({ label, value, tone, to }) => (
+                  <button
+                    type="button"
                     key={label}
+                    onClick={() => setSection(to)}
                     className={cn(
-                      "min-w-0 rounded-lg border border-border bg-surface px-4 py-4 shadow-sm sm:px-5",
+                      "min-w-0 rounded-lg border border-border bg-surface px-3 py-3 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5 sm:py-4",
                     )}
                   >
                      <span className="block truncate text-[10px] font-semibold uppercase text-muted-foreground">{label}</span>
@@ -377,51 +403,72 @@ function AdminPage() {
                       tone === "amber" && Number(value) > 0 && "text-amber-700",
                       tone === "emerald" && "text-emerald-700",
                     )}>{value}</span>
-                  </div>
+                  </button>
                 ))}
               </div>
               {accountDataStatus !== "ready" ? (
                 <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} compact />
               ) : null}
 
-        <div className={accountDataStatus === "ready" ? "" : "hidden"}>
-        <TabsContent value="team" className="mt-0">
+        <div className={cn("min-w-0 max-w-full", accountDataStatus !== "ready" && "hidden")}>
+        <TabsContent value="dashboard" className="mt-0 min-w-0 max-w-full">
+          <DashboardPanel overview={adminOverview} canStats={backendEnabled && can("stats.read")} onOpen={setSection} />
+        </TabsContent>
+        <TabsContent value="team" className="mt-0 min-w-0 max-w-full">
           <TeamRolesPanel />
         </TabsContent>
 
-        <TabsContent value="listing-reports" className="mt-0">
+        <TabsContent value="listing-reports" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <ListingReportsPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="verification" className="mt-0">
+        <TabsContent value="verification" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <VerificationPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="commissions" className="mt-0">
+        <TabsContent value="commissions" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <CommissionsPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="finance" className="mt-0">
+        <TabsContent value="finance" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <FinancePanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="support" className="mt-0">
+        <TabsContent value="support" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <SupportDeskPanel adminId={me?.userId ?? null} /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="booking-actions" className="mt-0">
+        <TabsContent value="booking-actions" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <BookingActionsPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="bookings" className="mt-0">
+        <TabsContent value="bookings" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <BookingsDeskPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="compare" className="mt-0">
+        <TabsContent value="compare" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <StatsComparePanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="audit" className="mt-0">
+        <TabsContent value="audit" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <AuditPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="emails" className="mt-0">
+        <TabsContent value="emails" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <NotificationsPanel /> : <Empty text={ac.empty} />}
+        </TabsContent>
+        <TabsContent value="amenities" className="mt-0 min-w-0 max-w-full">
+          {backendEnabled ? <AmenitiesPanel /> : <Empty text={ac.empty} />}
+        </TabsContent>
+        <TabsContent value="property-types" className="mt-0 min-w-0 max-w-full">
+          {backendEnabled ? <PropertyTypesPanel /> : <Empty text={ac.empty} />}
+        </TabsContent>
+        <TabsContent value="countries" className="mt-0 min-w-0 max-w-full">
+          {backendEnabled ? <CountriesPanel /> : <Empty text={ac.empty} />}
+        </TabsContent>
+        <TabsContent value="cities" className="mt-0 min-w-0 max-w-full">
+          {backendEnabled ? <CitiesPanel /> : <Empty text={ac.empty} />}
+        </TabsContent>
+        <TabsContent value="pages" className="mt-0 min-w-0 max-w-full">
+          {backendEnabled ? <ContentPagesPanel /> : <Empty text={ac.empty} />}
+        </TabsContent>
+        <TabsContent value="translations" className="mt-0 min-w-0 max-w-full">
+          {backendEnabled ? <TranslationsPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
 
 
-        <TabsContent value="approvals" className="mt-0">
+        <TabsContent value="approvals" className="mt-0 min-w-0 max-w-full">
           {pending.length === 0 ? (
             <Empty text={t.app.admin.noApprovals} />
           ) : (
@@ -600,7 +647,7 @@ function AdminPage() {
           </ul>
         </TabsContent>
 
-        <TabsContent value="moderation" className="mt-0">
+        <TabsContent value="moderation" className="mt-0 min-w-0 max-w-full">
           {reviews.length === 0 ? (
             <Empty text={t.app.admin.noReports} />
           ) : (
@@ -674,7 +721,7 @@ function AdminPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="payouts" className="mt-0">
+        <TabsContent value="payouts" className="mt-0 min-w-0 max-w-full">
           {payouts.length === 0 ? <Empty text={t.app.admin.noPayouts} /> : null}
           <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
             {payouts.map((payout) => (
@@ -725,11 +772,11 @@ function AdminPage() {
           </ul>
         </TabsContent>
 
-        <TabsContent value="reports" className="mt-0">
+        <TabsContent value="reports" className="mt-0 min-w-0 max-w-full">
           <ReportsPanel />
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-0">
+        <TabsContent value="settings" className="mt-0 min-w-0 max-w-full">
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -770,6 +817,7 @@ function AdminPage() {
 
 /** Monthly performance, best places, top hosts and cancellation reasons. */
 function ReportsPanel() {
+  const allProperties = useAllProperties();
   const { t } = useLanguage();
   const { format } = useCurrency();
   const [reports, setReports] = useState<AdminReportsDto | null>(null);
@@ -800,73 +848,122 @@ function ReportsPanel() {
     return <Empty text={t.app.admin.noReports} />;
   }
 
-  const peak = Math.max(1, ...monthly.map((row) => row.revenueUsd));
+  const listingPeak = Math.max(1, ...topListings.map((row) => row.revenueUsd));
+  const hostPeak = Math.max(1, ...topHosts.map((row) => row.revenueUsd));
+  const cancelTotal = Math.max(1, cancellations.reduce((sum, row) => sum + row.count, 0));
+  const rank = (i: number) => (
+    <span className={cn(
+      "grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold tabular-nums",
+      i < 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+    )}>{i + 1}</span>
+  );
+  const card = "min-w-0 rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6";
+
+  const totalRevenue = monthly.reduce((sum, r) => sum + r.revenueUsd, 0);
+  const totalCommission = monthly.reduce((sum, r) => sum + r.commissionUsd, 0);
+  const totalBookings = monthly.reduce((sum, r) => sum + r.bookings, 0);
+  const cancelCount = cancellations.reduce((sum, r) => sum + r.count, 0);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <section className="rounded-lg border border-border bg-surface p-6 lg:col-span-2">
-        <h2 className="font-display text-lg font-semibold">{t.app.admin.reportMonthly}</h2>
-        <ul className="mt-4 space-y-3">
-          {monthly.map((row) => (
-            <li key={row.month} className="space-y-1">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
-                <span className="font-medium">{row.month}</span>
-                <span className="text-muted-foreground">
-                  {row.bookings} {t.app.admin.reportBookings} · {format(row.revenueUsd)} {t.app.admin.reportRevenue} ·{" "}
-                  {format(row.commissionUsd)} {t.app.admin.reportCommission}
-                </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${Math.round((row.revenueUsd / peak) * 100)}%` }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3 lg:col-span-2 lg:grid-cols-4">
+        <StatTile label={t.app.admin.reportRevenue} value={format(totalRevenue)} />
+        <StatTile label={t.app.admin.reportCommission} value={format(totalCommission)} tone="primary" hint={totalRevenue > 0 ? `${Math.round((totalCommission / totalRevenue) * 100)}%` : undefined} />
+        <StatTile label={t.app.admin.reportBookings} value={String(totalBookings)} />
+        <StatTile label={t.app.admin.reportCancellations} value={String(cancelCount)} tone={cancelCount > 0 ? "danger" : "default"} />
+      </div>
 
-      <section className="rounded-lg border border-border bg-surface p-6">
+      <ChartPanel title={t.app.admin.reportMonthly} className="lg:col-span-2">
+        <GroupedBars
+          data={monthly.map((r) => ({ month: r.month, revenueUsd: Math.round(r.revenueUsd), commissionUsd: Math.round(r.commissionUsd) }))}
+          xKey="month"
+          series={[{ key: "revenueUsd", label: t.app.admin.reportRevenue }, { key: "commissionUsd", label: t.app.admin.reportCommission }]}
+        />
+      </ChartPanel>
+
+      <section className={card}>
         <h2 className="font-display text-lg font-semibold">{t.app.admin.reportTopListings}</h2>
-        <ul className="mt-4 space-y-3 text-sm">
-          {topListings.map((row) => (
-            <li key={row.propertyId} className="flex items-center justify-between gap-3">
-              <span className="min-w-0 truncate font-medium">{row.name}</span>
-              <span className="shrink-0 text-muted-foreground">
-                {row.bookings} {t.app.admin.reportBookings} · {format(row.revenueUsd)}
-              </span>
-            </li>
-          ))}
+        <ul className="mt-4 divide-y divide-border">
+          {topListings.map((row, i) => {
+            const property = allProperties.find((p) => p.id === row.propertyId);
+            const image = property?.image ? mediaUrl(property.image) : null;
+            return (
+              <li key={row.propertyId}>
+                <Link to="/stays/$propertyId" params={{ propertyId: row.propertyId }} className="-mx-2 flex min-w-0 items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-muted/60">
+                  {rank(i)}
+                  <span className="size-11 shrink-0 overflow-hidden rounded-md bg-muted">
+                    {image ? <img src={image} alt="" className="size-full object-cover" loading="lazy" /> : <Home className="m-3 size-5 text-muted-foreground" aria-hidden />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{row.name}</span>
+                    <span className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{row.bookings} {t.app.admin.reportBookings}</span>
+                      {row.rating > 0 ? <span className="inline-flex items-center gap-0.5"><Star className="size-3 fill-current" aria-hidden />{row.rating.toFixed(1)}</span> : null}
+                    </span>
+                    <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-muted">
+                      <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.round((row.revenueUsd / listingPeak) * 100)}%` }} />
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums">{format(row.revenueUsd)}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </section>
 
-      <section className="rounded-lg border border-border bg-surface p-6">
+      <section className={card}>
         <h2 className="font-display text-lg font-semibold">{t.app.admin.reportTopHosts}</h2>
-        <ul className="mt-4 space-y-3 text-sm">
-          {topHosts.map((row) => (
-            <li key={row.hostId} className="flex items-center justify-between gap-3">
-              <span className="min-w-0 truncate font-medium">{row.hostName}</span>
-              <span className="shrink-0 text-muted-foreground">
-                {row.listings} {t.app.admin.reportListings} · {format(row.revenueUsd)}
-              </span>
+        <ul className="mt-4 divide-y divide-border">
+          {topHosts.map((row, i) => (
+            <li key={row.hostId}>
+              <Link to="/admin/hosts/$userId" params={{ userId: row.hostId }} className="-mx-2 flex min-w-0 items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-muted/60">
+                {rank(i)}
+                <UserAvatar name={row.hostName} src={`${API_BASE_URL}/api/accounts/${encodeURIComponent(row.hostId)}/avatar`} className="size-11 text-base" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{row.hostName}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{row.listings} {t.app.admin.reportListings}</span>
+                  <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-muted">
+                    <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.round((row.revenueUsd / hostPeak) * 100)}%` }} />
+                  </span>
+                </span>
+                <span className="shrink-0 text-sm font-semibold tabular-nums">{format(row.revenueUsd)}</span>
+              </Link>
             </li>
           ))}
         </ul>
       </section>
 
       {cancellations.length > 0 ? (
-        <section className="rounded-lg border border-border bg-surface p-6 lg:col-span-2">
+        <section className={cn(card, "lg:col-span-2")}>
           <h2 className="font-display text-lg font-semibold">{t.app.admin.reportCancellations}</h2>
-          <ul className="mt-4 space-y-3 text-sm">
-            {cancellations.map((row) => (
-              <li key={row.reason} className="flex items-center justify-between gap-3">
-                <span className="min-w-0 truncate">{row.reason}</span>
-                <span className="shrink-0 text-muted-foreground">
-                  {row.count} · {format(row.refundedUsd)} {t.app.admin.reportRefunded}
-                </span>
-              </li>
-            ))}
+          <div className="mt-4">
+            <Donut centerLabel={t.app.admin.reportCancellations} data={(() => {
+              const sorted = [...cancellations].sort((x, y) => y.count - x.count);
+              const head = sorted.slice(0, 4).map((r) => ({ name: r.reason, value: r.count }));
+              const rest = sorted.slice(4).reduce((sum, r) => sum + r.count, 0);
+              return rest > 0 ? [...head, { name: "Other", value: rest }] : head;
+            })()} />
+          </div>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+            {cancellations.map((row) => {
+              const share = Math.round((row.count / cancelTotal) * 100);
+              return (
+                <li key={row.reason} className="min-w-0 rounded-md border border-border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="flex min-w-0 items-start gap-2 text-sm">
+                      <X className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+                      <span className="line-clamp-2 break-words">{row.reason}</span>
+                    </span>
+                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums">{row.count}</span>
+                  </div>
+                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-destructive" style={{ width: `${share}%` }} />
+                  </div>
+                  <p className="mt-1.5 text-xs text-muted-foreground">{share}% · {format(row.refundedUsd)} {t.app.admin.reportRefunded}</p>
+                </li>
+              );
+            })}
           </ul>
         </section>
       ) : null}

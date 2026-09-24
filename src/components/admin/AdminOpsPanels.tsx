@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { adminOpsApi } from "@/api/http/adminOps.http";
+import { ChartPanel, GroupedBars, RankingBars, StatTile } from "@/components/admin/AdminCharts";
 import type {
   AccountingRowDto,
   AdminBookingDto,
@@ -46,12 +47,12 @@ import { cn } from "@/lib/utils";
 /* ------------------------------------------------------------------ shared */
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-4">{children}</div>;
+  return <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">{children}</div>;
 }
 
 function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-lg border border-border bg-surface p-4", className)}>{children}</div>
+    <div className={cn("min-w-0 rounded-lg border border-border bg-surface p-4", className)}>{children}</div>
   );
 }
 
@@ -1501,18 +1502,18 @@ export function FinancePanel() {
 
   return (
     <Shell>
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="grid grid-cols-2 items-end gap-3 rounded-lg border border-border bg-surface p-3 shadow-sm sm:flex sm:flex-wrap sm:p-4">
         <div className="space-y-1">
           <Label className="text-xs">{copy.finFrom}</Label>
-          <Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="w-40" />
+          <Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="w-full sm:w-40" />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">{copy.finTo}</Label>
-          <Input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="w-40" />
+          <Input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="w-full sm:w-40" />
         </div>
-        <div className="space-y-1">
+        <div className="col-span-2 space-y-1 sm:col-span-1">
           <Label className="text-xs">{copy.finPeriod}</Label>
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             {(["month", "quarter", "year"] as const).map((value) => (
               <Button
                 key={value}
@@ -1543,6 +1544,35 @@ export function FinancePanel() {
           {sp.excel}
         </Button>
       </div>
+
+      {accounting.length > 0 ? (() => {
+        const sum = (k: keyof AccountingRowDto) => accounting.reduce((t, r) => t + Number(r[k] ?? 0), 0);
+        const rev = sum("revenueUsd");
+        const com = sum("commissionUsd");
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <StatTile label={copy.finRevenue} value={format(rev)} hint={`${sum("bookings")} ${copy.finBookings.toLowerCase()}`} />
+              <StatTile label={copy.finCommission} value={format(com)} hint={rev > 0 ? `${Math.round((com / rev) * 100)}%` : undefined} tone="primary" />
+              <StatTile label={copy.finHostNet} value={format(sum("hostNetUsd"))} />
+              <StatTile label={copy.finRefunded} value={format(sum("refundedUsd"))} tone={sum("refundedUsd") > 0 ? "danger" : "default"} />
+            </div>
+            <ChartPanel title={copy.finAccounting} subtitle={copy.finRevenue + " · " + copy.finCommission + " · " + copy.finHostNet}>
+              <GroupedBars
+                data={accounting.map((r) => ({ period: r.period, revenueUsd: Math.round(r.revenueUsd), commissionUsd: Math.round(r.commissionUsd), hostNetUsd: Math.round(r.hostNetUsd) }))}
+                xKey="period"
+                series={[{ key: "revenueUsd", label: copy.finRevenue }, { key: "commissionUsd", label: copy.finCommission }, { key: "hostNetUsd", label: copy.finHostNet }]}
+              />
+            </ChartPanel>
+          </>
+        );
+      })() : null}
+
+      {report.length > 0 ? (
+        <ChartPanel title={copy.finReport} subtitle={copy.finCommission}>
+          <RankingBars label={copy.finCommission} data={[...report].sort((x, y) => y.commissionUsd - x.commissionUsd).slice(0, 8).map((r) => ({ name: r.hostName, value: Math.round(r.commissionUsd) }))} />
+        </ChartPanel>
+      ) : null}
 
       {/* accounting totals */}
       <Card>

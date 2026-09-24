@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { equipmentByGroup, equipmentGroupLabel, equipmentLabel, findEquipment } from "@/data/equipment";
+import { equipmentByGroup, equipmentGroupLabel, equipmentLabel, findEquipment, useEquipmentVersion } from "@/data/equipment";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
@@ -12,9 +12,10 @@ export function EquipmentList({ ids }: { ids: string[] }) {
   const cc = useClientCopy();
   const [showAll, setShowAll] = useState(false);
 
+  const catalogueVersion = useEquipmentVersion();
   const groups = useMemo(
     () => equipmentByGroup(ids.map(findEquipment).filter((item): item is NonNullable<typeof item> => Boolean(item))),
-    [ids],
+    [ids, catalogueVersion],
   );
 
   if (groups.length === 0) return null;

@@ -1,3 +1,4 @@
+import { CmsOrFallback } from "@/components/legal/CmsPage";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { canonical, KEYWORDS, publicPageMeta } from "@/lib/seo";
 import { LifeBuoy, Mail, MessageSquare, ShieldCheck } from "lucide-react";
@@ -25,7 +26,11 @@ export const Route = createFileRoute("/help")({
     }),
     links: canonical("/help"),
   }),
-  component: HelpPage,
+  component: () => (
+    <CmsOrFallback slug="help">
+      <HelpPage />
+    </CmsOrFallback>
+  ),
 });
 
 const content = {

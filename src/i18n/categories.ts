@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/translations";
-import type { PropertyCategory } from "@/models/property";
+import { livePropertyTypeLabel, type PropertyCategory } from "@/models/property";
 
 type Key = "all" | PropertyCategory;
 
@@ -83,5 +83,6 @@ const labels: Record<Locale, Record<Key, string>> = {
 
 /** Localised label for a property type (or "all"). */
 export function categoryLabel(category: Key, locale: Locale): string {
-  return labels[locale]?.[category] ?? labels.en[category];
+  if (category === "all") return labels[locale]?.all ?? labels.en.all;
+  return livePropertyTypeLabel(category, locale) ?? labels[locale]?.[category] ?? labels.en[category] ?? category;
 }

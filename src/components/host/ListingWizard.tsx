@@ -1,3 +1,4 @@
+import { usePropertyTypesVersion } from "@/hooks/useTaxonomy";
 import { EuropePlacePicker } from "./EuropePlacePicker";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -17,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { equipmentLabel, equipmentCatalogue } from "@/data/equipment";
+import { equipmentLabel, findEquipment, useEquipmentVersion } from "@/data/equipment";
 import { categoryLabel } from "@/i18n/categories";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { useCurrency } from "@/i18n/CurrencyProvider";
@@ -51,6 +52,8 @@ export function ListingWizard({
   mode: "create" | "edit";
   onSaved: (draft: ListingDraft, published: boolean) => void;
 }) {
+  useEquipmentVersion();
+  usePropertyTypesVersion();
   const c = useListingCopy();
   const cc = useClientCopy();
   const { locale } = useLanguage();
@@ -94,7 +97,7 @@ export function ListingWizard({
       area: draft.capacity.area,
       amenities: draft.amenities.map((id) => amenityName(id as AmenityId, locale)),
       equipment: draft.equipment
-        .map((id) => equipmentCatalogue.find((entry) => entry.id === id))
+        .map((id) => findEquipment(id))
         .filter((item): item is NonNullable<typeof item> => Boolean(item))
         .map((item) => equipmentLabel(item, locale)),
       nightly: format(draft.pricing.nightlyUsd),
@@ -942,7 +945,7 @@ export function ListingWizard({
                 {draft.equipment.length ? (
                   <div className="mt-4 flex flex-wrap gap-1.5">
                     {draft.equipment.slice(0, 12).map((id) => {
-                      const item = equipmentCatalogue.find((entry) => entry.id === id);
+                      const item = findEquipment(id);
                       return item ? (
                         <Badge key={id} variant="secondary" className="rounded-full font-normal">
                           {equipmentLabel(item, locale)}

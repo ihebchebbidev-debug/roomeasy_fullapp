@@ -4,6 +4,7 @@
  * `src/data/seed/equipment.json` so a backend can seed a table from them.
  */
 import equipmentJson from "@/data/seed/equipment.json";
+import { useSyncExternalStore } from "react";
 import type { Locale } from "@/i18n/translations";
 
 export type EquipmentGroup =
@@ -27,7 +28,13 @@ export type EquipmentItem = {
   paid?: boolean;
 };
 
-export const equipmentCatalogue: EquipmentItem[] = equipmentJson as EquipmentItem[];
+/**
+ * Starts with the bundled list so the first paint never waits, then is replaced
+ * in place by the live list from the server (managed in the admin "Amenities"
+ * section) via `loadEquipmentFromApi`. Components re-render through
+ * `useEquipmentCatalogue()`.
+ */
+export const equipmentCatalogue: EquipmentItem[] = [...(equipmentJson as EquipmentItem[])];
 
 export const equipmentGroups: EquipmentGroup[] = [
   "general",
@@ -126,7 +133,8 @@ export const popularEquipmentIds: string[] = [
 ];
 
 export function equipmentGroupLabel(group: EquipmentGroup, locale: Locale): string {
-  return groupLabels[locale]?.[group] ?? groupLabels.en[group];
+  // Groups created by an admin have no built-in label: show their name.
+  return groupLabels[locale]?.[group] ?? groupLabels.en[group] ?? String(group).replace(/[-_]/g, " ");
 }
 
 /** Localised item name; every locale except French falls back to English. */
@@ -136,12 +144,60 @@ export function equipmentLabel(item: EquipmentItem, locale: Locale): string {
 
 const byId = new Map(equipmentCatalogue.map((item) => [item.id, item]));
 
+let version = 0;
+const listeners = new Set<() => void>();
+
+/** Replaces the catalogue with the server's active amenities. */
+export function setEquipmentCatalogue(items: EquipmentItem[]) {
+  if (!items.length) return;
+  equipmentCatalogue.splice(0, equipmentCatalogue.length, ...items);
+  // Keep retired ids resolvable for old listings, but only list active ones.
+  for (const item of items) byId.set(item.id, item);
+  version += 1;
+  listeners.forEach((listener) => listener());
+}
+
+let loading: Promise<void> | null = null;
+export function loadEquipmentFromApi(fetcher: () => Promise<{ id: string; group: string; label: { en: string; fr: string }; paid: boolean; active: boolean }[]>) {
+  loading ??= fetcher()
+    .then((rows) =>
+      setEquipmentCatalogue(
+        rows
+          .filter((row) => row.active)
+          .map((row) => ({ id: row.id, group: row.group as EquipmentGroup, en: row.label.en, fr: row.label.fr, paid: row.paid })),
+      ),
+    )
+    .catch(() => {
+      loading = null; // keep the bundled list; retry next time
+    });
+  return loading;
+}
+
+/** Subscribe a component to catalogue updates; returns a number that changes on every update. */
+export function useEquipmentVersion(): number {
+  return useSyncExternalStore(
+    (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    () => version,
+    () => 0,
+  );
+}
+
+/** Popular filter ids that still exist in the live catalogue. */
+export function activePopularEquipmentIds(): string[] {
+  const live = new Set(equipmentCatalogue.map((item) => item.id));
+  return popularEquipmentIds.filter((id) => live.has(id));
+}
+
 export function findEquipment(id: string): EquipmentItem | undefined {
   return byId.get(id);
 }
 
 export function equipmentByGroup(items: EquipmentItem[]): { group: EquipmentGroup; items: EquipmentItem[] }[] {
-  return equipmentGroups
+  const extra = [...new Set(items.map((item) => item.group))].filter((group) => !equipmentGroups.includes(group));
+  return [...equipmentGroups, ...extra]
     .map((group) => ({ group, items: items.filter((item) => item.group === group) }))
     .filter((entry) => entry.items.length > 0);
 }

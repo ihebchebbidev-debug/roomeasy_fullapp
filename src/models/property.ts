@@ -37,7 +37,9 @@ export type PropertyCategory =
   | "bungalow"
   | "chalet"
   | "hostel"
-  | "camping";
+  | "camping"
+  // Types added later by an admin in the back office.
+  | (string & {});
 
 export type PropertyHost = {
   id?: string;
@@ -113,6 +115,44 @@ export const propertyTypes: PropertyCategory[] = [
 ];
 
 export const propertyCategories: ("all" | PropertyCategory)[] = ["all", ...propertyTypes];
+
+/* Live property types, managed in the admin "Property types" section. */
+export type PropertyTypeDto = {
+  id: string;
+  labels: { en: string; fr: string; es: string; de: string; pt: string };
+  active: boolean;
+  sortOrder: number;
+};
+
+const liveTypeLabels = new Map<string, PropertyTypeDto["labels"]>();
+let typesVersion = 0;
+const typeListeners = new Set<() => void>();
+
+/** Replaces the type lists in place with the server's active types (admin order). */
+export function setPropertyTypes(rows: PropertyTypeDto[]) {
+  const active = rows.filter((row) => row.active);
+  if (!active.length) return;
+  for (const row of rows) liveTypeLabels.set(row.id, row.labels);
+  propertyTypes.splice(0, propertyTypes.length, ...active.map((row) => row.id));
+  propertyCategories.splice(0, propertyCategories.length, "all", ...propertyTypes);
+  typesVersion += 1;
+  typeListeners.forEach((listener) => listener());
+}
+
+/** Admin-written label for a type in a language, if any. */
+export function livePropertyTypeLabel(id: string, locale: string): string | undefined {
+  const labels = liveTypeLabels.get(id);
+  if (!labels) return undefined;
+  return (labels as Record<string, string>)[locale] || labels.en || undefined;
+}
+
+export function subscribePropertyTypes(listener: () => void) {
+  typeListeners.add(listener);
+  return () => {
+    typeListeners.delete(listener);
+  };
+}
+export const propertyTypesVersion = () => typesVersion;
 
 export function cityName(property: Property, locale: Locale) {
   return property.location[locale] ?? property.location.en;

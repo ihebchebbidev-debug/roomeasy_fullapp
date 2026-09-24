@@ -29,6 +29,7 @@ function DevAdminPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);
 
   if (import.meta.env.PROD) {
@@ -44,7 +45,9 @@ function DevAdminPage() {
     setBusy(true);
     try {
       const { request } = await import("@/api/http/client");
-      await request("/accounts/dev/admin", { method: "POST", body: { fullName, email, password } });
+      await request("/accounts/dev/admin", { method: "POST", body: { fullName, email, password },
+        headers: { "x-dev-admin-secret": secret },
+      });
       const session = await remote.signIn(email, password);
       if (!session) return;
       toast.success("Administrator ready — opening the back office.");
@@ -86,6 +89,10 @@ function DevAdminPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="dev-secret">Dev admin secret</Label>
+            <Input id="dev-secret" type="password" value={secret} onChange={(e) => setSecret(e.target.value)} required />
           </div>
           <Button type="submit" className="w-full rounded-full" disabled={busy}>
             {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}

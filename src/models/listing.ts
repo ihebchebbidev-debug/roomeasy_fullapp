@@ -20,7 +20,7 @@ export const listingDraftSchema = z.object({
   /** Host-listing id, `hl-<propertyId>`. */
   listingId: z.string().min(1),
   title: z.string().trim().min(4).max(120),
-  category: z.enum(propertyTypes as [PropertyCategory, ...PropertyCategory[]]),
+  category: z.string().refine((value) => propertyTypes.includes(value), "Choose a property type."),
   summary: z.string().trim().min(20).max(300),
   description: z.string().trim().max(4000),
   location: z.object({

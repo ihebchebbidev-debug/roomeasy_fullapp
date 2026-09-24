@@ -37,8 +37,11 @@ export type SessionDto = { account: AccountDto; token: string };
 export const accountsApi = {
   signup: (body: { fullName: string; email: string; password: string; phone?: string; asHost?: boolean }) =>
     request<SessionDto>("/accounts/signup", { method: "POST", body }),
-  login: (body: { email: string; password: string }) =>
+  login: (body: { email: string; password: string; otp?: string }) =>
     request<SessionDto>("/accounts/login", { method: "POST", body }),
+  twoFactorSetup: () => request<{ secret: string; otpauthUrl: string }>("/accounts/2fa/setup", { method: "POST", body: {} }),
+  twoFactorEnable: (code: string) => request<{ enabled: boolean }>("/accounts/2fa/enable", { method: "POST", body: { code } }),
+  twoFactorDisable: (code: string) => request<{ enabled: boolean }>("/accounts/2fa/disable", { method: "POST", body: { code } }),
   me: () => request<AccountDto>("/accounts/me"),
   updateMe: (body: Record<string, unknown>) => request<AccountDto>("/accounts/me", { method: "PATCH", body }),
   uploadAvatar: (dataUrl: string) => request<AccountDto>("/accounts/me/avatar", { method: "PUT", body: { dataUrl } }),

@@ -9,6 +9,7 @@ import {
   equipmentGroupLabel,
   equipmentLabel,
   searchEquipment,
+  useEquipmentVersion,
 } from "@/data/equipment";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -30,7 +31,8 @@ export function EquipmentEditor({
   const cc = useClientCopy();
   const [query, setQuery] = useState("");
 
-  const groups = useMemo(() => equipmentByGroup(searchEquipment(query)), [query]);
+  const catalogueVersion = useEquipmentVersion();
+  const groups = useMemo(() => equipmentByGroup(searchEquipment(query)), [query, catalogueVersion]);
 
   const toggle = (id: string, on: boolean) => {
     onChange(on ? [...new Set([...selected, id])] : selected.filter((item) => item !== id));

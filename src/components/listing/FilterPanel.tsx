@@ -1,3 +1,4 @@
+import { usePropertyTypesVersion } from "@/hooks/useTaxonomy";
 import {
   Car,
   ChefHat,
@@ -29,7 +30,8 @@ import {
 import {
   equipmentLabel,
   findEquipment,
-  popularEquipmentIds,
+  activePopularEquipmentIds,
+  useEquipmentVersion,
 } from "@/data/equipment";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { cn } from "@/lib/utils";
@@ -59,6 +61,8 @@ export function FilterPanel({
   const { t, locale } = useLanguage();
   const cc = useClientCopy();
   const { format } = useCurrency();
+  useEquipmentVersion();
+  usePropertyTypesVersion();
   const chosen = selectedAmenities(search.amenities);
   const chosenEquipment = selectedEquipment(search.equipment);
 
@@ -203,7 +207,7 @@ export function FilterPanel({
 
       <Group label={cc.equipment}>
         <div className="flex flex-wrap gap-2">
-          {popularEquipmentIds.map((id) => {
+          {activePopularEquipmentIds().map((id) => {
             const item = findEquipment(id);
             if (!item) return null;
             const active = chosenEquipment.includes(id);

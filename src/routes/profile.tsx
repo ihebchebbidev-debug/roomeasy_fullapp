@@ -19,6 +19,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import coverImg from "@/assets/profile-cover.jpg";
+import { TwoFactorDialog } from "@/components/auth/TwoFactorDialog";
 import { AccountShell } from "@/components/layout/AccountShell";
 import { CurrencySelector } from "@/components/layout/CurrencySelector";
 import { LanguageSelector } from "@/components/layout/LanguageSelector";
@@ -83,17 +84,18 @@ function ProfilePage() {
     setTwoFactor(session.twoFactorEnabled ?? false);
   }, [session?.name, session?.email, session?.phone, session?.twoFactorEnabled]);
 
-  // Two-step sign-in is only switched once the server confirms it.
-  async function changeTwoFactor(next: boolean) {
+  // Two-step sign-in is only switched once the server confirms a real code.
+  const [twoFactorDialog, setTwoFactorDialog] = useState<"enable" | "disable" | null>(null);
+  function changeTwoFactor(next: boolean) {
     if (!session || twoFactorBusy) return;
-    setTwoFactorBusy(true);
-    const account = await remote.setTwoFactor(next);
-    if (account) {
-      setTwoFactor(account.twoFactorEnabled);
-      setPlatform({ session: { ...session, twoFactorEnabled: account.twoFactorEnabled } });
-      toast.success(t.app.profile.saved);
-    }
+    setTwoFactorDialog(next ? "enable" : "disable");
+  }
+  function twoFactorChanged(enabled: boolean) {
+    if (!session) return;
     setTwoFactorBusy(false);
+    setTwoFactor(enabled);
+    setPlatform({ session: { ...session, twoFactorEnabled: enabled } });
+    toast.success(t.app.profile.saved);
   }
 
 
@@ -523,6 +525,12 @@ function ProfilePage() {
         </section>
       </div>
       <PasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
+      <TwoFactorDialog
+        open={twoFactorDialog !== null}
+        mode={twoFactorDialog ?? "enable"}
+        onOpenChange={(open) => !open && setTwoFactorDialog(null)}
+        onDone={twoFactorChanged}
+      />
       <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} />
     </AccountShell>
   );

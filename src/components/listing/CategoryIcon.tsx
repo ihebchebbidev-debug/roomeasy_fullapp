@@ -39,7 +39,7 @@ export function CategoryIcon({
 }) {
   const image = images[category];
   if (!image) {
-    const Icon = fallbackIcons[category];
+    const Icon = fallbackIcons[category] ?? Home;
     return <Icon className={cn("size-7", className)} aria-hidden />;
   }
   return (

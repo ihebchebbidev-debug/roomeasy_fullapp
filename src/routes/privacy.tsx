@@ -1,3 +1,4 @@
+import { CmsOrFallback } from "@/components/legal/CmsPage";
 import { createFileRoute } from "@tanstack/react-router";
 import { canonical, publicPageMeta } from "@/lib/seo";
 
@@ -16,7 +17,11 @@ export const Route = createFileRoute("/privacy")({
     }),
     links: canonical("/privacy"),
   }),
-  component: PrivacyPage,
+  component: () => (
+    <CmsOrFallback slug="privacy">
+      <PrivacyPage />
+    </CmsOrFallback>
+  ),
 });
 
 const sectionsByLocale = {

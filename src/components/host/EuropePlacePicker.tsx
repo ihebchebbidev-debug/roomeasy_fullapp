@@ -4,6 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { request } from "@/api/http/client";
+import { catalogEnabled, type CityDto, type CountryDto } from "@/api/http/catalog.http";
+
+/** Countries managed in the admin "Countries" section, loaded once per visit. */
+let managedCountries: Promise<CountryDto[]> | null = null;
+function loadManagedCountries(): Promise<CountryDto[]> {
+  if (!catalogEnabled) return Promise.resolve([]);
+  managedCountries ??= request<CountryDto[]>("/content/countries").catch(() => {
+    managedCountries = null;
+    return [];
+  });
+  return managedCountries;
+}
+
+/** Cities managed in the admin "Cities" section, loaded once per visit. */
+let managedCities: Promise<CityDto[]> | null = null;
+function loadManagedCities(): Promise<CityDto[]> {
+  if (!catalogEnabled) return Promise.resolve([]);
+  managedCities ??= request<CityDto[]>("/content/cities").catch(() => {
+    managedCities = null;
+    return [];
+  });
+  return managedCities;
+}
 
 /** ISO codes of every European country. */
 export const EUROPE_CODES = [
@@ -113,19 +137,43 @@ export function EuropePlacePicker({
   onCity: (city: string, coords: { lat: number; lng: number } | null) => void;
 }) {
   const t = T[(locale as keyof typeof T)] ?? T.en;
+  const [apiCountries, setApiCountries] = useState<CountryDto[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    loadManagedCountries().then((rows) => alive && setApiCountries(rows.length ? rows : null));
+    return () => { alive = false; };
+  }, []);
   const countries = useMemo(() => {
     let local: Intl.DisplayNames | null = null;
     try { local = new Intl.DisplayNames([locale], { type: "region" }); } catch { /* ignore */ }
+    if (apiCountries) {
+      // Admin order first, then alphabetical in the visitor's language.
+      return apiCountries
+        .map((c) => {
+          let label = c.name;
+          if (locale !== "en" && c.code !== "XK") {
+            try { label = local?.of(c.code) ?? c.name; } catch { /* unknown code */ }
+          }
+          return { key: c.name, label, code: c.code, order: c.sortOrder };
+        })
+        .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, locale));
+    }
     return EUROPE_CODES.map((code) => ({
       key: englishName(code),
       label: code === "XK" ? "Kosovo" : local?.of(code) ?? englishName(code),
       code,
     })).sort((a, b) => a.label.localeCompare(b.label, locale));
-  }, [locale]);
+  }, [locale, apiCountries]);
 
   const code = countries.find((c) => norm(c.key) === norm(country) || norm(c.label) === norm(country))?.code;
   const [cities, setCities] = useState<CityRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [managed, setManaged] = useState<CityDto[]>([]);
+  useEffect(() => {
+    let alive = true;
+    loadManagedCities().then((rows) => alive && setManaged(rows));
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     if (!code) { setCities([]); return; }
@@ -135,7 +183,20 @@ export function EuropePlacePicker({
     return () => { alive = false; };
   }, [code]);
 
-  const cityOptions = useMemo(() => cities.map((c) => ({ key: c.name, label: c.name })), [cities]);
+  // Admin-managed cities for this country come first (featured, then admin order).
+  const cityOptions = useMemo(() => {
+    const countryNames = new Set(
+      [norm(country), code ? norm(englishName(code)) : "", code ? norm(code) : "", norm(countries.find((c) => c.code === code)?.key ?? "")].filter(Boolean),
+    );
+    const mine = managed
+      .filter((c) => countryNames.has(norm(c.country)))
+      .sort((a, b) => Number(b.featured) - Number(a.featured) || a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+    const top = new Set(mine.map((c) => norm(c.name)));
+    return [
+      ...mine.map((c) => ({ key: c.name, label: c.featured ? `★ ${c.name}` : c.name })),
+      ...cities.filter((c) => !top.has(norm(c.name))).map((c) => ({ key: c.name, label: c.name })),
+    ];
+  }, [cities, managed, country, code, countries]);
 
   return (
     <>
