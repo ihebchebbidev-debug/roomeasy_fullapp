@@ -1,3 +1,4 @@
+import { Paged, rowText } from "@/components/admin/ListControls";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -13,11 +14,13 @@ export function TeamRolesPanel() {
   const [search, setSearch] = useState("");
   const [rows, setRows] = useState<AdminMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searched, setSearched] = useState("");
 
   const load = useCallback(async (term: string) => {
     setLoading(true);
+    setSearched(term.trim());
     try {
-      setRows(await adminTeamApi.members(term.trim() || undefined));
+      setRows(term.trim() ? await adminTeamApi.members(term.trim()) : await adminTeamApi.staff());
     } catch {
       setRows([]);
     } finally {
@@ -29,6 +32,11 @@ export function TeamRolesPanel() {
     void load("");
   }, [load]);
 
+  // Only staff (admin, moderator, support, accounting) are listed; searching
+  // also shows other members so a new person can be given access.
+  const STAFF = ["admin", "moderator", "support", "accounting"];
+  const visible = searched ? rows : rows.filter((r) => r.roles.some((role) => STAFF.includes(role)));
+
   const roleOptions: { role: GrantableRole; label: string }[] = [
     { role: "admin", label: c.roleAdmin },
     { role: "moderator", label: c.roleModerator },
@@ -39,12 +47,15 @@ export function TeamRolesPanel() {
 
   async function toggle(row: AdminMemberRow, role: GrantableRole, has: boolean) {
     try {
-      if (has) await adminTeamApi.revokeRole(row.id, role);
-      else await adminTeamApi.grantRole(row.id, role);
+      const result = has ? await adminTeamApi.revokeRole(row.id, role) : await adminTeamApi.grantRole(row.id, role);
+      if (has && result && result.removed === false) {
+        toast.error(result.message ?? c.failed);
+        return;
+      }
       toast.success(has ? c.revoked : c.granted);
       await load(search);
-    } catch {
-      toast.error(c.failed);
+    } catch (error) {
+      toast.error(error instanceof Error && error.message ? error.message : c.failed);
     }
   }
 
@@ -73,10 +84,10 @@ export function TeamRolesPanel() {
       </div>
 
       {loading ? <p className="text-sm text-muted-foreground">{c.loading}</p> : null}
-      {!loading && rows.length === 0 ? <p className="text-sm text-muted-foreground">{c.empty}</p> : null}
+      {!loading && visible.length === 0 ? <p className="text-sm text-muted-foreground">{c.empty}</p> : null}
 
       <div className="overflow-hidden rounded-lg border border-border bg-card divide-y divide-border">
-        {rows.map((row) => (
+        <Paged rows={visible} text={rowText}>{(__rows) => __rows.map((row) => (
           <div key={row.id} className="p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -111,7 +122,7 @@ export function TeamRolesPanel() {
               })}
             </div>
           </div>
-        ))}
+        ))}</Paged>
       </div>
     </div>
   );

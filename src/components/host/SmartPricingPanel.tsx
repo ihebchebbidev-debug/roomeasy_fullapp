@@ -1,4 +1,5 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { DeleteIconButton } from "@/components/ui/action-buttons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -183,9 +184,7 @@ export function SmartPricingPanel({ listings }: Props) {
               <Input type="date" value={period.endDate} onChange={(e) => update({ endDate: e.target.value })} aria-label={c.to} className="h-9" />
               <Input type="number" value={period.percent} onChange={(e) => update({ percent: Number(e.target.value) || 0 })} aria-label={c.change} className="h-9" />
               <Switch checked={period.enabled} onCheckedChange={(v) => update({ enabled: v })} aria-label={c.seasonOn} />
-              <Button size="icon" variant="ghost" aria-label={c.removeSeason} onClick={() => set({ seasonal: rules.seasonal.filter((_, i) => i !== index) })}>
-                <Trash2 className="size-4" aria-hidden />
-              </Button>
+              <DeleteIconButton itemName={period.label || undefined} onConfirm={() => set({ seasonal: rules.seasonal.filter((_, i) => i !== index) })} />
             </div>
           );
         })}

@@ -1,7 +1,7 @@
 /** Back-office content: amenities, cities, CMS pages, translation overrides, security actions. */
 import { API_BASE_URL, request } from "@/api/http/client";
 
-export type AmenityDto = { id: string; group: string; label: { en: string; fr: string }; paid: boolean; active: boolean };
+export type AmenityDto = { id: string; group: string; label: { en: string; fr: string; es?: string; de?: string; pt?: string }; paid: boolean; active: boolean };
 export type CityDto = {
   id: string;
   name: string;
@@ -37,7 +37,7 @@ const enc = encodeURIComponent;
 export const catalogApi = {
   amenities: (search?: string) =>
     request<{ items: AmenityDto[]; groups: string[] }>("/admin/taxonomy/amenities", { query: { search } }),
-  saveAmenity: (id: string, body: { group: string; labelEn: string; labelFr: string; paid: boolean; active: boolean }) =>
+  saveAmenity: (id: string, body: { group: string; labelEn: string; labelFr: string; labelEs: string; labelDe: string; labelPt: string; paid: boolean; active: boolean }) =>
     request<unknown>(`/admin/taxonomy/amenities/${enc(id)}`, { method: "PUT", body }),
   removeAmenity: (id: string) =>
     request<{ deleted: boolean }>(`/admin/taxonomy/amenities/${enc(id)}`, { method: "DELETE" }),

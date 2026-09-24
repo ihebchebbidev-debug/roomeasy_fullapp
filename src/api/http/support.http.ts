@@ -67,12 +67,25 @@ export type AdminMemberRow = {
 export type GrantableRole = "host" | "admin" | "moderator" | "support" | "accounting";
 
 export const adminTeamApi = {
-  members: (search?: string) =>
-    request<AdminMemberRow[]>("/admin/users", { query: { limit: 30, ...(search ? { search } : {}) } }),
+  members: (search?: string, role?: string) =>
+    request<AdminMemberRow[]>("/admin/users", {
+      query: { limit: search ? 30 : 100, ...(search ? { search } : {}), ...(role ? { role } : {}) },
+    }),
+  /** Everyone holding a back-office role, merged and de-duplicated. */
+  staff: async () => {
+    const lists = await Promise.all(
+      ["admin", "moderator", "support", "accounting"].map((role) =>
+        request<AdminMemberRow[]>("/admin/users", { query: { limit: 100, role } }),
+      ),
+    );
+    const byId = new Map<string, AdminMemberRow>();
+    lists.flat().forEach((row) => byId.set(row.id, row));
+    return [...byId.values()];
+  },
   grantRole: (userId: string, role: GrantableRole) =>
-    request<unknown>(`/admin/users/${encodeURIComponent(userId)}/roles`, { method: "POST", body: { role } }),
+    request<{ removed?: boolean; message?: string }>(`/admin/users/${encodeURIComponent(userId)}/roles`, { method: "POST", body: { role } }),
   revokeRole: (userId: string, role: GrantableRole) =>
-    request<unknown>(
+    request<{ removed?: boolean; message?: string }>(
       `/admin/users/${encodeURIComponent(userId)}/roles/${encodeURIComponent(role)}`,
       { method: "DELETE" },
     ),

@@ -2,6 +2,9 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { API_BASE_URL } from "@/api/http/client";
 import { mediaUrl } from "@/lib/images";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { IdentityBadge } from "@/components/admin/IdentityBadge";
+import { PlatformSettingsPanel } from "@/components/admin/PlatformSettingsPanel";
+import { ListToolbar, ShowMore, useListControls } from "@/components/admin/ListControls";
 import { ChartPanel, Donut, GroupedBars, StatTile } from "@/components/admin/AdminCharts";
 import {
   BadgeCheck,
@@ -38,6 +41,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { DeleteIconButton } from "@/components/ui/action-buttons";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { AccountMenu } from "@/components/layout/AccountMenu";
@@ -58,7 +62,7 @@ import {
 } from "@/components/admin/AdminOpsPanels";
 import { TeamRolesPanel } from "@/components/admin/TeamRolesPanel";
 import { DashboardPanel } from "@/components/admin/DashboardPanel";
-import { AmenitiesPanel, CitiesPanel, ContentPagesPanel, CountriesPanel, PropertyTypesPanel, TranslationsPanel } from "@/components/admin/CatalogPanels";
+import { AmenitiesPanel, CitiesPanel, ContentPagesPanel, CountriesPanel, PropertyTypesPanel } from "@/components/admin/CatalogPanels";
 import { adminOpsApi, type AdminMeDto } from "@/api/http/adminOps.http";
 import { useAdminCopy } from "@/i18n/adminCopy";
 import { useSupportCopy } from "@/i18n/supportCopy";
@@ -120,6 +124,7 @@ function AdminPage() {
   const { session, listings, users, payouts, commissionRate, reviews, adminOverview, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
   const [query, setQuery] = useState("");
+  const [idFilter, setIdFilter] = useState<"all" | "pending" | "verified" | "rejected" | "none">("all");
   const [section, setSection] = useState("dashboard");
   const [commission, setCommission] = useState(String(commissionRate));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -158,6 +163,25 @@ function AdminPage() {
 
   const pending = listings.filter((l) => !l.approved);
 
+  // Live "to do" counters for the sidebar, read from the server and refreshed every minute.
+  const [todo, setTodo] = useState<{ support: number; reports: number; verifications: number }>({ support: 0, reports: 0, verifications: 0 });
+  useEffect(() => {
+    if (!backendEnabled || !me) return;
+    let active = true;
+    const load = async () => {
+      const count = async (p: Promise<unknown[]>) => { try { return (await p).length; } catch { return 0; } };
+      const [support, reports, verifications] = await Promise.all([
+        me.capabilities.includes("support.manage") ? count(adminOpsApi.tickets("open")) : 0,
+        me.capabilities.includes("listings.moderate") ? count(adminOpsApi.listingReports("open")) : 0,
+        0,
+      ]);
+      if (active) setTodo({ support, reports, verifications });
+    };
+    void load();
+    const timer = window.setInterval(load, 60_000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [me, section]);
+
   // Listings waiting for approval are not in the public catalogue yet, so the
   // back office loads their full record (photos included) on its own.
   const pendingIds = pending.map((l) => l.propertyId).join(",");
@@ -189,10 +213,45 @@ function AdminPage() {
   // ignores spaces and punctuation so "+216 55 123" also finds "21655123".
   const needle = query.trim().toLowerCase();
   const digits = needle.replace(/\D/g, "");
+  const idStatus = (u: (typeof users)[number]) => u.verificationStatus ?? "none";
   const filteredUsers = users.filter((u) => {
+    if (idFilter !== "all" && idStatus(u) !== idFilter) return false;
     if (!needle) return true;
     if (`${u.name} ${u.email}`.toLowerCase().includes(needle)) return true;
     return Boolean(digits) && (u.phone ?? "").replace(/\D/g, "").includes(digits);
+  });
+  const idCounts = users.reduce<Record<string, number>>((acc, u) => {
+    acc[idStatus(u)] = (acc[idStatus(u)] ?? 0) + 1;
+    return acc;
+  }, {});
+  const fr = locale === "fr";
+  const userPage = useListControls(users, {
+    text: (u) => `${u.name} ${u.email} ${u.phone ?? ""}`,
+    filters: [
+      { value: "pending", label: fr ? "À vérifier" : "To verify", test: (u) => idStatus(u) === "pending" },
+      { value: "verified", label: fr ? "Vérifiés" : "Verified", test: (u) => idStatus(u) === "verified" },
+      { value: "rejected", label: fr ? "Refusés" : "Refused", test: (u) => idStatus(u) === "rejected" },
+      { value: "none", label: fr ? "Sans document" : "No document", test: (u) => idStatus(u) === "none" },
+    ],
+  });
+  void filteredUsers; void idCounts; void setIdFilter;
+  const pendingList = useListControls(pending, {
+    text: (l) => { const p = pendingDetails[l.propertyId] ?? allProperties.find((x) => x.id === l.propertyId); return `${p?.name ?? ""} ${(p as { location?: { city?: string } } | undefined)?.location?.city ?? ""} ${l.propertyId}`; },
+  });
+  const reviewList = useListControls(reviews, {
+    text: (r) => `${r.author} ${r.text} ${allProperties.find((p) => p.id === r.propertyId)?.name ?? ""}`,
+    filters: [
+      { value: "visible", label: locale === "fr" ? "Visibles" : "Visible", test: (r) => !r.hidden },
+      { value: "hidden", label: locale === "fr" ? "Masqués" : "Hidden", test: (r) => Boolean(r.hidden) },
+      { value: "low", label: locale === "fr" ? "Note ≤ 2" : "Rating ≤ 2", test: (r) => r.rating <= 2 },
+    ],
+  });
+  const payoutList = useListControls(payouts, {
+    text: (p) => `${p.hostName} ${p.date} ${p.transferId ?? ""}`,
+    filters: [
+      { value: "scheduled", label: t.app.admin.scheduled, test: (p) => p.status !== "paid" },
+      { value: "paid", label: t.app.admin.paid, test: (p) => p.status === "paid" },
+    ],
   });
   const hostsCount = adminOverview?.users.hosts ?? users.filter((u) => u.role === "host").length;
   const payoutsTotal = adminOverview?.revenue.payoutsUsd ?? payouts.reduce((sum, p) => sum + p.amountUsd, 0);
@@ -226,7 +285,6 @@ function AdminPage() {
     { value: "moderation", label: cc.reviewModeration, icon: Star, group: "moderation" },
 
     { value: "users", label: t.app.admin.users, icon: Users, group: "members" },
-    ...(can("users.manage") ? [{ value: "verification", label: ac.tabVerification, icon: BadgeCheck, group: "members" as const }] : []),
     ...(can("support.manage") ? [{ value: "support", label: ac.tabSupport, icon: LifeBuoy, group: "members" as const }] : []),
 
     ...(can("bookings.read") ? [{ value: "bookings", label: ac.tabBookings, icon: CalendarDays, group: "finance" as const }] : []),
@@ -253,7 +311,6 @@ function AdminPage() {
           { value: "countries", label: "Countries", icon: Globe, group: "system" as const },
           { value: "cities", label: "Cities", icon: Building2, group: "system" as const },
           { value: "pages", label: "Pages", icon: FileText, group: "system" as const },
-          { value: "translations", label: "Translations", icon: Languages, group: "system" as const },
         ]
       : []),
     ...(can("admins.manage") || can("users.manage") ? [{ value: "team", label: sc.tabTeam, icon: UserCog, group: "system" as const }] : []),
@@ -286,7 +343,13 @@ function AdminPage() {
           {items.map((item) => {
             const Icon = item.icon;
             const active = item.value === section;
-            const count = item.value === "approvals" && pending.length > 0 ? pending.length : null;
+            const counts: Record<string, number> = {
+              approvals: pending.length,
+              "listing-reports": todo.reports,
+              support: todo.support,
+              payouts: payouts.filter((p) => p.status !== "paid").length,
+            };
+            const count = counts[item.value] || null;
             return (
               <Button
                 key={item.value}
@@ -307,7 +370,7 @@ function AdminPage() {
                 <Icon className="size-4 shrink-0" strokeWidth={1.8} aria-hidden />
                 <span className="truncate">{item.label}</span>
                 {count ? (
-                  <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-5 text-primary-foreground tabular-nums">
+                  <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-destructive px-1.5 text-[10px] font-semibold leading-5 text-destructive-foreground tabular-nums">
                     {count}
                   </span>
                 ) : null}
@@ -387,7 +450,7 @@ function AdminPage() {
                 {roleName ? <Badge variant="outline" className="hidden sm:inline-flex">{roleName}</Badge> : null}
               </header>
 
-              <div className={cn("mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4", section === "dashboard" && "hidden")}>
+              <div className={cn("mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4", section !== "dashboard" && "hidden")}>
                 {overview.map(({ label, value, tone, to }) => (
                   <button
                     type="button"
@@ -463,17 +526,15 @@ function AdminPage() {
         <TabsContent value="pages" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <ContentPagesPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="translations" className="mt-0 min-w-0 max-w-full">
-          {backendEnabled ? <TranslationsPanel /> : <Empty text={ac.empty} />}
-        </TabsContent>
 
 
-        <TabsContent value="approvals" className="mt-0 min-w-0 max-w-full">
-          {pending.length === 0 ? (
+        <TabsContent value="approvals" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
+          {pending.length > 0 && <ListToolbar controls={pendingList} />}
+          {pendingList.total === 0 ? (
             <Empty text={t.app.admin.noApprovals} />
           ) : (
-            <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
-              {pending.map((listing) => {
+            <ul className="divide-y divide-border border-y border-border">
+              {pendingList.visible.map((listing) => {
                 const property =
                   pendingDetails[listing.propertyId] ?? allProperties.find((p) => p.id === listing.propertyId);
                 return (
@@ -543,35 +604,42 @@ function AdminPage() {
               })}
             </ul>
           )}
+          <ShowMore controls={pendingList} />
         </TabsContent>
 
-        <TabsContent value="users" className="mt-0 space-y-4">
-          <div className="relative max-w-md">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t.app.admin.searchUsers}
-              aria-label={t.app.admin.searchUsers}
-              className="pl-9"
-            />
-          </div>
-          {filteredUsers.length === 0 ? <Empty text={t.app.admin.noUsers} /> : null}
-          <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
-            {filteredUsers.map((user) => (
+        <TabsContent value="users" className="mt-0 rounded-2xl border border-border bg-surface p-5">
+          <ListToolbar controls={userPage} placeholder={t.app.admin.searchUsers} />
+          {userPage.total === 0 ? <Empty text={t.app.admin.noUsers} /> : null}
+          <ul className="divide-y divide-border border-y border-border">
+            {userPage.visible.map((user) => (
               <li
                 key={user.id}
-                className="grid gap-3 p-4 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5"
+                className={cn(
+                  "grid gap-3 p-4 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5",
+                  idStatus(user) === "pending" && "border-l-4 border-l-amber-500 bg-amber-500/5",
+                )}
               >
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{user.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {user.email}
-                    {user.phone ? ` · ${user.phone}` : ""}
-                  </p>
-                </div>
+                <Link
+                  to="/admin/hosts/$userId"
+                  params={{ userId: user.id }}
+                  className="flex min-w-0 items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  <UserAvatar
+                    name={user.name}
+                    src={`${API_BASE_URL}/api/accounts/${encodeURIComponent(user.id)}/avatar`}
+                    className="size-11 shrink-0 text-base"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold hover:underline">{user.name}</p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {user.email}
+                      {user.phone ? ` · ${user.phone}` : ""}
+                    </p>
+                  </div>
+                </Link>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary" className="capitalize">{t.app.admin[user.role]}</Badge>
+                  <IdentityBadge status={idStatus(user)} />
                   {user.suspended ? (
                     <Badge className="border-0 bg-destructive/10 text-destructive">
                       {t.app.host.suspended}
@@ -580,13 +648,11 @@ function AdminPage() {
                         : ""}
                     </Badge>
                   ) : null}
-                  {user.role === "host" ? (
-                    <Button asChild size="sm" variant="outline">
-                      <Link to="/admin/hosts/$userId" params={{ userId: user.id }}>
-                        {ac.hostProfile}
-                      </Link>
-                    </Button>
-                  ) : null}
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/admin/hosts/$userId" params={{ userId: user.id }}>
+                      View details
+                    </Link>
+                  </Button>
                   {user.suspended ? (
                     <Button
                       size="sm"
@@ -645,14 +711,16 @@ function AdminPage() {
               </li>
             ))}
           </ul>
+          <ShowMore controls={userPage} />
         </TabsContent>
 
-        <TabsContent value="moderation" className="mt-0 min-w-0 max-w-full">
-          {reviews.length === 0 ? (
+        <TabsContent value="moderation" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
+          <ListToolbar controls={reviewList} />
+          {reviewList.total === 0 ? (
             <Empty text={t.app.admin.noReports} />
           ) : (
-            <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
-              {reviews.map((review) => {
+            <ul className="divide-y divide-border border-y border-border">
+              {reviewList.visible.map((review) => {
                 const property = allProperties.find((p) => p.id === review.propertyId);
                 return (
                   <li
@@ -700,31 +768,27 @@ function AdminPage() {
                           <><EyeOff className="size-4" aria-hidden />{cc.hideReview}</>
                         )}
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive"
-                        aria-label={cc.deleteReview}
-                        onClick={async () => {
+                      <DeleteIconButton
+                        onConfirm={async () => {
                           if (!(await remote.deleteReview(review.id))) return;
                           setPlatform((s) => ({ reviews: s.reviews.filter((r) => r.id !== review.id) }));
                           toast.success(cc.reviewDeleted);
                         }}
-                      >
-                        <Trash2 className="size-4" aria-hidden />
-                      </Button>
+                      />
                     </div>
                   </li>
                 );
               })}
             </ul>
           )}
+          <ShowMore controls={reviewList} />
         </TabsContent>
 
-        <TabsContent value="payouts" className="mt-0 min-w-0 max-w-full">
-          {payouts.length === 0 ? <Empty text={t.app.admin.noPayouts} /> : null}
-          <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
-            {payouts.map((payout) => (
+        <TabsContent value="payouts" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
+          <ListToolbar controls={payoutList} />
+          {payoutList.total === 0 ? <Empty text={t.app.admin.noPayouts} /> : null}
+          <ul className="divide-y divide-border border-y border-border">
+            {payoutList.visible.map((payout) => (
               <li
                 key={payout.id}
                 className="flex flex-wrap items-center justify-between gap-3 p-4 transition-colors hover:bg-muted/30 sm:px-5"
@@ -770,6 +834,7 @@ function AdminPage() {
               </li>
             ))}
           </ul>
+          <ShowMore controls={payoutList} />
         </TabsContent>
 
         <TabsContent value="reports" className="mt-0 min-w-0 max-w-full">
@@ -777,34 +842,11 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="settings" className="mt-0 min-w-0 max-w-full">
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const rate = Number(commission) || 0;
-              if (!(await remote.saveCommission(rate))) return;
-              setPlatform({ commissionRate: rate });
-              toast.success(t.app.admin.settingsSaved);
-            }}
-             className="max-w-md space-y-4 rounded-lg border border-border bg-surface p-6 shadow-sm"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="commission">{t.app.admin.commission}</Label>
-              <Input
-                id="commission"
-                type="number"
-                min={0}
-                max={50}
-                value={commission}
-                onChange={(e) => setCommission(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">{t.app.admin.commissionHint}</p>
-            </div>
-            <Button type="submit">{t.app.admin.saveSettings}</Button>
-            <p className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Shield className="size-3.5" aria-hidden />
-              {t.app.admin.auditNote}
-            </p>
-          </form>
+          <PlatformSettingsPanel />
+          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+            <Shield className="size-3.5" aria-hidden />
+            {t.app.admin.auditNote}
+          </p>
         </TabsContent>
         </div>
             </div>

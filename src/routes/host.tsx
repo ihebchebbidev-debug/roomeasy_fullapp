@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Paged, rowText } from "@/components/admin/ListControls";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { DeleteIconButton, EditIconButton } from "@/components/ui/action-buttons";
 import {
   BadgeCheck,
   CalendarRange,
@@ -67,7 +69,7 @@ export const Route = createFileRoute("/host")({
 });
 
 function HostPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const x = useExtra();
   const cc = useClientCopy();
   const { format } = useCurrency();
@@ -195,7 +197,7 @@ function HostPage() {
         {isReady && section === "requests" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.requests}</h2>
           {requests.length === 0 ? <EmptyState icon={Inbox} title={t.app.host.noRequests} size="compact" /> : null}
-          {requests.map((booking) => {
+          <Paged rows={requests} filters={[{ value: "pending", label: locale === "fr" ? "En attente" : "Pending", test: (b) => b.status === "pending" }, { value: "confirmed", label: locale === "fr" ? "Confirmées" : "Confirmed", test: (b) => b.status === "confirmed" }, { value: "cancelled", label: locale === "fr" ? "Annulées" : "Cancelled", test: (b) => String(b.status).includes("cancel") || b.status === "declined" }]} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === x.propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((booking) => {
             const property = properties.find((p) => p.id === booking.propertyId);
             return (
               <Panel key={booking.id}>
@@ -228,7 +230,7 @@ function HostPage() {
                 </div>
               </Panel>
             );
-          })}
+          })}</Paged>
 
           {bookings
             .filter((booking) => booking.status === "confirmed")
@@ -268,9 +270,9 @@ function HostPage() {
         {isReady && section === "listings" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.listings}</h2>
           {listings.length === 0 ? <EmptyState icon={Building2} title={t.app.host.noListings} description={t.app.host.noListingsHint} action={<Button asChild><Link to="/list-your-place"><Plus className="size-4" aria-hidden />{t.app.host.newListing}</Link></Button>} /> : null}
-          {listings.map((listing) => (
+          <Paged rows={listings} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === (x as { propertyId?: string }).propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((listing) => (
             <ListingRow key={listing.id} listing={listing} />
-          ))}
+          ))}</Paged>
         </section> : null}
 
         {isReady && section === "calendar" ? (listings.length === 0 ? (
@@ -314,7 +316,7 @@ function HostPage() {
             <PayoutsOnboarding returned={stripeReturn === "done"} />
           </Panel>
           {payouts.length === 0 ? <EmptyState icon={Wallet} title={t.app.host.noPayouts} size="compact" /> : null}
-          {payouts.map((payout) => (
+          <Paged rows={payouts} text={rowText}>{(__rows) => __rows.map((payout) => (
             <Panel key={payout.id}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -326,13 +328,13 @@ function HostPage() {
                 </Badge>
               </div>
             </Panel>
-          ))}
+          ))}</Paged>
         </section> : null}
 
         {isReady && section === "reviews" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.reviews}</h2>
           {reviews.length === 0 ? <EmptyState icon={BadgeCheck} title={t.app.host.noReviews} /> : null}
-          {reviews.map((review) => (
+          <Paged rows={reviews} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === (x as { propertyId?: string }).propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((review) => (
             <Panel key={review.id}>
               <div className="flex items-center justify-between gap-3">
                 <p className="font-semibold">{review.author}</p>
@@ -348,7 +350,7 @@ function HostPage() {
                 <ReplyBox reviewId={review.id} />
               )}
             </Panel>
-          ))}
+          ))}</Paged>
         </section> : null}
 
         {isReady && section === "team" ? <section className="space-y-5">
@@ -365,20 +367,16 @@ function HostPage() {
                   {member.scopes.map((scope) => (
                     <Badge key={scope} variant="secondary">{scope === "calendar" ? x.scopeCalendar : x.scopeMessaging}</Badge>
                   ))}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive"
-                    onClick={async () => {
+                  <DeleteIconButton
+                    label={x.removeMember}
+                    onConfirm={async () => {
                       // Wait for the server: a failed removal must stay visible.
                       const removed = await remote.removeTeamMember(member.id);
                       if (!removed) return;
                       setPlatform((state) => ({ team: state.team.filter((m) => m.id !== member.id) }));
                       toast.success(x.memberRemoved);
                     }}
-                  >
-                    <Trash2 className="size-4" aria-hidden />{x.removeMember}
-                  </Button>
+                  />
                 </div>
               </div>
             </Panel>
@@ -395,6 +393,7 @@ function ListingRow({ listing }: { listing: HostListing }) {
   const x = useExtra();
   const cc = useClientCopy();
   const lc = useListingCopy();
+  const navigate = useNavigate();
   const { format } = useCurrency();
   const properties = useAllProperties();
   const property = properties.find((p) => p.id === listing.propertyId);
@@ -476,15 +475,12 @@ function ListingRow({ listing }: { listing: HostListing }) {
             aria-label={listing.status === "published" ? t.app.host.unpublish : t.app.host.publish}
             onCheckedChange={(checked) => void changeStatus(checked)}
           />
-          <Button size="sm" variant="outline" asChild>
-            <Link to="/list-your-place" search={{ edit: listing.propertyId }}>
-              <Pencil className="size-4" aria-hidden />
-              {x.editListing}
-            </Link>
-          </Button>
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => void remove()} aria-label={x.deleteListing}>
-            <Trash2 className="size-4" aria-hidden />
-          </Button>
+          <EditIconButton
+            label={x.editListing}
+            itemName={property.name}
+            onConfirm={() => navigate({ to: "/list-your-place", search: { edit: listing.propertyId } })}
+          />
+          <DeleteIconButton itemName={property.name} onConfirm={() => remove()} />
         </div>
       </div>
 

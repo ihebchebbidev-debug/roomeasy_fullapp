@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { DeleteIconButton } from "@/components/ui/action-buttons";
 
 import coverImg from "@/assets/profile-cover.jpg";
 import { TwoFactorDialog } from "@/components/auth/TwoFactorDialog";
@@ -184,7 +185,7 @@ function ProfilePage() {
                 <Camera className="size-4" aria-hidden />
                 {p.changePhoto}
               </Button>
-              {session?.avatarUrl ? <Button size="sm" variant="secondary" className="rounded-full backdrop-blur" onClick={() => void removePhoto()} disabled={photoBusy}>{pc.remove}</Button> : null}
+              {session?.avatarUrl ? <DeleteIconButton label={pc.remove} className="rounded-full bg-background/80 backdrop-blur" onConfirm={() => removePhoto()} disabled={photoBusy} /> : null}
             </div>
           </div>
 

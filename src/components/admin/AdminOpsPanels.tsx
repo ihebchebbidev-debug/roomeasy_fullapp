@@ -43,6 +43,7 @@ import { useAdminCopy } from "@/i18n/adminCopy";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
+import { Paged, rowText } from "@/components/admin/ListControls";
 
 /* ------------------------------------------------------------------ shared */
 
@@ -106,13 +107,14 @@ export function ListingReportsPanel() {
   const [reasons, setReasons] = useState<Record<string, string>>({});
 
   if (loading) return <Note text={copy.loading} />;
-  if (data.length === 0) return <Note text={copy.empty} />;
 
   return (
-    <Shell>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
-      {data.map((report) => (
-        <div key={report.id} className="p-4 sm:px-5">
+    <div className="min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
+      {data.length === 0 ? (
+        <Note text={copy.empty} />
+      ) : (
+      <Paged rows={data} text={rowText}>{(__rows) => __rows.map((report) => (
+        <div key={report.id} className="border-b border-border p-4 last:border-b-0 sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-semibold">{report.propertyName ?? report.listingId}</p>
             <Badge className="border-0 bg-amber-500/15 text-amber-700">{copy.reportOpen}</Badge>
@@ -172,9 +174,9 @@ export function ListingReportsPanel() {
             </div>
           </div>
         </div>
-      ))}
-      </div>
-    </Shell>
+      ))}</Paged>
+      )}
+    </div>
   );
 }
 
@@ -195,7 +197,7 @@ export function VerificationPanel() {
   return (
     <Shell>
       <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
-      {data.map((row) => (
+      <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
         <div key={row.userId} className="p-4 sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
@@ -272,7 +274,7 @@ export function VerificationPanel() {
             </div>
           </div>
         </div>
-      ))}
+      ))}</Paged>
       </div>
     </Shell>
   );
@@ -292,7 +294,7 @@ export function CommissionsPanel() {
   return (
     <Shell>
       <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
-      {data.map((row) => (
+      <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
         <div key={row.hostId} className="p-4 sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
@@ -337,7 +339,7 @@ export function CommissionsPanel() {
             </Button>
           </div>
         </div>
-      ))}
+      ))}</Paged>
       </div>
     </Shell>
   );
@@ -426,7 +428,7 @@ export function SupportDeskPanel({ adminId }: { adminId: string | null }) {
       {filterBar}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <Shell>
-        {data.map((ticket) => (
+        <Paged rows={data} text={rowText}>{(__rows) => __rows.map((ticket) => (
           <Button
             key={ticket.id}
             type="button"
@@ -445,7 +447,7 @@ export function SupportDeskPanel({ adminId }: { adminId: string | null }) {
               {copy.ticketRef} {ticket.reference} · {ticket.openedByName} · {ticket.category}
             </span>
           </Button>
-        ))}
+        ))}</Paged>
       </Shell>
 
 
@@ -871,7 +873,7 @@ export function AuditPanel() {
   return (
     <Card>
       <ul className="divide-y divide-border text-sm">
-        {data.map((entry) => (
+        <Paged rows={data} text={rowText}>{(__rows) => __rows.map((entry) => (
           <li key={entry.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
             <span className="font-medium">{entry.action}</span>
             <span className="text-muted-foreground">
@@ -879,7 +881,7 @@ export function AuditPanel() {
               {entry.reason ? ` · ${entry.reason}` : ""}
             </span>
           </li>
-        ))}
+        ))}</Paged>
       </ul>
     </Card>
   );
@@ -1038,7 +1040,7 @@ export function NotificationsPanel() {
       ) : (
         <Card>
           <ul className="divide-y divide-border text-sm">
-            {data.map((row) => (
+            <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
               <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{row.subject}</span>
@@ -1066,7 +1068,7 @@ export function NotificationsPanel() {
                   ) : null}
                 </span>
               </li>
-            ))}
+            ))}</Paged>
           </ul>
         </Card>
       )}
@@ -1386,7 +1388,7 @@ export function BookingsDeskPanel() {
         <Note text={copy.empty} />
       ) : (
         <div className="grid gap-2">
-          {rows.map((row) => (
+          <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((row) => (
             <Card key={row.id} className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-semibold">
@@ -1404,7 +1406,7 @@ export function BookingsDeskPanel() {
                 </Button>
               </div>
             </Card>
-          ))}
+          ))}</Paged>
         </div>
       )}
 
@@ -1618,7 +1620,7 @@ export function FinancePanel() {
           <p className="text-sm text-muted-foreground">{copy.empty}</p>
         ) : (
           <div className="grid gap-2">
-            {report.map((row) => (
+            <Paged rows={report} text={rowText}>{(__rows) => __rows.map((row) => (
               <div key={row.hostId} className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-sm">
                 <div>
                   <p className="font-medium">{row.hostName}</p>
@@ -1633,7 +1635,7 @@ export function FinancePanel() {
                   <span>{copy.finUnpaid}: {format(row.unpaidUsd)}</span>
                 </div>
               </div>
-            ))}
+            ))}</Paged>
           </div>
         )}
       </Card>
@@ -1661,7 +1663,7 @@ export function FinancePanel() {
           <p className="text-sm text-muted-foreground">{copy.empty}</p>
         ) : (
           <div className="grid gap-2">
-            {ledger.rows.map((row) => (
+            <Paged rows={ledger.rows} text={rowText}>{(__rows) => __rows.map((row) => (
               <div
                 key={row.bookingId}
                 className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-sm"
@@ -1687,7 +1689,7 @@ export function FinancePanel() {
                   </Button>
                 </div>
               </div>
-            ))}
+            ))}</Paged>
           </div>
         )}
       </Card>

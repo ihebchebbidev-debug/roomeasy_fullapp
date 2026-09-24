@@ -1,3 +1,4 @@
+import { Paged, rowText } from "@/components/admin/ListControls";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CalendarDays, MessageSquare, Receipt, Star, Users } from "lucide-react";
 import { useState } from "react";
@@ -83,9 +84,9 @@ function TripsPage() {
               />
             ) : (
               <ul className="grid gap-5">
-                {list.map((booking) => (
+                <Paged rows={list} text={(x) => `${rowText(x)} ${(x as { propertyName?: string }).propertyName ?? ""}`}>{(__rows) => __rows.map((booking) => (
                   <TripCard key={booking.id} booking={booking} locale={locale} />
-                ))}
+                ))}</Paged>
               </ul>
             )}
           </TabsContent>

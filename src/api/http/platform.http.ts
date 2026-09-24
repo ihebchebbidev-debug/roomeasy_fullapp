@@ -340,6 +340,8 @@ export type AdminUserDto = {
   lastLoginAt: string | null;
   bookings: number;
   listings: number;
+  /** Identity check state; missing on older servers. */
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
 };
 
 export type AdminListingDto = {
@@ -412,6 +414,17 @@ export type AdminHostProfileDto = {
     createdAt: string;
     decidedAt: string | null;
   }[];
+  /** Stays this member booked as a guest; missing on older servers. */
+  trips?: {
+    id: string;
+    reference: string;
+    propertyId: string;
+    propertyName: string;
+    checkIn: string;
+    checkOut: string;
+    status: string;
+    totalUsd: number;
+  }[];
 };
 
 export type AdminReportsDto = {
@@ -483,7 +496,17 @@ export const settingsApi = {
   admin: () => request<AdminSettingsDto>("/settings/admin"),
   saveAdmin: (body: Partial<{ serviceFeeRate: number; taxRate: number; commissionRate: number; weekend: number; longStay: number; lastMinute: number }>) =>
     request<AdminSettingsDto>("/settings/admin", { method: "PUT", body }),
+  integrations: () => request<IntegrationViewDto>("/settings/admin/integrations"),
+  saveIntegrations: (body: Record<string, string>) =>
+    request<IntegrationViewDto>("/settings/admin/integrations", { method: "PUT", body }),
+  testEmail: (to: string) =>
+    request<{ ok: boolean; error?: string; dryRun?: boolean }>("/settings/admin/integrations/test-email", { method: "POST", body: { to } }),
+  testStripe: () =>
+    request<{ ok: boolean; error?: string; mode?: string | null }>("/settings/admin/integrations/test-stripe", { method: "POST", body: {} }),
 };
+
+export type IntegrationFieldDto = { value: string; masked: string | null; set: boolean; secret: boolean; source: "admin" | "env" | "none" };
+export type IntegrationViewDto = Record<string, IntegrationFieldDto>;
 
 export type EquipmentDto = { id: string; group: string; label: { en: string; fr: string }; paid: boolean; active: boolean };
 
