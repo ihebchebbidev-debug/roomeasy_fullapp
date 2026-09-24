@@ -140,7 +140,9 @@ export function FilterPanel({
           anyLabel={t.explore.any}
           onSelect={(beds) => update({ beds })}
         />
+        
       </Group>
+      
 
       <Group label={t.explore.bathrooms}>
         <Segmented

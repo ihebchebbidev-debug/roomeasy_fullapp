@@ -160,7 +160,7 @@ function AuthPage() {
       toast.success(
         created ? t.app.auth.created : interpolate(t.app.auth.signedIn, { name: session.name || safeName }),
       );
-      const destination = session.role === "host" || session.role === "admin" ? "/host" : "/trips";
+      const destination = session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips";
       if (created) setNewAccount({ name: session.name || safeName, to: destination });
       else enterApp(session.name || safeName, destination);
       return;

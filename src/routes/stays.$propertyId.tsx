@@ -285,7 +285,7 @@ function ListingDetail() {
       houseRules: "Règlement intérieur",
       safety: "Sécurité et logement",
       cancellation: "Conditions d’annulation",
-      notFound: "Logement introuvable",
+      notFound: "Merci pour votre patience ! Votre annonce est en cours de vérification par notre équipe et sera bientôt disponible.",
       pendingTitle: "En attente de validation",
       pendingText: "Vous seul voyez cette annonce. Notre équipe la vérifie — elle sera visible une fois validée.",
       draftTitle: "Annonce en brouillon",

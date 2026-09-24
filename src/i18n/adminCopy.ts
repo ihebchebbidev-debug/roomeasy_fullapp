@@ -196,10 +196,7 @@ const fr: typeof en = {
   tabReports: "Annonces signalées",
   tabVerification: "Vérification d'identité",
   hostProfile: "Fiche de l'hôte",
-  suspend7Days: "Suspendre 7 jours",
-  suspend30Days: "Suspendre 30 jours",
-  suspendPermanent: "Suspendre sans date de fin",
-  suspendedUntil: "Suspendu jusqu'au",
+  
   tabBookings: "Réservations",
   bkGuest: "Voyageur",
   bkHost: "Hôte",
@@ -305,7 +302,7 @@ const fr: typeof en = {
   ticketActions: "Actions rapides",
   cancelStay: "Annuler le séjour",
   refundStay: "Rembourser",
-  suspendMember: "Suspendre le membre",
+  
   actionReason: "Motif",
   notLinkedBooking: "Aucune réservation n'est liée à ce ticket",
   notLinkedMember: "Aucun compte membre n'est lié à ce ticket",
