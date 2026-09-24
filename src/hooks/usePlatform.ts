@@ -16,6 +16,7 @@ import {
 import type { Property } from "@/data/properties";
 
 export type PlatformState = {
+  accountDataStatus: "idle" | "loading" | "ready" | "error";
   session: SessionUser | null;
   bookings: Booking[];
   listings: HostListing[];
@@ -34,12 +35,15 @@ export type PlatformState = {
   customProperties: Property[];
   calendar: CalendarMap;
   propertyOverrides: Record<string, Partial<Property>>;
+  hostDashboard: import("@/api/http/platform.http").HostDashboardDto | null;
+  adminOverview: import("@/api/http/platform.http").AdminOverviewDto | null;
 };
 
 const STORAGE_KEY = "nestara.platform";
 
 /** The store starts empty and is filled from the database. */
 const initialState: PlatformState = {
+  accountDataStatus: "idle",
   session: null,
   bookings: [],
   listings: [],
@@ -57,6 +61,8 @@ const initialState: PlatformState = {
   customProperties: [],
   calendar: {},
   propertyOverrides: {},
+  hostDashboard: null,
+  adminOverview: null,
 };
 
 let state: PlatformState = initialState;

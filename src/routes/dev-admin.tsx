@@ -31,6 +31,10 @@ function DevAdminPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  if (import.meta.env.PROD) {
+    return <main className="grid min-h-screen place-items-center bg-background px-4"><p className="text-sm text-muted-foreground">Not found.</p></main>;
+  }
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!backendEnabled) {

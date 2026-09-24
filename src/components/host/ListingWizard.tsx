@@ -73,7 +73,6 @@ export function ListingWizard({
   // Description step: free-form host notes + the wording the assistant returns.
   const [storyNotes, setStoryNotes] = useState("");
   const [writing, setWriting] = useState(false);
-  const [highlights, setHighlights] = useState<string[]>([]);
   const writeStoryFn = useServerFn(generateListingStory);
 
   /** Builds the guest-facing wording from everything already entered. */
@@ -114,13 +113,11 @@ export function ListingWizard({
       const result = await writeStoryFn({
         data: { ...facts, ...(draft.photos[0] ? { coverPhoto: draft.photos[0] } : {}) },
       });
-      patch({ summary: result.story.summary, description: result.story.description });
-      setHighlights(result.story.highlights);
+      patch({ summary: result.story.summary, description: withHighlights(result.story.description, result.story.highlights, locale) });
       toast.success(result.source === "model" ? c.storyDone : c.storyFallback);
     } catch {
       const local = composeListingStory(facts);
-      patch({ summary: local.summary, description: local.description });
-      setHighlights(local.highlights);
+      patch({ summary: local.summary, description: withHighlights(local.description, local.highlights, locale) });
       toast.success(c.storyFallback);
     } finally {
       setWriting(false);
@@ -197,7 +194,7 @@ export function ListingWizard({
     });
   }
 
-  async function save(publish: boolean) {
+  async function save(publish: boolean, identityDone = false) {
     setTouched(true);
     if (missing.length > 0) {
       toast.error(c.reviewIncomplete);
@@ -220,7 +217,7 @@ export function ListingWizard({
     try {
       // A member who has never hosted becomes a host on their first save,
       // otherwise the server refuses a listing they may not own.
-      if (backendEnabled && session && session.role === "guest" && !identityFiled) {
+      if (backendEnabled && session && session.role === "guest" && !identityFiled && !identityDone) {
         setIdentityAsk({ publish });
         setSaving(false);
         return;
@@ -251,11 +248,14 @@ export function ListingWizard({
         documentReference: idNumber.trim(),
         ...(idFiles.length > 0 ? { documentFiles: idFiles } : {}),
       });
-      if (!upgraded) return;
+      if (!upgraded) {
+        toast.error(c.required);
+        return;
+      }
       setIdentityFiled(true);
       setIdentityAsk(null);
       setSaving(false);
-      if (pending) await save(pending.publish);
+      if (pending) await save(pending.publish, true);
     } catch (error) {
       toast.error(error instanceof Error && error.message ? error.message : c.required);
     } finally {
@@ -560,30 +560,6 @@ export function ListingWizard({
               <Field label={c.description} error={showError("description")}>
                 <Textarea rows={10} value={draft.description} onChange={(e) => patch({ description: e.target.value })} placeholder={c.descriptionPh} maxLength={4000} />
               </Field>
-              {highlights.length > 0 ? (
-                <div>
-                  <Label className="mb-2 block">{c.storyHighlights}</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {highlights.map((item) => (
-                      <Badge key={item} variant="secondary" className="rounded-full px-3 py-1 text-xs font-medium">
-                        {item}
-                      </Badge>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="mt-3 rounded-full px-3 text-sm"
-                    onClick={() => {
-                      const block = highlightsBlock(highlights, locale);
-                      if (!block || draft.description.includes(block)) return;
-                      patch({ description: `${draft.description.trim()}\n\n${block}`.slice(0, 4000) });
-                    }}
-                  >
-                    {c.storyInsert}
-                  </Button>
-                </div>
-              ) : null}
             </div>
           ) : null}
 
@@ -1129,4 +1105,10 @@ async function shrinkImage(file: File, maxSide = 1600, quality = 0.82): Promise<
   } catch {
     return source;
   }
+}
+
+function withHighlights(description: string, highlights: string[], locale: Parameters<typeof highlightsBlock>[1]) {
+  const block = highlights.length ? highlightsBlock(highlights, locale) : "";
+  if (!block || description.includes(block)) return description;
+  return `${description.trim()}\n\n${block}`.slice(0, 4000);
 }

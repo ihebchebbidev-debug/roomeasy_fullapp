@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { ListingPreview } from "@/components/admin/ListingPreview";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/admin_/listings/$listingId")({
 function AdminListingDetail() {
   const { listingId } = Route.useParams();
   const { t } = useLanguage();
-  const { listings } = usePlatform();
+  const { listings, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
   const listing = listings.find((item) => item.id === listingId);
   const [property, setProperty] = useState<Property | undefined>(undefined);
@@ -187,8 +188,10 @@ function AdminListingDetail() {
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
         {listing && property ? (
           <ListingPreview listing={listing} property={property} />
+        ) : accountDataStatus === "ready" && !listing ? (
+          <EmptyState title="This listing could not be found." />
         ) : (
-          <p className="py-16 text-center text-sm text-muted-foreground">…</p>
+          <EmptyState title={t.app.common.loading} />
         )}
       </div>
     </main>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { adminApi, type AdminHostProfileDto } from "@/api/http/platform.http";
 import { backendEnabled } from "@/api/backend";
 import { privatePageMeta } from "@/lib/seo";
@@ -75,9 +76,9 @@ function AdminHostProfile() {
 
       <div className="mx-auto max-w-6xl space-y-8 px-4 pt-6 sm:px-6 lg:px-8">
         {error ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">This host could not be loaded.</p>
+          <EmptyState title="This host could not be loaded." />
         ) : !data ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">…</p>
+          <EmptyState title="Loading host profile…" />
         ) : (
           <>
             <header className="space-y-2">
@@ -121,7 +122,7 @@ function AdminHostProfile() {
 
             <Section title="Listings">
               {data.listings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No listings yet.</p>
+                <EmptyState title="No listings yet." size="compact" />
               ) : (
                 <ul className="divide-y divide-border border border-border bg-surface">
                   {data.listings.map((listing) => (
@@ -150,7 +151,7 @@ function AdminHostProfile() {
 
             <Section title="Bookings">
               {data.bookings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No bookings yet.</p>
+                <EmptyState title="No bookings yet." size="compact" />
               ) : (
                 <ul className="divide-y divide-border border border-border bg-surface">
                   {data.bookings.map((booking) => (
@@ -175,7 +176,7 @@ function AdminHostProfile() {
 
             <Section title="Reviews">
               {data.reviews.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No reviews yet.</p>
+                <EmptyState title="No reviews yet." size="compact" />
               ) : (
                 <ul className="divide-y divide-border border border-border bg-surface">
                   {data.reviews.map((review) => (
@@ -194,7 +195,7 @@ function AdminHostProfile() {
 
             <Section title="Documents">
               {data.documents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No identity documents submitted.</p>
+                <EmptyState title="No identity documents submitted." size="compact" />
               ) : (
                 <ul className="divide-y divide-border border border-border bg-surface">
                   {data.documents.map((doc) => (

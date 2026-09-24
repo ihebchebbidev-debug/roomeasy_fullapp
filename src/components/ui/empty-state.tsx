@@ -1,4 +1,4 @@
-import { Inbox, type LucideIcon } from "lucide-react";
+import { Inbox, LoaderCircle, RefreshCw, WifiOff, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -59,5 +59,34 @@ export function EmptyState({
         {action ? <div className="mt-6 flex justify-center gap-3">{action}</div> : null}
       </div>
     </div>
+  );
+}
+
+export function DataState({
+  status,
+  loading,
+  error,
+  retry,
+  compact = false,
+}: {
+  status: "idle" | "loading" | "ready" | "error";
+  loading: string;
+  error: string;
+  retry: string;
+  compact?: boolean;
+}) {
+  if (status === "ready") return null;
+  return (
+    <EmptyState
+      icon={status === "error" ? WifiOff : LoaderCircle}
+      title={status === "error" ? error : loading}
+      size={compact ? "compact" : "default"}
+      action={status === "error" ? (
+        <button type="button" onClick={() => window.location.reload()} className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+          <RefreshCw className="size-4" aria-hidden />
+          {retry}
+        </button>
+      ) : undefined}
+    />
   );
 }

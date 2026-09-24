@@ -236,7 +236,14 @@ export const messagingApi = {
 
 /* -------------------------------------------------------------------- host */
 
-export type HostDashboardDto = Record<string, unknown>;
+export type HostDashboardDto = {
+  listings: { total: number; published: number; awaitingApproval: number; drafts: number; suspended: number };
+  bookings: { pending: number; upcoming: number; staying: number; completed: number; cancelled: number };
+  earnings: { grossUsd: number; netUsd: number; pendingPayoutUsd: number; paidOutUsd: number };
+  reviews: { count: number; averageRating: number; awaitingReply: number };
+  messages: { openThreads: number; unread: number };
+  occupancy: { nightsBooked: number; nightsAvailable: number; ratePercent: number };
+};
 export type TeamMemberDto = { id: string; fullName: string; email: string; scopes: string[]; createdAt: string };
 export type PayoutDto = {
   id: string;
@@ -411,8 +418,16 @@ export type AdminReportsDto = {
   cancellations: { reason: string; count: number; refundedUsd: number }[];
 };
 
+export type AdminOverviewDto = {
+  users: { total: number; guests: number; hosts: number; admins: number; suspended: number };
+  listings: { total: number; published: number; awaitingApproval: number; suspended: number };
+  bookings: { total: number; pending: number; confirmed: number; completed: number; cancelled: number };
+  revenue: { grossUsd: number; commissionUsd: number; payoutsUsd: number; payoutsPendingUsd: number };
+  reviews: { total: number; hidden: number; averageRating: number };
+};
+
 export const adminApi = {
-  overview: () => request<Record<string, unknown>>("/admin/overview"),
+  overview: () => request<AdminOverviewDto>("/admin/overview"),
   reports: () => request<AdminReportsDto>("/admin/reports?months=12"),
   listings: () => request<AdminListingDto[]>("/admin/listings?scope=all&limit=100"),
   reviews: () => request<ReviewDto[]>("/admin/reviews"),

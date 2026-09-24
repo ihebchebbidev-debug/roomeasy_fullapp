@@ -387,13 +387,15 @@ export async function hydrateAccount(): Promise<void> {
   if (bookings) setPlatform({ bookings: (bookings as unknown as ServerBooking[]).map(toBooking) });
 
   if (session.role === "host" || session.role === "admin") {
-    const [listings, payouts, team, rateRules, reviews] = await Promise.all([
+    const [dashboard, listings, payouts, team, rateRules, reviews] = await Promise.all([
+      runRemote(() => hostApi.dashboard(), "Your dashboard could not be loaded."),
       runRemote(() => fetchHostListings(), "Your listings could not be loaded."),
       runRemote(() => hostApi.payouts(), "Payouts could not be loaded."),
       runRemote(() => hostApi.team(), "Your team could not be loaded."),
       runRemote(() => hostApi.rateRules(), "Rate rules could not be loaded."),
       runRemote(() => reviewsApi.received(), "Reviews could not be loaded."),
     ]);
+    if (dashboard) setPlatform({ hostDashboard: dashboard });
     if (listings) {
       setPlatform({ listings });
       await mergeOwnProperties(listings);
@@ -410,13 +412,15 @@ export async function hydrateAccount(): Promise<void> {
     const quiet = session.role !== "admin";
     const load = <T,>(action: () => Promise<T>, message: string) =>
       quiet ? runQuiet(action) : runRemote(action, message);
-    const [users, adminListings, adminPayouts, adminSettings, allReviews] = await Promise.all([
+    const [overview, users, adminListings, adminPayouts, adminSettings, allReviews] = await Promise.all([
+      load(() => adminApi.overview(), "Dashboard figures could not be loaded."),
       load(() => adminApi.users(), "Members could not be loaded."),
       load(() => adminApi.listings(), "Listings could not be loaded."),
       load(() => adminApi.payouts(), "Payouts could not be loaded."),
       load(() => settingsApi.admin(), "Platform settings could not be loaded."),
       load(() => adminApi.reviews(), "Reviews could not be loaded."),
     ]);
+    if (overview) setPlatform({ adminOverview: overview });
     if (allReviews) setPlatform({ reviews: allReviews.map(toHostReview) });
     if (users) setPlatform({ users: users.map(toPlatformUser) });
     if (adminListings) setPlatform({ listings: adminListings.map(toHostListing) });
@@ -514,6 +518,9 @@ export const remote = {
       team: [],
       users: [],
       reviews: [],
+      hostDashboard: null,
+      adminOverview: null,
+      accountDataStatus: "ready",
     });
   },
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AccountShell } from "@/components/layout/AccountShell";
-import { EmptyState } from "@/components/ui/empty-state";
+import { DataState, EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/messages")({
 function MessagesPage() {
   const { locale, t } = useLanguage();
   const { format } = useCurrency();
-  const { threads, bookings } = usePlatform();
+  const { threads, bookings, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
   // Loads the stays the conversations point at, even outside the first page.
   useEnsureStays(threads.map((thread) => thread.propertyId));
@@ -148,6 +148,9 @@ function MessagesPage() {
 
   return (
     <AccountShell>
+      {accountDataStatus !== "ready" ? (
+        <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} />
+      ) : (<>
       <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-border pb-5">
         <div className="min-w-0"><p className="text-xs font-semibold text-primary">{copy.conversations}</p><h1 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">{copy.inbox}</h1></div>
         <p className="hidden text-sm text-muted-foreground sm:block">{threads.reduce((sum, thread) => sum + thread.unread, 0)} {t.app.messages.unread}</p>
@@ -220,6 +223,7 @@ function MessagesPage() {
           </div> : null}
         </aside>
       </div>
+      </>)}
     </AccountShell>
   );
 }

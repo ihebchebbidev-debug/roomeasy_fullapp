@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
   CalendarRange,
+  Building2,
   Check,
   ChevronLeft,
   Inbox,
@@ -20,7 +21,7 @@ import { AccountShell } from "@/components/layout/AccountShell";
 import { PayoutsOnboarding } from "@/components/host/PayoutsOnboarding";
 import { SmartPricingPanel } from "@/components/host/SmartPricingPanel";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/empty-state";
+import { DataState, EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,7 +72,8 @@ function HostPage() {
   const cc = useClientCopy();
   const { format } = useCurrency();
   const properties = useAllProperties();
-  const { bookings: allBookings, listings, payouts, reviews, team, rateRules } = usePlatform();
+  const { bookings: allBookings, listings, payouts, reviews, team, rateRules, hostDashboard, accountDataStatus } = usePlatform();
+  const { session } = usePlatform();
   const { section, stripe: stripeReturn } = Route.useSearch();
 
   // The dashboard only ever shows reservations made on this host's own listings —
@@ -79,13 +81,15 @@ function HostPage() {
   const ownPropertyIds = new Set(listings.map((l) => l.propertyId));
   const bookings = allBookings.filter((b) => ownPropertyIds.has(b.propertyId));
 
-  const revenue = bookings.filter((b) => b.status === "confirmed" || b.status === "completed").reduce((sum, b) => sum + b.totalUsd, 0);
+  const revenue = hostDashboard?.earnings.grossUsd ?? bookings.filter((b) => b.status === "confirmed" || b.status === "completed").reduce((sum, b) => sum + b.totalUsd, 0);
   const requests = bookings.filter((b) => b.status === "pending");
   const decided = bookings.filter((b) => b.status !== "pending");
   const confirmationRate = decided.length
     ? Math.round((decided.filter((b) => b.status === "confirmed" || b.status === "completed").length / decided.length) * 100)
     : 0;
-  const avgRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
+  const avgRating = hostDashboard?.reviews.averageRating ?? (reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0);
+  const isReady = accountDataStatus === "ready";
+  const metric = (value: string) => isReady ? value : "—";
   // The chart counts the host's real reservations per month.
   const monthlyBookings = Array.from({ length: 12 }, (_, index) => {
     const date = new Date();
@@ -98,6 +102,17 @@ function HostPage() {
     };
   });
   const maxMonth = Math.max(...monthlyBookings.map((m) => m.value), 1);
+
+  if (accountDataStatus === "ready" && (!session || (session.role !== "host" && session.role !== "admin"))) {
+    return (
+      <AccountShell title={t.app.host.title} subtitle={t.app.host.subtitle}>
+        <EmptyState
+          title={session ? t.app.host.noListings : t.auth.login}
+          action={<Button asChild><Link to={session ? "/list-your-place" : "/auth"}>{session ? t.app.host.newListing : t.auth.login}</Link></Button>}
+        />
+      </AccountShell>
+    );
+  }
 
   /** Applies the new status at once, then puts the old one back if the server refused. */
   function patchStatus(bookingId: string, status: Booking["status"]) {
@@ -144,14 +159,40 @@ function HostPage() {
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat icon={Wallet} label={t.app.host.revenue} value={format(revenue)} />
-        <Stat icon={CalendarRange} label={t.app.host.requests} value={String(requests.length)} />
-        <Stat icon={TrendingUp} label={t.app.host.confirmationRate} value={`${confirmationRate}%`} />
-        <Stat icon={BadgeCheck} label={t.app.host.avgRating} value={avgRating.toFixed(1)} />
+        <Stat icon={Wallet} label={t.app.host.revenue} value={metric(format(revenue))} />
+        <Stat icon={CalendarRange} label={t.app.host.requests} value={metric(String(hostDashboard?.bookings.pending ?? requests.length))} />
+        <Stat icon={TrendingUp} label={t.app.host.occupancy} value={metric(`${hostDashboard?.occupancy.ratePercent ?? 0}%`)} />
+        <Stat icon={BadgeCheck} label={t.app.host.avgRating} value={metric(avgRating.toFixed(1))} />
       </div>
 
       <div className="mt-10">
-        {section === "requests" ? <section className="space-y-5">
+        {!isReady ? <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} /> : null}
+
+        {isReady && section === "overview" ? <section className="space-y-5">
+          {listings.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title={t.app.host.noListings}
+              description={t.app.host.noListingsHint}
+              action={<Button asChild><Link to="/list-your-place"><Plus className="size-4" aria-hidden />{t.app.host.newListing}</Link></Button>}
+            />
+          ) : (
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Panel>
+                <h2 className="font-display text-lg font-bold">{t.app.host.listings}</h2>
+                <p className="mt-2 text-3xl font-bold tabular-nums">{hostDashboard?.listings.total ?? listings.length}</p>
+                <Button asChild variant="outline" className="mt-5"><Link to="/host" search={{ section: "listings" }}>{t.app.host.listings}</Link></Button>
+              </Panel>
+              <Panel>
+                <h2 className="font-display text-lg font-bold">{t.app.host.pendingPayout}</h2>
+                <p className="mt-2 text-3xl font-bold tabular-nums">{format(hostDashboard?.earnings.pendingPayoutUsd ?? payouts.filter((p) => p.status === "scheduled").reduce((sum, p) => sum + p.amountUsd, 0))}</p>
+                <Button asChild variant="outline" className="mt-5"><Link to="/host" search={{ section: "payouts" }}>{t.app.host.payouts}</Link></Button>
+              </Panel>
+            </div>
+          )}
+        </section> : null}
+
+        {isReady && section === "requests" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.requests}</h2>
           {requests.length === 0 ? <EmptyState icon={Inbox} title={t.app.host.noRequests} size="compact" /> : null}
           {requests.map((booking) => {
@@ -224,14 +265,17 @@ function HostPage() {
             })}
         </section> : null}
 
-        {section === "listings" ? <section className="space-y-5">
+        {isReady && section === "listings" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.listings}</h2>
+          {listings.length === 0 ? <EmptyState icon={Building2} title={t.app.host.noListings} description={t.app.host.noListingsHint} action={<Button asChild><Link to="/list-your-place"><Plus className="size-4" aria-hidden />{t.app.host.newListing}</Link></Button>} /> : null}
           {listings.map((listing) => (
             <ListingRow key={listing.id} listing={listing} />
           ))}
         </section> : null}
 
-        {section === "calendar" ? <section className="grid gap-5 lg:grid-cols-2">
+        {isReady && section === "calendar" ? (listings.length === 0 ? (
+          <EmptyState icon={CalendarRange} title={t.app.host.noCalendar} action={<Button asChild><Link to="/list-your-place">{t.app.host.newListing}</Link></Button>} />
+        ) : (<section className="grid gap-5 lg:grid-cols-2">
           <CalendarPanel />
           <Panel>
             <h2 className="font-display text-lg font-bold">{t.app.host.rateRules}</h2>
@@ -242,9 +286,11 @@ function HostPage() {
             <Button className="mt-5" onClick={() => { void remote.saveRateRules({ weekend: rateRules.weekend, longStay: rateRules.longStay, lastMinute: rateRules.lastMinute }); toast.success(t.app.host.ruleSaved); }}>{t.app.common.save}</Button>
           </Panel>
           <SmartPricingPanel listings={listings.map((l) => ({ propertyId: l.propertyId, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
-        </section> : null}
+        </section>)) : null}
 
-        {section === "stats" ? <section className="grid gap-5 lg:grid-cols-2">
+        {isReady && section === "stats" ? (bookings.length === 0 ? (
+          <EmptyState icon={TrendingUp} title={t.app.host.noStats} />
+        ) : (<section className="grid gap-5 lg:grid-cols-2">
           <Panel className="lg:col-span-2">
             <h2 className="font-display text-lg font-bold">{x.bookingsPerMonth}</h2>
             <div className="mt-6 flex h-40 items-end gap-2 sm:gap-3">
@@ -261,12 +307,13 @@ function HostPage() {
             <Stat icon={TrendingUp} label={t.app.host.confirmationRate} value={`${confirmationRate}%`} />
             <Stat icon={Wallet} label={t.app.host.revenue} value={format(revenue)} />
           </div>
-        </section> : null}
+        </section>)) : null}
 
-        {section === "payouts" ? <section className="space-y-5">
+        {isReady && section === "payouts" ? <section className="space-y-5">
           <Panel>
             <PayoutsOnboarding returned={stripeReturn === "done"} />
           </Panel>
+          {payouts.length === 0 ? <EmptyState icon={Wallet} title={t.app.host.noPayouts} size="compact" /> : null}
           {payouts.map((payout) => (
             <Panel key={payout.id}>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -282,7 +329,9 @@ function HostPage() {
           ))}
         </section> : null}
 
-        {section === "reviews" ? <section className="space-y-5">
+        {isReady && section === "reviews" ? <section className="space-y-5">
+          <h2 className="font-display text-xl font-bold">{t.app.host.reviews}</h2>
+          {reviews.length === 0 ? <EmptyState icon={BadgeCheck} title={t.app.host.noReviews} /> : null}
           {reviews.map((review) => (
             <Panel key={review.id}>
               <div className="flex items-center justify-between gap-3">
@@ -302,7 +351,9 @@ function HostPage() {
           ))}
         </section> : null}
 
-        {section === "team" ? <section className="space-y-5">
+        {isReady && section === "team" ? <section className="space-y-5">
+          <h2 className="font-display text-xl font-bold">{t.app.host.team}</h2>
+          {team.length === 0 ? <EmptyState icon={Inbox} title={t.app.host.noTeam} size="compact" /> : null}
           {team.map((member) => (
             <Panel key={member.id}>
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -348,7 +399,9 @@ function ListingRow({ listing }: { listing: HostListing }) {
   const properties = useAllProperties();
   const property = properties.find((p) => p.id === listing.propertyId);
 
-  if (!property) return null;
+  if (!property) {
+    return <Panel><p className="font-semibold">{listing.propertyId}</p><p className="mt-1 text-sm text-muted-foreground">{t.app.common.loading}</p></Panel>;
+  }
 
   // Both actions wait for the server: nothing is announced, and nothing
   // disappears from the list, until the server actually accepted it.

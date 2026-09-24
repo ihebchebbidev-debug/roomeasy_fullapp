@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { backendEnabled, checkServerReachable, hydrateAccount, hydratePublic } from "@/api/backend";
+import { setPlatform } from "@/hooks/usePlatform";
 
 /**
  * Loads the server's data into the platform store once per page load. When no
@@ -9,11 +10,23 @@ import { backendEnabled, checkServerReachable, hydrateAccount, hydratePublic } f
  */
 export function useBackendHydration(): void {
   useEffect(() => {
-    if (!backendEnabled) return;
+    if (!backendEnabled) {
+      setPlatform({ accountDataStatus: "ready" });
+      return;
+    }
+    setPlatform({ accountDataStatus: "loading" });
     void (async () => {
-      if (!(await checkServerReachable())) return;
-      await hydratePublic();
-      await hydrateAccount();
+      if (!(await checkServerReachable())) {
+        setPlatform({ accountDataStatus: "error" });
+        return;
+      }
+      try {
+        await hydratePublic();
+        await hydrateAccount();
+        setPlatform({ accountDataStatus: "ready" });
+      } catch {
+        setPlatform({ accountDataStatus: "error" });
+      }
     })();
   }, []);
 }

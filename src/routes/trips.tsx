@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { AccountShell } from "@/components/layout/AccountShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EmptyState as SharedEmptyState } from "@/components/ui/empty-state";
+import { DataState, EmptyState as SharedEmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cityName } from "@/data/properties";
 import { useAllProperties } from "@/hooks/useAllProperties";
@@ -53,7 +53,7 @@ export function statusTone(status: BookingStatus) {
 
 function TripsPage() {
   const { t, locale } = useLanguage();
-  const { bookings } = usePlatform();
+  const { bookings, accountDataStatus } = usePlatform();
   // Loads any booked stay the browser does not hold yet.
   useEnsureStays(bookings.map((booking) => booking.propertyId));
   const upcoming = bookings.filter((b) => ["pending", "confirmed"].includes(b.status));
@@ -61,6 +61,9 @@ function TripsPage() {
 
   return (
     <AccountShell title={t.app.trips.title} subtitle={t.app.trips.subtitle}>
+      {accountDataStatus !== "ready" ? (
+        <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} />
+      ) : (
       <Tabs defaultValue="upcoming">
         <TabsList className="grid h-11 w-full grid-cols-2 rounded-lg bg-muted p-1 sm:w-80">
           <TabsTrigger value="upcoming">{t.app.trips.upcoming}</TabsTrigger>
@@ -88,6 +91,7 @@ function TripsPage() {
           </TabsContent>
         ))}
       </Tabs>
+      )}
     </AccountShell>
   );
 }

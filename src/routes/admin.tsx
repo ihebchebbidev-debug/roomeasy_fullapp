@@ -71,7 +71,7 @@ import type { AdminReportsDto } from "@/api/http/platform.http";
 import { setPlatform, usePlatform } from "@/hooks/usePlatform";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { EmptyState } from "@/components/ui/empty-state";
+import { DataState, EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
 import authWallpaper from "@/assets/auth-wallpaper.jpg";
@@ -104,7 +104,7 @@ function AdminPage() {
   const { t, locale } = useLanguage();
   const { format } = useCurrency();
   const cc = useClientCopy();
-  const { session, listings, users, payouts, commissionRate, reviews } = usePlatform();
+  const { session, listings, users, payouts, commissionRate, reviews, adminOverview, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
   const [query, setQuery] = useState("");
   const [section, setSection] = useState("approvals");
@@ -132,6 +132,7 @@ function AdminPage() {
   }, []);
 
   const can = (capability: string) => me?.capabilities.includes(capability) ?? !backendEnabled;
+  const accessResolved = accountDataStatus === "ready" && (!backendEnabled || me !== null);
   const roleName = me?.roles.includes("admin")
     ? ac.roleAdmin
     : me?.roles.includes("moderator")
@@ -180,23 +181,24 @@ function AdminPage() {
     if (`${u.name} ${u.email}`.toLowerCase().includes(needle)) return true;
     return Boolean(digits) && (u.phone ?? "").replace(/\D/g, "").includes(digits);
   });
-  const hostsCount = users.filter((u) => u.role === "host").length;
-  const payoutsTotal = payouts.reduce((sum, p) => sum + p.amountUsd, 0);
+  const hostsCount = adminOverview?.users.hosts ?? users.filter((u) => u.role === "host").length;
+  const payoutsTotal = adminOverview?.revenue.payoutsUsd ?? payouts.reduce((sum, p) => sum + p.amountUsd, 0);
+  const metric = (value: number | string) => accountDataStatus === "ready" ? value : "—";
 
   const overview = [
-    { label: t.app.admin.approvals, value: pending.length, tone: "amber" as const },
-    { label: t.app.admin.users, value: users.length, tone: "primary" as const },
-    { label: t.app.admin.host, value: hostsCount, tone: "emerald" as const },
-    { label: t.app.admin.payouts, value: format(payoutsTotal), tone: "primary" as const },
+    { label: t.app.admin.approvals, value: metric(adminOverview?.listings.awaitingApproval ?? pending.length), tone: "amber" as const },
+    { label: t.app.admin.users, value: metric(adminOverview?.users.total ?? users.length), tone: "primary" as const },
+    { label: t.app.admin.host, value: metric(hostsCount), tone: "emerald" as const },
+    { label: t.app.admin.payouts, value: metric(format(payoutsTotal)), tone: "primary" as const },
   ];
 
   // The back office is for administrators and the delegated roles the server
   // recognises (moderator, support, accounting).
-  if (session && session.role !== "admin" && !session.backOffice && !me) {
+  if (accessResolved && (!session || (session.role !== "admin" && !session.backOffice) || (backendEnabled && !me))) {
     return (
       <AppShell title={t.app.admin.title} subtitle={t.app.admin.subtitle}>
         <p className="rounded-xl border border-border bg-surface p-6 text-muted-foreground">
-          You do not have access to the back office.
+          {session ? "You do not have access to the back office." : t.auth.login}
         </p>
       </AppShell>
     );
@@ -378,7 +380,11 @@ function AdminPage() {
                   </div>
                 ))}
               </div>
+              {accountDataStatus !== "ready" ? (
+                <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} compact />
+              ) : null}
 
+        <div className={accountDataStatus === "ready" ? "" : "hidden"}>
         <TabsContent value="team" className="mt-0">
           <TeamRolesPanel />
         </TabsContent>
@@ -417,7 +423,7 @@ function AdminPage() {
 
         <TabsContent value="approvals" className="mt-0">
           {pending.length === 0 ? (
-            <Empty text={t.app.admin.noReports} />
+            <Empty text={t.app.admin.noApprovals} />
           ) : (
             <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
               {pending.map((listing) => {
@@ -503,6 +509,7 @@ function AdminPage() {
               className="pl-9"
             />
           </div>
+          {filteredUsers.length === 0 ? <Empty text={t.app.admin.noUsers} /> : null}
           <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
             {filteredUsers.map((user) => (
               <li
@@ -668,6 +675,7 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="payouts" className="mt-0">
+          {payouts.length === 0 ? <Empty text={t.app.admin.noPayouts} /> : null}
           <ul className="overflow-hidden border border-border bg-surface divide-y divide-border">
             {payouts.map((payout) => (
               <li
@@ -751,6 +759,7 @@ function AdminPage() {
             </p>
           </form>
         </TabsContent>
+        </div>
             </div>
           </div>
         </div>
@@ -780,7 +789,7 @@ function ReportsPanel() {
     };
   }, []);
 
-  if (loading) return <Empty text="…" />;
+  if (loading) return <Empty text={t.app.common.loading} />;
 
   const monthly = reports?.monthly ?? [];
   const topListings = reports?.topListings.filter((row) => row.bookings > 0) ?? [];
