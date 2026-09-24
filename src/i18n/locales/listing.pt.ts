@@ -137,5 +137,8 @@ export const listingPt: ListingCopy = {
   idNumber: "Número do documento",
   idNumberPlaceholder: "Número indicado no documento",
   idSubmit: "Enviar e continuar",
+  idFiles: "Carregar fotos do documento",
+  idFilesHint: "Carregue fotos ou digitalizações nítidas do documento (JPEG, PNG ou WebP).",
+  idFilesAdded: "{n} ficheiro(s) anexado(s)",
   idMissing: "Escolha um tipo de documento e introduza o número.",
 };

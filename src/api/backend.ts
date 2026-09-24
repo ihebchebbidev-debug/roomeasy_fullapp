@@ -525,6 +525,7 @@ export const remote = {
     document: {
       documentKind: "passport" | "id_card" | "driving_licence" | "residence_permit";
       documentReference: string;
+      documentFiles?: string[];
     },
   ): Promise<SessionUser | null> {
     const account = await runRemote(

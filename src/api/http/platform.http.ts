@@ -54,6 +54,7 @@ export const accountsApi = {
     displayName?: string;
     documentKind: "passport" | "id_card" | "driving_licence" | "residence_permit";
     documentReference: string;
+    documentFiles?: string[];
   }) => request<AccountDto>("/accounts/me/become-host", { method: "POST", body }),
   forgotPassword: (body: { email: string }) =>
     request<{ message: string; devCode?: string; expiresAt?: string }>("/accounts/forgot-password", {
@@ -395,6 +396,7 @@ export type AdminHostProfileDto = {
     status: string;
     documentKind: string | null;
     documentReference: string | null;
+    documentFiles: string[] | null;
     notes: string | null;
     createdAt: string;
     decidedAt: string | null;

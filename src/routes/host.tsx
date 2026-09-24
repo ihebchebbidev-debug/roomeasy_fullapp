@@ -18,6 +18,7 @@ import { toast } from "sonner";
 
 import { AccountShell } from "@/components/layout/AccountShell";
 import { PayoutsOnboarding } from "@/components/host/PayoutsOnboarding";
+import { SmartPricingPanel } from "@/components/host/SmartPricingPanel";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
@@ -235,12 +236,12 @@ function HostPage() {
           <Panel>
             <h2 className="font-display text-lg font-bold">{t.app.host.rateRules}</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <RateField id="weekend" label={t.app.host.weekend} value={rateRules.weekend} onChange={(v) => setPlatform({ rateRules: { ...rateRules, weekend: v } })} />
               <RateField id="longstay" label={t.app.host.longStay} value={rateRules.longStay} onChange={(v) => setPlatform({ rateRules: { ...rateRules, longStay: v } })} />
               <RateField id="lastminute" label={t.app.host.lastMinute} value={rateRules.lastMinute} onChange={(v) => setPlatform({ rateRules: { ...rateRules, lastMinute: v } })} />
             </div>
             <Button className="mt-5" onClick={() => { void remote.saveRateRules({ weekend: rateRules.weekend, longStay: rateRules.longStay, lastMinute: rateRules.lastMinute }); toast.success(t.app.host.ruleSaved); }}>{t.app.common.save}</Button>
           </Panel>
+          <SmartPricingPanel listings={listings.map((l) => ({ propertyId: l.propertyId, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
         </section> : null}
 
         {section === "stats" ? <section className="grid gap-5 lg:grid-cols-2">

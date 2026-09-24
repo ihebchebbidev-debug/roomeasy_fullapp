@@ -28,6 +28,8 @@ export type PriceBreakdown = {
   serviceFee: number;
   taxes: number;
   total: number;
+  /** Per-night explanation, present when the host uses smart pricing. */
+  nightsDetail?: { date: string; basePrice: number; finalPrice: number; applied: { rule: string; label?: string; percent?: number }[] }[];
 };
 
 export type PaymentRecord = {

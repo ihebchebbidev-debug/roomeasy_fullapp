@@ -198,14 +198,25 @@ function AdminHostProfile() {
               ) : (
                 <ul className="divide-y divide-border border border-border bg-surface">
                   {data.documents.map((doc) => (
-                    <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                      <div>
-                        <p className="font-medium capitalize">{doc.documentKind ?? "Document"}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {doc.documentReference ?? "—"} · submitted {new Date(doc.createdAt).toLocaleDateString()}
-                        </p>
+                    <li key={doc.id} className="flex flex-col gap-3 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-medium capitalize">{doc.documentKind ?? "Document"}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {doc.documentReference ?? "—"} · submitted {new Date(doc.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Badge variant="secondary" className="capitalize">{doc.status}</Badge>
                       </div>
-                      <Badge variant="secondary" className="capitalize">{doc.status}</Badge>
+                      {doc.documentFiles && doc.documentFiles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {doc.documentFiles.map((file, i) => (
+                            <a key={i} href={file} target="_blank" rel="noreferrer" className="block max-w-[200px]">
+                              <img src={file} alt="Identity document" className="rounded-lg object-contain bg-muted" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

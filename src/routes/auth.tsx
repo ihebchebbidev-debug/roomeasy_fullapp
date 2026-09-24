@@ -71,7 +71,7 @@ function AuthPage() {
   const [signInToken, setSignInToken] = useState<string | null>(null);
   const [welcome, setWelcome] = useState<string | null>(null);
   const [signUpToken, setSignUpToken] = useState<string | null>(null);
-  const [newAccount, setNewAccount] = useState<{ name: string; to: "/host" | "/trips" } | null>(null);
+  const [newAccount, setNewAccount] = useState<{ name: string; to: "/admin" | "/host" | "/trips" } | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>();
   const [photoPending, setPhotoPending] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);

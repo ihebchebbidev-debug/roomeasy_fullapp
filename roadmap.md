@@ -37,3 +37,15 @@
 - [x] Removed bundled demo stays, demo photos and unused demo JSON rows
 - [x] Service/tax fee rates come from service settings instead of a bundled file
 - [x] Featured homepage stay card shows a real listing and links to its page
+
+## Client feedback round 2 (specification v2)
+- [x] Booking emails (request, confirmed, declined, cancelled) and new-message emails, in 5 languages
+- [x] Excel downloads for statistics and finance; PDF invoices for admins and guests
+- [x] Smart pricing: seasons, weekend, early/last-minute, occupancy, gap nights, min/max price; charged by the server, host preview, per-night breakdown at checkout
+- [ ] Gap-night "shorter minimum stay" option is stored but not yet applied to the minimum-nights check
+- [x] Smart pricing, invoice and Excel/PDF button texts translated in 5 languages
+- [ ] Admin editor for Terms / Privacy / Help pages (spec: Must)
+- [ ] Admin-managed amenities and property-type list (spec: Must)
+- [ ] Admin editor for site texts/translations
+- [ ] Editable role permissions (currently fixed)
+- [ ] Profile photos moved to file storage

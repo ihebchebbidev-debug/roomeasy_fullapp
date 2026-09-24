@@ -14,6 +14,9 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useBookingCopy } from "@/i18n/booking";
 import { useExtra } from "@/i18n/extra";
 import { openConversation } from "@/lib/conversation";
+import { useSmartPricingCopy } from "@/i18n/smartPricingCopy";
+import { downloadApiFile } from "@/api/http/adminOps.http";
+import { FileDown } from "lucide-react";
 
 export const Route = createFileRoute("/booking/$bookingId")({
   head: () => ({
@@ -36,6 +39,7 @@ function BookingConfirmation() {
   const c = useBookingCopy();
   const x = useExtra();
   const navigate = useNavigate();
+  const sp = useSmartPricingCopy();
   const properties = useAllProperties();
   const { data: booking, isLoading } = useBooking(bookingId);
   // Loads the booked stay when it is not part of the catalogue slice held.
@@ -180,6 +184,20 @@ function BookingConfirmation() {
             >
               <MessageSquare className="size-4" aria-hidden />
               {c.contactHost}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                void downloadApiFile(
+                  `/api/bookings/${encodeURIComponent(booking.id)}/invoice.pdf`,
+                  {},
+                  `invoice-${booking.id}.pdf`,
+                ).catch(() => toast.error(sp.invoiceFailed))
+              }
+            >
+              <FileDown className="size-4" aria-hidden />
+              {sp.invoicePdf}
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/help">{c.helpCenter}</Link>

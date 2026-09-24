@@ -196,7 +196,11 @@ const fr: typeof en = {
   tabReports: "Annonces signalées",
   tabVerification: "Vérification d'identité",
   hostProfile: "Fiche de l'hôte",
-  
+  suspend7Days: "Suspendre 7 jours",
+  suspend30Days: "Suspendre 30 jours",
+  suspendPermanent: "Suspendre sans date de fin",
+  suspendedUntil: "Suspendu jusqu'au",
+  suspendMember: "Suspendre le membre",
   tabBookings: "Réservations",
   bkGuest: "Voyageur",
   bkHost: "Hôte",

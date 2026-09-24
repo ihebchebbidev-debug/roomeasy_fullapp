@@ -8,6 +8,7 @@
  * Each panel loads its own data from the Node backend and hides itself when
  * the signed-in administrator's role does not carry the capability.
  */
+import { useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -1094,6 +1095,7 @@ function MiniBars({ points }: { points: { label: string; value: number; caption?
 }
 
 export function StatsComparePanel() {
+  const sp = useSmartPricingCopy();
   const copy = useAdminCopy();
   const { format } = useCurrency();
   const [months, setMonths] = useState(6);
@@ -1139,6 +1141,12 @@ export function StatsComparePanel() {
           }
         >
           {copy.exportCsv}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => void adminOpsApi.downloadStatsXlsx(12).catch(() => toast.error(copy.failed))}
+        >
+          {sp.excel}
         </Button>
       </div>
 
@@ -1457,6 +1465,7 @@ export function BookingsDeskPanel() {
  * a spreadsheet export, and a printable invoice for a single reservation.
  */
 export function FinancePanel() {
+  const sp = useSmartPricingCopy();
   const copy = useAdminCopy();
   const { format } = useCurrency();
   const [period, setPeriod] = useState<"month" | "quarter" | "year">("month");
@@ -1525,6 +1534,13 @@ export function FinancePanel() {
           onClick={() => void adminOpsApi.downloadAccountingCsv(period, range)}
         >
           {copy.finExport}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void adminOpsApi.downloadAccountingXlsx(period, range).catch(() => toast.error(copy.failed))}
+        >
+          {sp.excel}
         </Button>
       </div>
 
@@ -1655,6 +1671,15 @@ export function FinancePanel() {
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => window.print()}>
                 {copy.finPrint}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  void adminOpsApi.downloadInvoicePdf(invoice.booking.bookingId).catch(() => toast.error(copy.failed))
+                }
+              >
+                {sp.pdf}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setInvoice(null)}>
                 {copy.finClose}

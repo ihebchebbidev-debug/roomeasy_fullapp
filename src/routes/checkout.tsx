@@ -17,6 +17,7 @@ import { hydrateAccount } from "@/api/backend";
 import { useAllProperties } from "@/hooks/useAllProperties";
 import { useEnsureStays } from "@/hooks/useEnsureStays";
 
+import { ruleSummary, useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { useAvailability, useCreateBooking, useQuote } from "@/hooks/useBookingApi";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useCurrency } from "@/i18n/CurrencyProvider";
@@ -160,6 +161,7 @@ function CheckoutPage() {
   const quoteQuery = useQuote(property ? { propertyId: property.id, from, to, guests, isMobile } : null);
   const createBooking = useCreateBooking();
   const quote = quoteQuery.data;
+  const sp = useSmartPricingCopy();
   const nights = quote?.nights ?? search.nights ?? 2;
 
   async function pay(event: React.FormEvent) {
@@ -480,6 +482,27 @@ function CheckoutPage() {
                 .replace("{nights}", String(nights))}
               value={format(quote?.baseSubtotal ?? 0)}
             />
+            {quote?.nightsDetail?.length ? (
+              <details className="rounded-md bg-muted/40 px-3 py-2 text-xs">
+                <summary className="cursor-pointer text-muted-foreground">{sp.perNight}</summary>
+                <ul className="mt-2 space-y-1">
+                  {quote.nightsDetail.map((night) => (
+                    <li key={night.date} className="flex justify-between gap-3">
+                      <span>
+                        {night.date}
+                        {night.applied.length ? (
+                          <span className="text-muted-foreground">
+                            {" · "}
+                            {ruleSummary(sp, night.applied)}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="tabular-nums">{format(night.finalPrice)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
             {(quote?.discounts ?? []).map((discount) => (
               <div key={discount.id} className="flex items-center justify-between gap-3 text-primary">
                 <span>
@@ -548,3 +571,4 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

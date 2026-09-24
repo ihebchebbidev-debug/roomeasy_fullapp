@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, ArrowRight, Bath, BedDouble, Camera, Check, ChevronLeft, ChevronRight, DoorOpen, PartyPopper, RefreshCw, Ruler, Sparkles, Star, Trash2, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bath, BedDouble, Camera, Check, ChevronLeft, ChevronRight, DoorOpen, PartyPopper, RefreshCw, Ruler, Sparkles, Star, Trash2, Upload, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { listingApi } from "@/api";
 import { backendEnabled, remote } from "@/api/backend";
+import { LocationPicker } from "@/components/host/LocationPicker";
 import { usePlatform } from "@/hooks/usePlatform";
 import { EquipmentEditor } from "@/components/host/EquipmentEditor";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,8 @@ export function ListingWizard({
 
   const [draft, setDraft] = useState<ListingDraft>(initial);
   const [stepIndex, setStepIndex] = useState(0);
+  // A step shows a check only after the host has actually passed it with "Next".
+  const [passed, setPassed] = useState<Set<ListingStep>>(() => new Set(mode === "edit" ? listingSteps : []));
   const [touched, setTouched] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<{ draft: ListingDraft; published: boolean; approved: boolean } | null>(null);
@@ -64,6 +67,7 @@ export function ListingWizard({
   const [identityAsk, setIdentityAsk] = useState<{ publish: boolean } | null>(null);
   const [idKind, setIdKind] = useState<"passport" | "id_card" | "driving_licence" | "residence_permit">("passport");
   const [idNumber, setIdNumber] = useState("");
+  const [idFiles, setIdFiles] = useState<string[]>([]);
   const [identityFiled, setIdentityFiled] = useState(false);
   // Description step: free-form host notes + the wording the assistant returns.
   const [storyNotes, setStoryNotes] = useState("");
@@ -145,6 +149,7 @@ export function ListingWizard({
       return;
     }
     setTouched(false);
+    setPassed((prev) => new Set(prev).add(step));
     setStepIndex((index) => Math.min(listingSteps.length - 1, index + 1));
   }
 
@@ -243,6 +248,7 @@ export function ListingWizard({
       const upgraded = await remote.becomeHost(session?.name, {
         documentKind: idKind,
         documentReference: idNumber.trim(),
+        ...(idFiles.length > 0 ? { documentFiles: idFiles } : {}),
       });
       if (!upgraded) return;
       setIdentityFiled(true);
@@ -256,14 +262,29 @@ export function ListingWizard({
     }
   }
 
+  /** Reads identity document files and shrinks them, same as listing photos. */
+  function onIdFiles(files: FileList | null) {
+    if (!files) return;
+    const maxIdFiles = 4;
+    const room = maxIdFiles - idFiles.length;
+    Array.from(files)
+      .slice(0, Math.max(0, room))
+      .forEach((file) => {
+        void shrinkImage(file, 1200, 0.85).then((result) => {
+          if (!result) return;
+          setIdFiles((current) => [...current, result].slice(0, maxIdFiles));
+        });
+      });
+  }
+
   const identityDialog = (
     <Dialog open={identityAsk !== null} onOpenChange={(open) => !open && setIdentityAsk(null)}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{c.idTitle}</DialogTitle>
           <DialogDescription>{c.idIntro}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="identity-kind">{c.idKind}</Label>
             <select
@@ -286,6 +307,44 @@ export function ListingWizard({
               onChange={(e) => setIdNumber(e.target.value)}
               placeholder={c.idNumberPlaceholder}
             />
+          </div>
+          <div className="space-y-2">
+            <Label>{c.idFiles}</Label>
+            <p className="text-xs text-muted-foreground">{c.idFilesHint}</p>
+            <label
+              className={cn(
+                "flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed text-sm",
+                "border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                idFiles.length >= 4 && "pointer-events-none opacity-50",
+              )}
+            >
+              <Upload className="size-5" aria-hidden />
+              {idFiles.length > 0 ? fill(c.idFilesAdded, { n: idFiles.length }) : c.idFiles}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="sr-only"
+                onChange={(e) => onIdFiles(e.target.files)}
+              />
+            </label>
+            {idFiles.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {idFiles.map((src, index) => (
+                  <div key={`id-file-${index}`} className="group relative overflow-hidden rounded-lg border border-border">
+                    <img src={src} alt="" className="aspect-4/3 w-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label={c.removePhoto}
+                      onClick={() => setIdFiles((current) => current.filter((_, i) => i !== index))}
+                      className="absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <Trash2 className="size-3" aria-hidden />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
         <DialogFooter>
@@ -385,7 +444,7 @@ export function ListingWizard({
       <aside className="hidden lg:block">
         <ol className="space-y-1">
           {listingSteps.map((key, index) => {
-            const done = !missing.includes(key);
+            const done = passed.has(key) && !missing.includes(key);
             return (
               <li key={key}>
                 <button
@@ -419,12 +478,26 @@ export function ListingWizard({
           </p>
           <p className="font-display text-sm font-semibold">{stepLabel(step)}</p>
         </div>
-        <ol className="mt-3 grid grid-cols-8 gap-1.5">
-          {listingSteps.map((key, index) => (
-            <li key={key}>
-              <div className={cn("h-1.5 rounded-full transition-colors", index <= stepIndex ? "bg-primary" : "bg-border")} />
-            </li>
-          ))}
+        <ol className="mt-3 flex items-center gap-1 lg:hidden">
+          {listingSteps.map((key, index) => {
+            const done = passed.has(key) && !missing.includes(key);
+            return (
+              <li key={key} className="flex flex-1 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setStepIndex(index)}
+                  aria-label={stepLabel(key)}
+                  className={cn(
+                    "grid size-7 shrink-0 place-items-center rounded-full border text-xs font-semibold",
+                    done ? "border-primary bg-primary text-primary-foreground" : index === stepIndex ? "border-primary text-primary" : "border-border bg-surface text-muted-foreground",
+                  )}
+                >
+                  {done ? <Check className="size-3.5" /> : index + 1}
+                </button>
+                {index < listingSteps.length - 1 ? <span className={cn("h-0.5 flex-1 rounded-full", done ? "bg-primary" : "bg-border")} /> : null}
+              </li>
+            );
+          })}
         </ol>
         <p className="mt-2 text-xs text-muted-foreground">
           {missing.length === 0

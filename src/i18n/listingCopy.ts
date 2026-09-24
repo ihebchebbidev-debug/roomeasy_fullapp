@@ -144,6 +144,9 @@ const en = {
   idPermit: "Residence permit",
   idNumber: "Document number",
   idNumberPlaceholder: "Number shown on the document",
+  idFiles: "Upload document photos",
+  idFilesHint: "Upload clear photos or scans of your document (JPEG, PNG, or WebP).",
+  idFilesAdded: "{n} file(s) attached",
   idSubmit: "Send and continue",
   idMissing: "Choose a document type and enter its number.",
 };
@@ -283,6 +286,9 @@ const fr: typeof en = {
   idPermit: "Titre de séjour",
   idNumber: "Numéro du document",
   idNumberPlaceholder: "Numéro figurant sur le document",
+  idFiles: "Télécharger des photos du document",
+  idFilesHint: "Envoyez des photos nettes ou des scans de votre document (JPEG, PNG ou WebP).",
+  idFilesAdded: "{n} fichier(s) joint(s)",
   idSubmit: "Envoyer et continuer",
   idMissing: "Choisissez un type de document et saisissez son numéro.",
 };

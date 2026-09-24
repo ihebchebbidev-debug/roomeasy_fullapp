@@ -28,6 +28,8 @@ export const listingDraftSchema = z.object({
     country: z.string().trim().min(2).max(80),
     postal: z.string().trim().max(16),
     neighbourhood: z.string().trim().max(120),
+    lat: z.number().min(-90).max(90).nullable().optional(),
+    lng: z.number().min(-180).max(180).nullable().optional(),
   }),
   capacity: z.object({
     guests: z.number().int().min(1).max(64),
@@ -108,7 +110,7 @@ export function emptyListingDraft(): ListingDraft {
     category: "apartment",
     summary: "",
     description: "",
-    location: { city: "", country: "", postal: "", neighbourhood: "" },
+    location: { city: "", country: "", postal: "", neighbourhood: "", lat: null, lng: null },
     capacity: { guests: 2, rooms: 1, beds: 1, baths: 1, area: 60 },
     amenities: ["wifi"],
     equipment: [],
@@ -163,6 +165,8 @@ export function draftFromProperty(
       country,
       postal: property.postal ?? "",
       neighbourhood: property.neighbourhood ?? "",
+      lat: property.coords?.lat ?? null,
+      lng: property.coords?.lng ?? null,
     },
     capacity: {
       guests: property.guests,
@@ -217,6 +221,7 @@ export function propertyFromDraft(draft: ListingDraft, previous?: Property): Pro
     description: draft.description.trim(),
     postal: draft.location.postal,
     neighbourhood: draft.location.neighbourhood,
+    ...(draft.location.lat != null && draft.location.lng != null ? { coords: { lat: draft.location.lat, lng: draft.location.lng } } : {}),
     cleaningFee: draft.pricing.cleaningFeeUsd,
     minNights: draft.pricing.minNights,
     cancellationPolicy: draft.policies.cancellationPolicy,
@@ -240,6 +245,7 @@ export function validateStep(step: ListingStep, draft: ListingDraft): string[] {
   if (step === "location") {
     add("city", draft.location.city.trim().length >= 2);
     add("country", draft.location.country.trim().length >= 2);
+    add("coords", draft.location.lat != null && draft.location.lng != null);
   }
   if (step === "space") {
     add("guests", draft.capacity.guests >= 1);

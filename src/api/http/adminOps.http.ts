@@ -435,4 +435,37 @@ export const adminOpsApi = {
     link.remove();
     URL.revokeObjectURL(href);
   },
+
+  downloadStatsXlsx: (months = 12) =>
+    downloadApiFile(`/api/admin/stats/export.xlsx`, { months: String(months) }, `roomeasy-statistics-${months}m.xlsx`),
+  downloadAccountingXlsx: (period: "month" | "quarter" | "year" = "month", range: FinanceRange = {}) =>
+    downloadApiFile(
+      `/api/admin/finance/accounting.xlsx`,
+      { period, ...(range.from ? { from: range.from } : {}), ...(range.to ? { to: range.to } : {}) },
+      `roomeasy-accounting-${period}.xlsx`,
+    ),
+  downloadInvoicePdf: (bookingId: string) =>
+    downloadApiFile(`/api/admin/finance/invoice/${encodeURIComponent(bookingId)}/pdf`, {}, `invoice-${bookingId}.pdf`),
 };
+
+/** Downloads a file from the server with the signed-in user's token. */
+export async function downloadApiFile(path: string, params: Record<string, string>, filename: string): Promise<void> {
+  const token = getAccessToken();
+  const base = API_BASE_URL || window.location.origin;
+  const url = new URL(`${API_BASE_URL}${path}`, base);
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
+  const response = await fetch(url.toString(), {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error("download failed");
+  const blob = await response.blob();
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+}
