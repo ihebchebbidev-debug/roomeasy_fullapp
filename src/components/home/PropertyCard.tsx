@@ -8,14 +8,17 @@ import { categoryLabel } from "@/i18n/categories";
 import { interpolate, useLanguage } from "@/i18n/LanguageProvider";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { cn } from "@/lib/utils";
+import { sizedImage, sizedSrcSet } from "@/lib/imageUrl";
 
 type Props = {
   property: Property;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  /** First visible cards: load the photo right away. */
+  priority?: boolean;
 };
 
-export function PropertyCard({ property, isFavorite, onToggleFavorite }: Props) {
+export function PropertyCard({ property, isFavorite, onToggleFavorite, priority = false }: Props) {
   const { t, locale } = useLanguage();
   const { format } = useCurrency();
   const [loaded, setLoaded] = useState(false);
@@ -33,9 +36,12 @@ export function PropertyCard({ property, isFavorite, onToggleFavorite }: Props) 
           <div className="absolute inset-0 animate-pulse bg-secondary" aria-hidden />
         ) : null}
         <img
-          src={property.image}
+          src={sizedImage(property.image, 640)}
+          srcSet={sizedSrcSet(property.image, [400, 640, 900])}
+          sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 80vw"
           alt={property.name}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           decoding="async"
           onLoad={() => setLoaded(true)}
           width={900}
@@ -100,7 +106,7 @@ export function PropertyCard({ property, isFavorite, onToggleFavorite }: Props) 
         </p>
 
         <p className="mt-1.5 text-[15px] font-semibold text-foreground">
-          {format(property.price)}{" "}
+          {format(property.price, { from: property.currency })}{" "}
           <span className="font-normal text-muted-foreground">/{t.listings.night}</span>
         </p>
       </div>

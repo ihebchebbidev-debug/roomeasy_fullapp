@@ -168,11 +168,11 @@ export function ListingPreview({ property, listing }: { property: Property; list
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <p className="text-2xl font-semibold">
-              {format(listing.nightlyUsd)}
+              {format(listing.nightlyUsd, { from: listing.currency ?? property.currency })}
               <span className="ml-1 text-sm font-normal text-muted-foreground">/ {t.listings.night}</span>
             </p>
             <dl className="mt-4 space-y-2.5 text-sm">
-              {property.cleaningFee ? <Row label={lc.cleaningFee} value={format(property.cleaningFee)} /> : null}
+              {property.cleaningFee ? <Row label={lc.cleaningFee} value={format(property.cleaningFee, { from: property.currency })} /> : null}
               {property.minNights ? <Row label={lc.minNights} value={String(property.minNights)} /> : null}
               {property.checkIn ? <Row label={lc.checkIn} value={property.checkIn} /> : null}
               {property.checkOut ? <Row label={lc.checkOut} value={property.checkOut} /> : null}

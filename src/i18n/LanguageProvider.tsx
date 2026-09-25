@@ -9,6 +9,8 @@ import {
 } from "./translations";
 
 import { catalogApi, catalogEnabled } from "@/api/http/catalog.http";
+import { useRouter, useRouterState } from "@tanstack/react-router";
+import { splitLocale, withLocale, type UrlLocaleRef } from "./urlLocale";
 
 const STORAGE_KEY = "nestara.locale";
 
@@ -68,9 +70,18 @@ function isLocale(value: string | null): value is Locale {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const router = useRouter();
+  const urlLocaleRef = (router.options.context as { urlLocale?: UrlLocaleRef } | undefined)?.urlLocale;
+  // The language in the address (`/fr/...`) wins over any saved preference.
+  const publicHref = useRouterState({ select: (s) => s.location.publicHref ?? s.location.href });
+  const urlLocale = splitLocale(new URL(publicHref, "http://x").pathname).locale;
+  const [locale, setLocaleState] = useState<Locale>(urlLocale ?? "en");
 
   useEffect(() => {
+    if (urlLocale) {
+      setLocaleState(urlLocale);
+      return;
+    }
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (isLocale(stored)) {
       setLocaleState(stored);
@@ -78,7 +89,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
     const detected = window.navigator.language?.slice(0, 2).toLowerCase() ?? "";
     if (isLocale(detected)) setLocaleState(detected);
-  }, []);
+  }, [urlLocale]);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -87,7 +98,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     window.localStorage.setItem(STORAGE_KEY, next);
-  }, []);
+    // Lets the server render titles in the chosen language on the next visit.
+    document.cookie = `${STORAGE_KEY}=${next}; path=/; max-age=31536000; samesite=lax`;
+    // Move to the same page in the chosen language (`/stays` → `/de/stays`).
+    const current = new URL(window.location.href);
+    const { path } = splitLocale(current.pathname);
+    const target = `${withLocale(path, next)}${current.search}${current.hash}`;
+    if (urlLocaleRef) urlLocaleRef.current = next;
+    if (target !== `${current.pathname}${current.search}${current.hash}`) router.history.replace(target);
+  }, [router, urlLocaleRef]);
 
   // Texts replaced by an administrator in the back office ("app.auth.signIn" → value).
   const [overrides, setOverrides] = useState<Record<string, string>>({});

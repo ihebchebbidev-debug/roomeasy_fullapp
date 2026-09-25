@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const QUOTES = ["USD", "GBP", "CHF", "BRL"] as const;
-const PROVIDER_URL = `https://api.frankfurter.app/latest?from=EUR&to=${QUOTES.join(",")}`;
+const PROVIDER_URL = `https://api.frankfurter.dev/v1/latest?base=EUR&symbols=${QUOTES.join(",")}`;
 const PROVIDER_TIMEOUT_MS = 5000;
 
 type RatesResponse = {
@@ -47,7 +47,9 @@ export const Route = createFileRoute("/api/public/exchange-rates")({
           });
         } catch {
           const body: RatesResponse = { base: "EUR", rates: { EUR: 1 }, live: false };
-          return Response.json(body, { status: 503, headers: { "Cache-Control": "no-store" } });
+          // Deliberately 200, not 503: `live: false` tells the app to keep
+          // showing EUR, and a provider outage must not surface as an app error.
+          return Response.json(body, { headers: { "Cache-Control": "no-store" } });
         } finally {
           clearTimeout(timer);
         }

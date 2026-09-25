@@ -23,7 +23,16 @@ import { prepareAvatar } from "@/lib/images";
 const TURNSTILE_SITE_KEY =
   import.meta.env["VITE_TURNSTILE_SITE_KEY"] ?? "1x00000000000000000000AA";
 
+/** Only same-site paths are accepted as a post-sign-in destination. */
+function safeRedirect(value: unknown): string | undefined {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : undefined;
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    const redirect = safeRedirect(search['redirect']);
+    return redirect ? { redirect } : {};
+  },
   head: () => ({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
@@ -61,6 +70,7 @@ const DIAL_CODES = [
 function AuthPage() {
   const { t, locale } = useLanguage();
   const navigate = useNavigate();
+  const { redirect: returnTo } = Route.useSearch();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [dialCode, setDialCode] = useState("+33");
@@ -168,7 +178,8 @@ function AuthPage() {
       toast.success(
         created ? t.app.auth.created : interpolate(t.app.auth.signedIn, { name: session.name || safeName }),
       );
-      const destination = session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips";
+      const destination = (returnTo ??
+        (session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips")) as "/admin" | "/host" | "/trips";
       if (created) setNewAccount({ name: session.name || safeName, to: destination });
       else enterApp(session.name || safeName, destination);
       return;

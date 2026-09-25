@@ -66,6 +66,8 @@ export type Property = {
   baths: number;
   area: number;
   price: number;
+  /** Currency the host prices this stay in; `price` and `cleaningFee` are in it. */
+  currency?: string;
   rating: number;
   reviewCount?: number;
   host?: PropertyHost;

@@ -6,6 +6,8 @@
  * social crawlers reject relative og:image / og:url values.
  */
 
+import { OG_LOCALE, URL_LOCALES, withLocale, type UrlLocale } from "@/i18n/urlLocale";
+
 /** The public address of the site. */
 export const SITE_URL = "https://www.roomeasy.fr";
 
@@ -30,7 +32,7 @@ export const KEYWORDS = {
 type MetaTag = { title?: string; name?: string; property?: string; content?: string };
 
 /** Share-card meta shared by every public page. */
-export function shareMeta(title: string, description: string, type = "website", image = OG_IMAGE): MetaTag[] {
+export function shareMeta(title: string, description: string, type = "website", image = OG_IMAGE, locale: UrlLocale | null = null): MetaTag[] {
   return [
     { property: "og:title", content: title },
     { property: "og:description", content: description },
@@ -40,7 +42,8 @@ export function shareMeta(title: string, description: string, type = "website", 
     { property: "og:image:height", content: "630" },
     { property: "og:image:alt", content: title },
     { property: "og:site_name", content: SITE_NAME },
-    { property: "og:locale", content: "fr_FR" },
+    { property: "og:locale", content: locale ? OG_LOCALE[locale] : "fr_FR" },
+    ...URL_LOCALES.filter((l) => l !== locale).map((l) => ({ property: "og:locale:alternate", content: OG_LOCALE[l] })),
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
@@ -59,21 +62,34 @@ export function publicPageMeta(options: {
   keywords?: string;
   type?: string;
   image?: string;
+  locale?: UrlLocale | null;
 }): MetaTag[] {
-  const url = absoluteUrl(options.path);
+  const url = absoluteUrl(withLocale(options.path, options.locale ?? null));
   return [
     { title: options.title },
     { name: "description", content: options.description },
     ...(options.keywords ? [{ name: "keywords", content: options.keywords }] : []),
     { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
     { property: "og:url", content: url },
-    ...shareMeta(options.title, options.description, options.type, options.image),
+    ...shareMeta(options.title, options.description, options.type, options.image, options.locale ?? null),
   ];
 }
 
-/** Canonical link for an indexable page. */
-export function canonical(path: string) {
-  return [{ rel: "canonical", href: absoluteUrl(path) }];
+/**
+ * Canonical link for an indexable page, plus one alternate link per language
+ * (hreflang) and the language-free x-default address.
+ */
+export function canonical(path: string, locale: UrlLocale | null = null) {
+  return [
+    { rel: "canonical", href: absoluteUrl(withLocale(path, locale)) },
+    ...URL_LOCALES.map((l) => ({ rel: "alternate", hrefLang: l, href: absoluteUrl(withLocale(path, l)) })),
+    { rel: "alternate", hrefLang: "x-default", href: absoluteUrl(path) },
+  ];
+}
+
+/** Language taken from the page address, readable inside a route's head(). */
+export function localeOf(match: { context?: unknown } | undefined): UrlLocale | null {
+  return (match?.context as { urlLocale?: { current: UrlLocale | null } } | undefined)?.urlLocale?.current ?? null;
 }
 
 /** Meta for account-only pages that must never appear in search results. */

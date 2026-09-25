@@ -1,6 +1,14 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, CalendarDays, CheckCircle2, CreditCard, Loader2, Lock, ShieldCheck, Users } from "lucide-react";
-import { brandLabel, detectBrand, formatCardNumber, formatCvc, formatExpiry, longDate } from "@/lib/cardFormat";
+import { longDate } from "@/lib/cardFormat";
+
+const PAYMENT_UNAVAILABLE = {
+  en: "Online card payment is not available right now. Please try again later.",
+  fr: "Le paiement par carte en ligne n'est pas disponible pour le moment. Veuillez réessayer plus tard.",
+  es: "El pago con tarjeta en línea no está disponible en este momento. Inténtalo más tarde.",
+  de: "Die Online-Kartenzahlung ist derzeit nicht verfügbar. Bitte versuche es später erneut.",
+  pt: "O pagamento com cartão online não está disponível de momento. Tente novamente mais tarde.",
+} as const;
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -98,7 +106,7 @@ function addDays(iso: string, days: number) {
 
 function CheckoutPage() {
   const { t, locale } = useLanguage();
-  const { format, formatCharged } = useCurrency();
+  const { format: formatDisplay, formatCharged: formatChargedIn } = useCurrency();
   const navigate = useNavigate();
   const search = Route.useSearch();
   const { session } = usePlatform();
@@ -113,6 +121,10 @@ function CheckoutPage() {
   // Never fall back to another listing: paying for a stay the guest did not
   // choose is worse than showing "not found".
   const property = properties.find((p) => p.id === search.propertyId) ?? null;
+  // Amounts are in the listing's currency; the guest is charged in it.
+  const listingCurrency = property?.currency ?? "EUR";
+  const format = (amount: number, options?: { decimals?: boolean }) => formatDisplay(amount, { ...options, from: listingCurrency });
+  const formatCharged = (amount: number) => formatChargedIn(amount, listingCurrency);
   const propertyMissing = !property && !loadingStay && properties.length > 0;
 
   const from = search.from ?? addDays(new Date().toISOString().slice(0, 10), 14);
@@ -123,10 +135,6 @@ function CheckoutPage() {
   const [email, setEmail] = useState(session?.email ?? "");
   const [phone, setPhone] = useState(session?.phone ?? "");
   const [note, setNote] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvc, setCvc] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [payConfig, setPayConfig] = useState<PaymentsConfigDto | null>(null);
   const [stripeStage, setStripeStage] = useState<{ clientSecret: string; bookingId: string } | null>(null);
@@ -209,32 +217,10 @@ function CheckoutPage() {
       return;
     }
 
-    try {
-      const booking = await createBooking.mutateAsync({
-        propertyId: property.id,
-        from,
-        to,
-        guests,
-        guest: { name: name || "Guest", email, ...(phone ? { phone } : {}) },
-        ...(note.trim() ? { message: note.trim() } : {}),
-        card: { number: cardNumber, name: cardName || name, expiry, cvc },
-        isMobile,
-      });
-      // The Trips list reads the account store, so refresh it or the new
-      // booking only shows up after a full page reload.
-      void hydrateAccount();
-      toast.success(c.bookingConfirmed);
-      navigate({ to: "/booking/$bookingId", params: { bookingId: booking.id } });
-
-    } catch (caught) {
-      const code = caught instanceof ApiError ? (caught.code as ApiErrorCode) : "NOT_FOUND";
-      setError(c.errors[code]);
-      toast.error(c.errors[code]);
-    }
+    // No card is ever collected by RoomEasy itself: without Stripe, checkout is closed.
+    setError(PAYMENT_UNAVAILABLE[locale as keyof typeof PAYMENT_UNAVAILABLE] ?? PAYMENT_UNAVAILABLE.en);
   }
 
-  const brand = detectBrand(cardNumber);
-  const BrandIcon = CreditCard;
   const signedOutCopy = SIGNED_OUT_COPY[locale as keyof typeof SIGNED_OUT_COPY] ?? SIGNED_OUT_COPY.en;
 
   if (propertyMissing) {
@@ -324,61 +310,13 @@ function CheckoutPage() {
               <h2 className="font-display text-lg font-bold">{payConfig ? c.stripeStep : c.paymentTitle}</h2>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
                 <Lock className="size-3" aria-hidden />
-                {brandLabel(brand)}
+                Stripe
               </span>
             </div>
             {payConfig ? null : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="cardnum">{c.cardNumber}</Label>
-                <div className="relative">
-                  <Input
-                    id="cardnum"
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    placeholder="4242 4242 4242 4242"
-                    className="pr-11 font-mono tracking-wider"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    required
-                  />
-                  <BrandIcon
-                    className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-                    aria-hidden
-                  />
-                </div>
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="cardname">{c.cardName}</Label>
-                <Input id="cardname" autoComplete="cc-name" value={cardName} onChange={(e) => setCardName(e.target.value)} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cardexp">{c.expiry}</Label>
-                <Input
-                  id="cardexp"
-                  placeholder="12/29"
-                  inputMode="numeric"
-                  autoComplete="cc-exp"
-                  className="font-mono"
-                  value={expiry}
-                  onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cardcvc">{c.cvc}</Label>
-                <Input
-                  id="cardcvc"
-                  inputMode="numeric"
-                  autoComplete="cc-csc"
-                  placeholder="123"
-                  className="font-mono"
-                  value={cvc}
-                  onChange={(e) => setCvc(formatCvc(e.target.value))}
-                  required
-                />
-              </div>
-            </div>
+              <p className="rounded-xl border border-dashed border-border p-3 text-sm text-muted-foreground" role="status">
+                {PAYMENT_UNAVAILABLE[locale as keyof typeof PAYMENT_UNAVAILABLE] ?? PAYMENT_UNAVAILABLE.en}
+              </p>
             )}
             {payConfig && stripeStage ? (
               <StripeCardPayment
@@ -387,7 +325,7 @@ function CheckoutPage() {
                 returnUrl={`${window.location.origin}/booking/${stripeStage.bookingId}`}
                 totalLabel={formatCharged(quote?.total ?? 0)}
                 defaults={{
-                  name: name || cardName,
+                  name,
                   email,
                   ...(phone ? { phone } : {}),
                   country: COUNTRY_BY_LOCALE[locale as keyof typeof COUNTRY_BY_LOCALE] ?? "FR",
@@ -407,11 +345,6 @@ function CheckoutPage() {
               <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               {c.encrypted}
             </p>
-            {payConfig ? null : (
-              <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
-                {c.demoCardHint}
-              </p>
-            )}
           </section>
 
           <section className="space-y-3 rounded-2xl border border-border bg-surface p-6 shadow-sm">
@@ -538,7 +471,7 @@ function CheckoutPage() {
               type="submit"
               size="lg"
               className="w-full"
-              disabled={createBooking.isPending || preparing || !quote || availability.data?.available === false}
+              disabled={!payConfig || createBooking.isPending || preparing || !quote || availability.data?.available === false}
             >
               {createBooking.isPending || preparing ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden />

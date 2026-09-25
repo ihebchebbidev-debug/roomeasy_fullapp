@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowUpRight, Facebook, Instagram, Linkedin, Music2, Twitter, Youtube } from "lucide-react";
+
+import { settingsApi, type SocialKey } from "@/api/http/platform.http";
 
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { CurrencySelector } from "@/components/layout/CurrencySelector";
@@ -37,12 +40,23 @@ export function Footer() {
     },
   ];
 
-  const socials = [
-    { icon: Instagram, label: "Instagram" },
-    { icon: Twitter, label: "X" },
-    { icon: Facebook, label: "Facebook" },
-    { icon: Linkedin, label: "LinkedIn" },
+  const { data: settings } = useQuery({
+    queryKey: ["public-settings"],
+    queryFn: () => settingsApi.get(),
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
+  const socialMeta: { key: SocialKey; icon: typeof Instagram; label: string }[] = [
+    { key: "instagram", icon: Instagram, label: "Instagram" },
+    { key: "x", icon: Twitter, label: "X" },
+    { key: "facebook", icon: Facebook, label: "Facebook" },
+    { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
+    { key: "tiktok", icon: Music2, label: "TikTok" },
+    { key: "youtube", icon: Youtube, label: "YouTube" },
   ];
+  const socials = socialMeta
+    .map((s) => ({ ...s, href: settings?.socialLinks?.[s.key]?.trim() ?? "" }))
+    .filter((s) => /^https?:\/\//i.test(s.href));
 
   return (
     <footer className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
@@ -62,14 +76,18 @@ export function Footer() {
             <BrandLogo inverted className="h-20" />
             <p className="mt-4 max-w-xs text-sm text-navy-muted">{t.footer.tagline}</p>
 
+            {socials.length > 0 && (
+            <>
             <p className="mt-8 text-xs font-semibold tracking-[0.2em] text-navy-muted uppercase">
               {t.footer.followUs}
             </p>
             <div className="mt-3 flex items-center gap-2.5">
-              {socials.map(({ icon: Icon, label }) => (
+              {socials.map(({ icon: Icon, label, href }) => (
                 <a
                   key={label}
-                  href="#top"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
                   className="grid size-10 place-items-center rounded-full border border-white/15 text-navy-foreground transition-colors hover:border-lime hover:bg-lime hover:text-lime-foreground focus-visible:ring-2 focus-visible:ring-lime focus-visible:outline-none"
                 >
@@ -77,6 +95,8 @@ export function Footer() {
                 </a>
               ))}
             </div>
+            </>
+            )}
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <LanguageSelector variant="dark" />
@@ -138,7 +158,7 @@ export function Footer() {
             <Link to="/help" className="transition-colors hover:text-lime">
               {t.footer.help}
             </Link>
-            <span className="font-semibold text-orange-500">
+            <span className="font-semibold text-primary">
               Developed by BxBstudio
             </span>
           </div>

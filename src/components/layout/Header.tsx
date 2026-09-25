@@ -133,7 +133,7 @@ export function Header() {
               <Link
                 to={accountTo}
                 onClick={() => setOpen(false)}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-lime px-5 py-3.5 text-sm font-bold text-lime-foreground transition-transform active:scale-95"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
               >
                 <UserRound className="size-4" aria-hidden />
                 <span className="max-w-40 truncate">{accountLabel}</span>

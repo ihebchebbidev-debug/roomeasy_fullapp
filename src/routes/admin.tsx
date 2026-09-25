@@ -119,7 +119,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const { t, locale } = useLanguage();
-  const { format } = useCurrency();
+  const { format, formatCharged } = useCurrency();
   const cc = useClientCopy();
   const { session, listings, users, payouts, commissionRate, reviews, adminOverview, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
@@ -780,7 +780,7 @@ function AdminPage() {
                   >
                     {payout.status === "paid" ? t.app.admin.paid : t.app.admin.scheduled}
                   </Badge>
-                  <span className="font-sans text-base font-semibold tabular-nums">{format(payout.amountUsd)}</span>
+                  <span className="font-sans text-base font-semibold tabular-nums">{formatCharged(payout.amountUsd, payout.currency ?? "EUR")}</span>
                   {payout.status === "paid" ? null : (
                     <Button
                       size="sm"

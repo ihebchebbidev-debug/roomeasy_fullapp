@@ -34,9 +34,9 @@ export function Hero() {
 
         <div className="relative mx-auto flex max-w-4xl flex-1 flex-col items-center justify-center px-5 pt-20 pb-5 text-center sm:pt-24 sm:pb-7 lg:pt-20">
           {stats.listings > 0 ? (
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/25 bg-black/35 px-5 py-1.5 backdrop-blur-md">
-              <span className="flex items-center gap-1.5 text-xs font-semibold tracking-[0.1em] text-lime uppercase sm:text-sm">
-                <Star className="size-3.5 fill-lime" aria-hidden />
+            <div className="inline-flex items-center gap-3 rounded-full border border-primary/60 bg-primary px-5 py-1.5 shadow-lift">
+              <span className="flex items-center gap-1.5 text-xs font-semibold tracking-[0.1em] text-primary-foreground uppercase sm:text-sm">
+                <Star className="size-3.5 fill-primary-foreground" aria-hidden />
                 {badgeLabel(stats.listings)}
               </span>
             </div>

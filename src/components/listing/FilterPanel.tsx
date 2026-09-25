@@ -25,8 +25,13 @@ import {
   PRICE_FLOOR,
   selectedAmenities,
   selectedEquipment,
+  nightOptions,
+  nightsBetween,
+  ACCESSIBLE_EQUIPMENT_ID,
   type StaySearch,
 } from "@/models/staySearch";
+import { useSearchCopy } from "@/i18n/searchCopy";
+import { interpolate } from "@/i18n/LanguageProvider";
 import {
   equipmentLabel,
   findEquipment,
@@ -60,6 +65,8 @@ export function FilterPanel({
 }) {
   const { t, locale } = useLanguage();
   const cc = useClientCopy();
+  const sc = useSearchCopy();
+  const datedNights = nightsBetween(search.from, search.to);
   const { format } = useCurrency();
   useEquipmentVersion();
   usePropertyTypesVersion();
@@ -234,6 +241,58 @@ export function FilterPanel({
         </div>
       </Group>
 
+      <Group label={sc.preferences}>
+        <div className="space-y-4">
+          <ToggleRow
+            label={sc.pets}
+            checked={chosen.includes("petFriendly")}
+            onChange={() => toggleAmenity("petFriendly")}
+          />
+          <ToggleRow
+            label={sc.accessible}
+            checked={chosenEquipment.includes(ACCESSIBLE_EQUIPMENT_ID)}
+            onChange={() => toggleEquipment(ACCESSIBLE_EQUIPMENT_ID)}
+          />
+          <ToggleRow
+            label={sc.instant}
+            hint={sc.instantHint}
+            checked={search.instant}
+            onChange={(instant) => update({ instant })}
+          />
+          <ToggleRow
+            label={sc.freeCancel}
+            hint={sc.freeCancelHint}
+            checked={search.freeCancel}
+            onChange={(freeCancel) => update({ freeCancel })}
+          />
+        </div>
+      </Group>
+
+      <Group label={sc.stayLength}>
+        {datedNights ? (
+          <p className="text-xs text-muted-foreground">
+            {interpolate(sc.stayLengthDates, { n: datedNights })}
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-4 gap-2">
+              {nightOptions.map((option) => (
+                <Button
+                  key={option}
+                  variant={search.nights === option ? "default" : "outline"}
+                  size="sm"
+                  className="px-1 text-xs"
+                  onClick={() => update({ nights: option })}
+                >
+                  {option ? interpolate(sc.nights, { n: option }) : sc.any}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">{sc.stayLengthHint}</p>
+          </>
+        )}
+      </Group>
+
       <div className="flex items-start justify-between gap-4 py-5">
         <div>
           <p className="text-sm font-bold">{t.explore.superhostOnly}</p>
@@ -293,6 +352,28 @@ function Segmented({
           {option ? `${option}+` : anyLabel}
         </Button>
       ))}
+    </div>
+  );
+}
+
+function ToggleRow({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <p className="text-xs font-semibold">{label}</p>
+        {hint ? <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p> : null}
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { CmsOrFallback } from "@/components/legal/CmsPage";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { canonical, KEYWORDS, publicPageMeta } from "@/lib/seo";
+import { canonical, localeOf, KEYWORDS, publicPageMeta } from "@/lib/seo";
 import { LifeBuoy, Mail, MessageSquare, ShieldCheck } from "lucide-react";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -16,15 +16,16 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSupportCopy } from "@/i18n/supportCopy";
 
 export const Route = createFileRoute("/help")({
-  head: () => ({
+  head: ({ match }) => ({
     meta: publicPageMeta({
+      locale: localeOf(match),
       title: "Centre d'aide RoomEasy — réservations, annulations et remboursements",
       description:
         "Toutes les réponses sur les réservations, annulations, remboursements, versements aux hôtes et la mise en ligne d'un logement, plus comment joindre notre support.",
       path: "/help",
       keywords: KEYWORDS.help,
     }),
-    links: canonical("/help"),
+    links: canonical("/help", localeOf(match)),
   }),
   component: () => (
     <CmsOrFallback slug="help">

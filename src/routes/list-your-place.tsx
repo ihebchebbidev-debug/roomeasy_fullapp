@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { canonical, KEYWORDS, publicPageMeta } from "@/lib/seo";
+import { canonical, localeOf, KEYWORDS, publicPageMeta } from "@/lib/seo";
 import { useMemo } from "react";
 
 import { ListingWizard } from "@/components/host/ListingWizard";
@@ -18,15 +18,16 @@ import {
 export const Route = createFileRoute("/list-your-place")({
   validateSearch: (search: Record<string, unknown>): { edit?: string } =>
     typeof search["edit"] === "string" ? { edit: search["edit"] } : {},
-  head: () => ({
+  head: ({ match }) => ({
     meta: publicPageMeta({
+      locale: localeOf(match),
       title: "Mettre son logement en location — devenir hôte RoomEasy",
       description:
         "Publiez votre appartement, villa, chalet ou maison d'hôtes en sept étapes guidées : informations, adresse, espaces, équipements, photos, tarifs et mise en ligne.",
       path: "/list-your-place",
       keywords: KEYWORDS.host,
     }),
-    links: canonical("/list-your-place"),
+    links: canonical("/list-your-place", localeOf(match)),
   }),
   component: ListYourPlacePage,
 });

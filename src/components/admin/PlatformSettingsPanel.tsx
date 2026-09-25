@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Copy, CreditCard, Eye, EyeOff, Mail, Percent } from "lucide-react";
+import { Copy, CreditCard, Eye, EyeOff, Mail, Percent, Share2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { settingsApi, type IntegrationViewDto } from "@/api/http/platform.http";
+import { settingsApi, SOCIAL_KEYS, type IntegrationViewDto, type SocialKey, type SocialLinksDto } from "@/api/http/platform.http";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 type Field = { key: string; label: [string, string]; type?: "text" | "password" | "number" | "select"; options?: string[]; placeholder?: string };
@@ -30,6 +31,14 @@ const STRIPE_FIELDS: Field[] = [
   { key: "STRIPE_CONNECT_COUNTRY", label: ["Pays Stripe Connect", "Stripe Connect country"], placeholder: "FR" },
 ];
 
+const SOCIAL_LABELS: Record<SocialKey, string> = {
+  instagram: "Instagram", x: "X (Twitter)", facebook: "Facebook", linkedin: "LinkedIn", tiktok: "TikTok", youtube: "YouTube",
+};
+const SOCIAL_PLACEHOLDERS: Record<SocialKey, string> = {
+  instagram: "https://instagram.com/roomeasy", x: "https://x.com/roomeasy", facebook: "https://facebook.com/roomeasy",
+  linkedin: "https://linkedin.com/company/roomeasy", tiktok: "https://tiktok.com/@roomeasy", youtube: "https://youtube.com/@roomeasy",
+};
+
 export function PlatformSettingsPanel() {
   const { locale } = useLanguage();
   const fr = locale === "fr";
@@ -38,23 +47,27 @@ export function PlatformSettingsPanel() {
   const [view, setView] = useState<IntegrationViewDto | null>(null);
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [fees, setFees] = useState({ commissionRate: "", serviceFeeRate: "", taxRate: "", weekend: "", longStay: "", lastMinute: "" });
+  const queryClient = useQueryClient();
+  const emptySocial = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, ""])) as SocialLinksDto;
+  const [social, setSocial] = useState<SocialLinksDto>(emptySocial);
   const [testTo, setTestTo] = useState("");
   const [shown, setShown] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [feesLoaded, setFeesLoaded] = useState(false);
 
   useEffect(() => {
     settingsApi.integrations().then((v) => {
       setView(v);
       setDraft(Object.fromEntries(Object.entries(v).map(([k, f]) => [k, f.value])));
     }).catch(() => toast.error(fr ? "Réglages indisponibles." : "Settings unavailable."));
-    settingsApi.admin().then((s) => setFees({
+    settingsApi.admin().then((s) => { setSocial({ ...emptySocial, ...(s.socialLinks ?? {}) }); setFees({
       commissionRate: String(s.commissionRate),
       serviceFeeRate: String(+(s.serviceFeeRate * 100).toFixed(2)),
       taxRate: String(+(s.taxRate * 100).toFixed(2)),
       weekend: String(s.rateRules.weekend),
       longStay: String(s.rateRules.longStay),
       lastMinute: String(s.rateRules.lastMinute),
-    })).catch(() => undefined);
+    }); setFeesLoaded(true); }).catch(() => toast.error(fr ? "Impossible de charger les frais actuels." : "Could not load the current fees."));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,6 +101,20 @@ export function PlatformSettingsPanel() {
         lastMinute: Number(fees.lastMinute) || 0,
       });
       toast.success(fr ? "Frais enregistrés." : "Fees saved.");
+    } catch { toast.error(fr ? "Enregistrement impossible." : "Could not save."); }
+    finally { setBusy(null); }
+  }
+
+  async function saveSocial() {
+    const cleaned = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, social[k].trim()])) as SocialLinksDto;
+    const bad = SOCIAL_KEYS.find((k) => cleaned[k] && !/^https?:\/\/\S+$/i.test(cleaned[k]));
+    if (bad) { toast.error(fr ? `Lien ${SOCIAL_LABELS[bad]} invalide : il doit commencer par https://` : `${SOCIAL_LABELS[bad]} link must start with https://`); return; }
+    setBusy("social");
+    try {
+      const saved = await settingsApi.saveAdmin({ socialLinks: cleaned });
+      setSocial({ ...emptySocial, ...(saved.socialLinks ?? cleaned) });
+      await queryClient.invalidateQueries({ queryKey: ["public-settings"] });
+      toast.success(fr ? "Réseaux sociaux enregistrés." : "Social links saved.");
     } catch { toast.error(fr ? "Enregistrement impossible." : "Could not save."); }
     finally { setBusy(null); }
   }
@@ -180,7 +207,24 @@ export function PlatformSettingsPanel() {
           {feeField("longStay", ["Remise long séjour (%)", "Long-stay discount (%)"])}
           {feeField("lastMinute", ["Remise dernière minute (%)", "Last-minute discount (%)"])}
         </div>
-        <Button disabled={busy === "fees"} onClick={saveFees}>{fr ? "Enregistrer les frais" : "Save fees"}</Button>
+        <Button disabled={busy === "fees" || !feesLoaded} onClick={saveFees}>{fr ? "Enregistrer les frais" : "Save fees"}</Button>
+      </section>
+
+      <section className={`${card} xl:col-span-2`}>
+        <h3 className="flex items-center gap-2 font-semibold"><Share2 className="size-4" />{fr ? "Réseaux sociaux" : "Social media"}</h3>
+        <p className="text-sm text-muted-foreground">
+          {fr ? "Ces liens s'affichent dans le pied de page. Laissez vide pour masquer un réseau." : "These links appear in the site footer. Leave a field empty to hide that network."}
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SOCIAL_KEYS.map((k) => (
+            <div key={k} className="space-y-1.5">
+              <Label htmlFor={`social-${k}`}>{SOCIAL_LABELS[k]}</Label>
+              <Input id={`social-${k}`} type="url" inputMode="url" autoComplete="off" placeholder={SOCIAL_PLACEHOLDERS[k]}
+                value={social[k]} onChange={(e) => setSocial({ ...social, [k]: e.target.value })} />
+            </div>
+          ))}
+        </div>
+        <Button disabled={busy === "social" || !feesLoaded} onClick={saveSocial}>{fr ? "Enregistrer les réseaux" : "Save social links"}</Button>
       </section>
     </div>
   );

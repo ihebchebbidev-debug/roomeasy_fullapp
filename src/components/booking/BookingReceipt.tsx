@@ -21,8 +21,9 @@ export function BookingReceipt({
 }) {
   const { t, locale } = useLanguage();
   // The receipt reports the real charge, so every line is in the charged
-  // currency (USD) rather than the currency the visitor happens to browse in.
-  const { formatCharged: format } = useCurrency();
+  // listing currency rather than the currency the visitor happens to browse in.
+  const { formatCharged } = useCurrency();
+  const format = (amount: number) => formatCharged(amount, booking.price.currency);
   const c = useBookingCopy();
   const x = useExtra();
   const lc = useListingCopy();

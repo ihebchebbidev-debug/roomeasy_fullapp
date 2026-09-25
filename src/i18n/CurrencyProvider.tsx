@@ -27,14 +27,19 @@ type RateCache = { savedAt: number; rates: Partial<Record<CurrencyCode, number>>
 type CurrencyContextValue = {
   currency: CurrencyCode;
   setCurrency: (code: CurrencyCode) => void;
-  /** Formats an amount given in EUR into the active currency and locale. */
-  format: (amountUsd: number, options?: { decimals?: boolean }) => string;
+  /**
+   * Formats an amount into the guest's chosen currency. The amount is in EUR
+   * unless `from` names the listing's own currency.
+   */
+  format: (amount: number, options?: { decimals?: boolean; from?: string | undefined }) => string;
   /**
    * Formats an amount the guest was actually charged. Charges settle in EUR,
    * so this never re-converts through a cached rate — the receipt always shows
    * the exact figure that left the card.
    */
-  formatCharged: (amountUsd: number) => string;
+  formatCharged: (amount: number, currency?: string) => string;
+  /** Converts between two supported currencies with today's rates (null if a rate is missing). */
+  convert: (amount: number, from: string, to: string) => number | null;
   convertFromUsd: (amountUsd: number) => number;
   convertToUsd: (amount: number) => number;
   ratesUpdatedAt: number | null;
@@ -95,30 +100,41 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
+  const convert = useCallback(
+    (amount: number, from: string, to: string) => {
+      if (from === to) return amount;
+      const fromRate = rates[from as CurrencyCode];
+      const toRate = rates[to as CurrencyCode];
+      if (!fromRate || !toRate) return null;
+      return (amount / fromRate) * toRate;
+    },
+    [rates],
+  );
+
   const format = useCallback(
-    (amountUsd: number, options?: { decimals?: boolean }) => {
-      // Without a live rate the amount stays in EUR rather than being converted
-      // at a guessed rate and labelled with the wrong currency.
-      const rate = rates[currency];
-      const value = amountUsd * (rate ?? 1);
+    (amount: number, options?: { decimals?: boolean; from?: string | undefined }) => {
+      const source = options?.from || "EUR";
+      // Without a live rate the amount stays in its own currency rather than
+      // being converted at a guessed rate and labelled with the wrong code.
+      const converted = convert(amount, source, currency);
       return new Intl.NumberFormat(locale, {
         style: "currency",
-        currency: rate ? currency : "EUR",
+        currency: converted === null ? source : currency,
         maximumFractionDigits: options?.decimals ? 2 : 0,
         minimumFractionDigits: options?.decimals ? 2 : 0,
-      }).format(value);
+      }).format(converted ?? amount);
     },
-    [currency, locale, rates],
+    [convert, currency, locale],
   );
 
   const formatCharged = useCallback(
-    (amountUsd: number) =>
+    (amount: number, chargeCurrency = "EUR") =>
       new Intl.NumberFormat(locale, {
         style: "currency",
-        currency: "EUR",
+        currency: chargeCurrency.trim() || "EUR",
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,
-      }).format(amountUsd),
+      }).format(amount),
     [locale],
   );
 
@@ -126,7 +142,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const convertToUsd = useCallback((amount: number) => amount / (rates[currency] ?? 1), [currency, rates]);
   const ratesLive = currency === "EUR" || rates[currency] !== undefined;
 
-  const value = useMemo(() => ({ currency, setCurrency, format, formatCharged, convertFromUsd, convertToUsd, ratesUpdatedAt, ratesLive }), [currency, setCurrency, format, formatCharged, convertFromUsd, convertToUsd, ratesUpdatedAt, ratesLive]);
+  const value = useMemo(() => ({ currency, setCurrency, format, formatCharged, convert, convertFromUsd, convertToUsd, ratesUpdatedAt, ratesLive }), [currency, setCurrency, format, formatCharged, convert, convertFromUsd, convertToUsd, ratesUpdatedAt, ratesLive]);
 
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
 }

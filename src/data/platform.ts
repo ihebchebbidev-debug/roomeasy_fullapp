@@ -36,6 +36,8 @@ export type Booking = {
   nights: number;
   guests: number;
   totalUsd: number;
+  /** Booking currency (the listing's currency on the booking day). */
+  currency?: string;
   status: BookingStatus;
   reference?: string;
   guestEmail?: string;
@@ -55,6 +57,8 @@ export type HostListing = {
   propertyId: string;
   status: ListingStatus;
   nightlyUsd: number;
+  /** Listing currency (EUR, USD, GBP, CHF, BRL). */
+  currency?: string;
   approved: boolean;
   longStay: DerivedLongStay;
   mobile: DerivedMobile;
@@ -92,6 +96,8 @@ export type Payout = {
   id: string;
   hostName: string;
   amountUsd: number;
+  /** Currency the payout is sent in (the bookings' listing currency). */
+  currency?: string;
   status: "paid" | "scheduled";
   date: string;
   /** Stripe transfer reference, once the money has actually been sent. */

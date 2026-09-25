@@ -26,8 +26,24 @@ export type StaySearch = {
   amenities: string;
   equipment: string;
   superhost: boolean;
+  /** Bookable without host approval. */
+  instant: boolean;
+  /** Flexible cancellation policy only. */
+  freeCancel: boolean;
+  /** Planned stay length in nights; 0 means any. */
+  nights: number;
+  /** Map area "south,west,north,east"; empty means no area limit. */
+  bounds: string;
+  /** Results shown as a list or on a map. */
+  view: "list" | "map";
   sort: SortOption;
 };
+
+/** Stay-length presets offered in the filters. */
+export const nightOptions = [0, 2, 7, 28];
+
+/** Equipment item used by the "accessible" shortcut. */
+export const ACCESSIBLE_EQUIPMENT_ID = "facilities-for-disabled-guests";
 
 export const PRICE_FLOOR = 0;
 export const PRICE_CEILING = 450;
@@ -47,6 +63,11 @@ export const staySearchDefaults: StaySearch = {
   amenities: "",
   equipment: "",
   superhost: false,
+  instant: false,
+  freeCancel: false,
+  nights: 0,
+  bounds: "",
+  view: "list",
   sort: "recommended",
 };
 
@@ -78,6 +99,11 @@ export function parseStaySearch(input: Record<string, unknown>): StaySearch {
     amenities: selectedAmenities(raw.amenities).join(","),
     equipment: selectedEquipment(raw.equipment).join(","),
     superhost: raw.superhost === true || raw.superhost === "true",
+    instant: raw.instant === true || raw.instant === "true",
+    freeCancel: raw.freeCancel === true || raw.freeCancel === "true",
+    nights: clamp(raw.nights, 0, 365, 0),
+    bounds: parseBounds(raw.bounds) ? String(raw.bounds) : "",
+    view: raw.view === "map" ? "map" : "list",
     sort: (sortOptions as string[]).includes(String(raw.sort))
       ? (raw.sort as SortOption)
       : "recommended",
@@ -114,5 +140,33 @@ export function activeFilterCount(search: StaySearch): number {
     search.superhost,
     selectedAmenities(search.amenities).length > 0,
     selectedEquipment(search.equipment).length > 0,
+    search.instant,
+    search.freeCancel,
+    search.nights > 0,
+    Boolean(search.bounds),
   ].filter(Boolean).length;
+}
+
+export type Bounds = { south: number; west: number; north: number; east: number };
+
+/** Reads "south,west,north,east", rejecting anything out of range. */
+export function parseBounds(value: unknown): Bounds | null {
+  if (typeof value !== "string" || !value) return null;
+  const parts = value.split(",").map(Number);
+  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return null;
+  const [south, west, north, east] = parts as [number, number, number, number];
+  if (south < -90 || north > 90 || south > north) return null;
+  if (Math.abs(west) > 180 || Math.abs(east) > 180) return null;
+  return { south, west, north, east };
+}
+
+export function formatBounds(b: Bounds): string {
+  return [b.south, b.west, b.north, b.east].map((n) => n.toFixed(4)).join(",");
+}
+
+/** Nights between the chosen dates, or 0 when no full range is set. */
+export function nightsBetween(from: string, to: string): number {
+  if (!from || !to) return 0;
+  const diff = Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+  return Number.isFinite(diff) && diff > 0 ? diff : 0;
 }

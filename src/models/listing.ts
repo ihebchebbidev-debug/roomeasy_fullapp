@@ -42,6 +42,7 @@ export const listingDraftSchema = z.object({
   equipment: z.array(z.string()),
   photos: z.array(z.string()).max(MAX_PHOTOS),
   pricing: z.object({
+    currency: z.enum(["EUR", "USD", "GBP", "CHF", "BRL"]).default("EUR"),
     nightlyUsd: z.number().min(10).max(100000),
     cleaningFeeUsd: z.number().min(0).max(100000),
     minNights: z.number().int().min(1).max(365),
@@ -116,6 +117,7 @@ export function emptyListingDraft(): ListingDraft {
     equipment: [],
     photos: [],
     pricing: {
+      currency: "EUR",
       nightlyUsd: 180,
       cleaningFeeUsd: 0,
       minNights: 1,
@@ -140,6 +142,7 @@ export function draftFromProperty(
     id: string;
     status: ListingStatus;
     nightlyUsd: number;
+    currency?: string;
     longStay: { enabled: boolean; threshold: number; discount: number };
     mobile: { enabled: boolean; discount: number };
   },
@@ -179,6 +182,7 @@ export function draftFromProperty(
     equipment: property.equipment ?? [],
     photos: [property.image, ...(property.gallery ?? [])].filter(Boolean).slice(0, MAX_PHOTOS),
     pricing: {
+      currency: ((listing?.currency ?? property.currency ?? "EUR") as ListingDraft["pricing"]["currency"]),
       nightlyUsd: listing?.nightlyUsd ?? property.price,
       cleaningFeeUsd: property.cleaningFee ?? 0,
       minNights: property.minNights ?? 1,
@@ -216,6 +220,7 @@ export function propertyFromDraft(draft: ListingDraft, previous?: Property): Pro
     baths: draft.capacity.baths,
     area: draft.capacity.area,
     price: draft.pricing.nightlyUsd,
+    currency: draft.pricing.currency,
     rating: previous?.rating ?? 5,
     amenities: draft.amenities,
     equipment: draft.equipment,

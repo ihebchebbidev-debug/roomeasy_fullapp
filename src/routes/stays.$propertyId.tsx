@@ -1,3 +1,4 @@
+import { ReportReviewButton } from "@/components/support/ReportReviewButton";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { differenceInCalendarDays, format } from "date-fns";
 import {
@@ -23,6 +24,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Clock, SearchX } from "lucide-react";
+import { StatusScreen } from "@/components/layout/StatusScreen";
+import { bookingApi } from "@/api";
 import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
 
@@ -53,7 +57,17 @@ import { useIsMobileDevice } from "@/hooks/use-mobile";
 import { setPlatform, usePlatform } from "@/hooks/usePlatform";
 import { blockedNightsIn, isNightBlocked, quoteStay, toISODate, type Quote } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
-import { absoluteUrl, canonical, publicPageMeta } from "@/lib/seo";
+import { absoluteUrl, canonical, localeOf, publicPageMeta } from "@/lib/seo";
+import { withLocale } from "@/i18n/urlLocale";
+
+
+const MISSING_COPY: Record<string, { eyebrow: string; reviewEyebrow: string; text: string; browse: string; home: string }> = {
+  en: { eyebrow: "Unavailable", reviewEyebrow: "Under review", text: "This stay may have been removed, paused by its host, or the link is incorrect. Plenty of other places are waiting for you.", browse: "Browse stays", home: "Home" },
+  fr: { eyebrow: "Indisponible", reviewEyebrow: "En vérification", text: "Ce logement a peut-être été retiré, mis en pause par son hôte, ou le lien est incorrect. De nombreux autres logements vous attendent.", browse: "Voir les logements", home: "Accueil" },
+  es: { eyebrow: "No disponible", reviewEyebrow: "En revisión", text: "Es posible que este alojamiento se haya eliminado, que el anfitrión lo haya pausado o que el enlace sea incorrecto. Muchos otros te esperan.", browse: "Ver alojamientos", home: "Inicio" },
+  de: { eyebrow: "Nicht verfügbar", reviewEyebrow: "In Prüfung", text: "Diese Unterkunft wurde möglicherweise entfernt, vom Gastgeber pausiert, oder der Link ist falsch. Viele andere Unterkünfte warten auf dich.", browse: "Unterkünfte ansehen", home: "Startseite" },
+  pt: { eyebrow: "Indisponível", reviewEyebrow: "Em análise", text: "Esta estadia pode ter sido removida, pausada pelo anfitrião ou o link está incorreto. Muitas outras estadias esperam por si.", browse: "Ver estadias", home: "Início" },
+};
 
 export const Route = createFileRoute("/stays/$propertyId")({
   // The listing itself is fetched here so search results and share cards show
@@ -82,7 +96,7 @@ export const Route = createFileRoute("/stays/$propertyId")({
     }
   },
 
-  head: ({ params, loaderData }) => {
+  head: ({ params, loaderData, match }) => {
     const seo = loaderData?.seo ?? null;
     const place = seo ? [seo.city, seo.country].filter(Boolean).join(", ") : "";
     // Many listing names already end with their city, so only add the place
@@ -98,6 +112,7 @@ export const Route = createFileRoute("/stays/$propertyId")({
     const image = seo?.image && /^https:\/\//.test(seo.image) ? seo.image : undefined;
     return {
       meta: publicPageMeta({
+      locale: localeOf(match),
         title,
         description,
         path: `/stays/${params.propertyId}`,
@@ -107,7 +122,7 @@ export const Route = createFileRoute("/stays/$propertyId")({
         type: "product",
         ...(image ? { image } : {}),
       }),
-      links: canonical(`/stays/${params.propertyId}`),
+      links: canonical(`/stays/${params.propertyId}`, localeOf(match)),
       // Rich results: the stay itself, its nightly price, its rating and the
       // breadcrumb trail Google shows above the result.
       scripts: seo
@@ -119,7 +134,7 @@ export const Route = createFileRoute("/stays/$propertyId")({
                 "@type": "VacationRental",
                 name: seo.name,
                 description,
-                url: absoluteUrl(`/stays/${params.propertyId}`),
+                url: absoluteUrl(withLocale(`/stays/${params.propertyId}`, localeOf(match))),
                 ...(image ? { image } : {}),
                 ...(seo.city || seo.country
                   ? {
@@ -212,7 +227,10 @@ function ListingDetail() {
   const allProperties = useAllProperties();
   const property = allProperties.find((item) => item.id === propertyId);
   const { t, locale } = useLanguage();
-  const { format: formatCurrency } = useCurrency();
+  const { format: formatDisplay } = useCurrency();
+  // Listing prices are stored in the host's currency; convert for display.
+  const formatCurrency = (amount: number, options?: { decimals?: boolean }) =>
+    formatDisplay(amount, { ...options, from: property?.currency });
   const x = useExtra();
   const navigate = useNavigate();
   const isMobile = useIsMobileDevice();
@@ -229,6 +247,39 @@ function ListingDetail() {
   const [range, setRange] = useState<DateRange | undefined>();
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
+  const [serverQuote, setServerQuote] = useState<{ key: string; quote: Quote } | null>(null);
+  const quoteFrom = range?.from ? toISODate(range.from) : "";
+  const quoteTo = range?.to ? toISODate(range.to) : "";
+  const quoteKey = `${propertyId}|${quoteFrom}|${quoteTo}|${isMobile ? 1 : 0}`;
+  useEffect(() => {
+    if (!quoteFrom || !quoteTo || quoteFrom >= quoteTo) return;
+    let cancelled = false;
+    bookingApi
+      .getQuote({ propertyId, from: quoteFrom, to: quoteTo, guests: 1, isMobile })
+      .then((price) => {
+        if (cancelled) return;
+        const nights = price.nights || 0;
+        setServerQuote({
+          key: quoteKey,
+          quote: {
+            nights,
+            baseSubtotal: price.baseSubtotal,
+            discounts: price.discounts.map((d) => ({ id: d.id, percent: d.percent, amount: d.amount })),
+            subtotal: price.subtotal,
+            perNight: nights ? Math.round((price.subtotal / nights) * 100) / 100 : price.nightly,
+            cleaningFee: price.cleaningFee ?? 0,
+            serviceFee: price.serviceFee,
+            taxes: price.taxes,
+            total: price.total,
+          },
+        });
+      })
+      // Minimum-stay or date errors are already explained by the booking box.
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [quoteKey]);
   const dateLocale = dateFnsLocale(locale);
   const d = pickCopy(locale, {
     en: {
@@ -400,18 +451,24 @@ function ListingDetail() {
   }
 
   if (!property) {
+    const missing = MISSING_COPY[locale] ?? MISSING_COPY["en"]!;
     return (
-      <main className="grid min-h-screen place-items-center bg-background px-5 text-center">
-        <div>
-          <h1 className="font-display text-3xl font-semibold">
-            {isOwner ? d.pendingTitle : d.notFound}
-          </h1>
-          {isOwner ? <p className="mt-3 text-muted-foreground">{d.pendingText}</p> : null}
-          <Button asChild className="mt-6">
-            <Link to="/stays">{t.detail.back}</Link>
-          </Button>
-        </div>
-      </main>
+      <StatusScreen
+        icon={isOwner ? <Clock className="h-7 w-7" /> : <SearchX className="h-7 w-7" />}
+        eyebrow={isOwner ? missing.reviewEyebrow : missing.eyebrow}
+        title={isOwner ? d.pendingTitle : d.notFound}
+        text={isOwner ? d.pendingText : missing.text}
+        actions={
+          <>
+            <Button asChild size="lg">
+              <Link to="/stays">{isOwner ? t.detail.back : missing.browse}</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link to="/">{missing.home}</Link>
+            </Button>
+          </>
+        }
+      />
     );
   }
 
@@ -425,7 +482,7 @@ function ListingDetail() {
     range?.from && range.to ? Math.max(0, differenceInCalendarDays(range.to, range.from)) : 0;
 
   const listing = listings.find((item) => item.propertyId === property.id);
-  const quote = quoteStay({
+  const localQuote = quoteStay({
     basePrice: listing?.nightlyUsd ?? property.price,
     cleaningFee: property.cleaningFee ?? 0,
     nights,
@@ -437,6 +494,11 @@ function ListingDetail() {
     rateRules,
     isMobile,
   });
+  // The local figure is only an instant estimate. The server applies the
+  // host's smart-pricing rules, so its quote replaces it as soon as it
+  // arrives — the guest sees exactly what they will be charged.
+  const quote: Quote =
+    serverQuote && serverQuote.key === quoteKey ? serverQuote.quote : localQuote;
   const total = quote.total;
   const propertyReviews = reviews.filter((review) => review.propertyId === property.id && !review.hidden);
   const displayedRating = propertyReviews.length
@@ -504,6 +566,10 @@ function ListingDetail() {
 
   async function contactHost() {
     if (!property) return;
+    if (!session) {
+      void navigate({ to: "/auth", search: { redirect: `/stays/${property.id}` } });
+      return;
+    }
     const existing = threads.find((thread) => thread.propertyId === property.id);
     const intro = `Hi! I have a question about ${property.name}.`;
     if (!existing && backendEnabled) {
@@ -855,6 +921,7 @@ function ListingDetail() {
               <div className="sticky top-8 rounded-2xl border border-border bg-surface p-6 shadow-[0_16px_40px_-18px_color-mix(in_oklab,var(--navy)_28%,transparent)]">
                 <BookingPanel
                   propertyPrice={property.price}
+                  currency={property.currency}
                   range={range}
                   setRange={setRange}
                   adults={adults}
@@ -910,6 +977,7 @@ function ListingDetail() {
                       {review.reply}
                     </p>
                   ) : null}
+                  <ReportReviewButton reviewId={review.id} />
                 </article>
               ))}
             </div>
@@ -1038,6 +1106,7 @@ function ListingDetail() {
             <PopoverContent side="top" align="end" className="w-[calc(100vw-2rem)] max-w-sm p-6">
               <BookingPanel
                 propertyPrice={property.price}
+                  currency={property.currency}
                 range={range}
                 setRange={setRange}
                 adults={adults}
@@ -1066,6 +1135,7 @@ function ListingDetail() {
 
 type BookingPanelProps = {
   propertyPrice: number;
+  currency?: string | undefined;
   range: DateRange | undefined;
   setRange: (range: DateRange | undefined) => void;
   adults: number;
@@ -1098,9 +1168,12 @@ function BookingPanel({
   rating,
   reviewCount,
   isNightUnavailable,
+  currency,
 }: BookingPanelProps) {
   const { t, locale } = useLanguage();
-  const { format: formatCurrency } = useCurrency();
+  const { format: formatDisplay } = useCurrency();
+  const formatCurrency = (amount: number, options?: { decimals?: boolean }) =>
+    formatDisplay(amount, { ...options, from: currency });
   const x = useExtra();
   const dateLocale = dateFnsLocale(locale);
   const dateText = range?.from

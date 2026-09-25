@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { equipmentLabel, findEquipment, useEquipmentVersion } from "@/data/equipment";
 import { categoryLabel } from "@/i18n/categories";
 import { useClientCopy } from "@/i18n/clientCopy";
-import { useCurrency } from "@/i18n/CurrencyProvider";
+import { currencies, useCurrency } from "@/i18n/CurrencyProvider";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { fill, useListingCopy } from "@/i18n/listingCopy";
 import { cancellationLabel, cancellationText } from "@/lib/cancellation";
@@ -42,6 +42,23 @@ import { amenityIds, propertyTypes, type AmenityId, type CancellationPolicy } fr
  * One wizard for both adding and editing a listing. Every step writes into a
  * single `ListingDraft`, which is the JSON payload handed to `listingApi`.
  */
+
+const LISTING_CURRENCY_LABEL: Record<string, string> = {
+  en: "Listing currency",
+  fr: "Devise de l'annonce",
+  es: "Moneda del anuncio",
+  de: "Währung des Inserats",
+  pt: "Moeda do anúncio",
+};
+
+const LISTING_CURRENCY_HINT: Record<string, string> = {
+  en: "Your prices, cleaning fee and calendar are in this currency. Guests see a converted price and pay in it.",
+  fr: "Vos prix, frais de ménage et calendrier sont dans cette devise. Les voyageurs voient un prix converti et paient dans cette devise.",
+  es: "Tus precios, tarifa de limpieza y calendario están en esta moneda. Los huéspedes ven un precio convertido y pagan en ella.",
+  de: "Preise, Reinigungsgebühr und Kalender gelten in dieser Währung. Gäste sehen einen umgerechneten Preis und zahlen in ihr.",
+  pt: "Os seus preços, taxa de limpeza e calendário estão nesta moeda. Os hóspedes veem um preço convertido e pagam nela.",
+};
+
 export function ListingWizard({
   initial,
   mode,
@@ -56,10 +73,13 @@ export function ListingWizard({
   const c = useListingCopy();
   const cc = useClientCopy();
   const { locale } = useLanguage();
-  const { currency, format, convertFromUsd, convertToUsd } = useCurrency();
+  const { format: formatDisplay } = useCurrency();
   const { session } = usePlatform();
 
   const [draft, setDraft] = useState<ListingDraft>(initial);
+  const listingCurrency = draft.pricing.currency ?? "EUR";
+  // Amounts in the wizard are in the listing's own currency.
+  const format = (amount: number) => formatDisplay(amount, { from: listingCurrency });
   const [stepIndex, setStepIndex] = useState(0);
   // A step shows a check only after the host has actually passed it with "Next".
   const [passed, setPassed] = useState<Set<ListingStep>>(() => new Set(mode === "edit" ? listingSteps : []));
@@ -752,20 +772,34 @@ export function ListingWizard({
           {step === "pricing" ? (
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={`${c.price} (${currency})`} error={showError("nightlyUsd")}>
+                <Field label={LISTING_CURRENCY_LABEL[locale] ?? "Listing currency"}>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={listingCurrency}
+                    onChange={(e) => patchPricing({ currency: e.target.value as typeof listingCurrency })}
+                  >
+                    {currencies.map((item) => (
+                      <option key={item.code} value={item.code}>
+                        {item.code} — {item.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-muted-foreground">{LISTING_CURRENCY_HINT[locale] ?? ""}</p>
+                </Field>
+                <Field label={`${c.price} (${listingCurrency})`} error={showError("nightlyUsd")}>
                   <Input
                     type="number"
                     min={1}
-                    value={Math.round(convertFromUsd(draft.pricing.nightlyUsd))}
-                    onChange={(e) => patchPricing({ nightlyUsd: convertToUsd(Number(e.target.value) || 0) })}
+                    value={Math.round(draft.pricing.nightlyUsd)}
+                    onChange={(e) => patchPricing({ nightlyUsd: Number(e.target.value) || 0 })}
                   />
                 </Field>
-                <Field label={`${c.cleaningFee} (${currency})`}>
+                <Field label={`${c.cleaningFee} (${listingCurrency})`}>
                   <Input
                     type="number"
                     min={0}
-                    value={Math.round(convertFromUsd(draft.pricing.cleaningFeeUsd))}
-                    onChange={(e) => patchPricing({ cleaningFeeUsd: convertToUsd(Number(e.target.value) || 0) })}
+                    value={Math.round(draft.pricing.cleaningFeeUsd)}
+                    onChange={(e) => patchPricing({ cleaningFeeUsd: Number(e.target.value) || 0 })}
                   />
                 </Field>
                 <Field label={c.minNights} error={showError("minNights")}>

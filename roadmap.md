@@ -1,16 +1,29 @@
-# Roadmap — admin back office
+# Roadmap — spec compliance fixes (audit Sep 2026)
 
-- [x] Users list: identity status highlighted + filter, click opens full member page (identity proof, validate/refuse, listings, trips)
-- [x] Remove separate "Identity verification" section
-- [x] Cities: country as a dropdown from the countries list
-- [x] Team & access page: show only admin/staff users
-- [x] Top summary cards only on the Dashboard
-- [ ] Redeploy server so identity status per member and guest trips appear (blocked: user redeploy)
-- [x] Réglages: email (SMTP), Stripe keys, fees & pricing editable, with Test email / Test Stripe
-- [ ] Redeploy server so the new Réglages sections can load and save (blocked: user redeploy)
-- [x] Search, filter and show-more (30 at a time) on every admin list
-- [x] Search/filter/show-more on host listings, requests, payouts, reviews and guest trips
+- [x] Remove fake card payment path (checkout form, backend card field, mock PSP)
+- [x] Freeze commission rate on each booking; payments + finance use frozen rate
+- [x] Admin access to guest–host conversation: only via open ticket/dispute for that booking, logged in audit log; ticket links to thread
+- [x] Invoices in the booking's currency (all prices are EUR; bookings now labelled EUR)
+- [x] Admin 2FA enforced at login when enabled
+- [x] Email verification on sign-up (send link, confirm endpoint, page)
+- [ ] Host team permissions enforced (team members act with scoped access)
+- [x] Report a review (guest/host) → support desk "review" ticket
+- [x] Pricing parity check script between the two engine copies
+- [x] Login rate limit survives restarts (DB-backed)
+- [x] Brand design system: teal/paper/gold, Fraunces/Inter/Space Mono
+- [x] Home page title/description per language
+- [ ] Search filters: pets, accessibility, stay length, instant book, free cancellation, map/radius
+- [ ] Verify: language auto-detect, translation completeness, daily FX rate fallback, photo storage
+- [ ] Money in minor units (blocked: needs user decision — large data migration)
+- [ ] Redeploy Node server so backend fixes go live (blocked: user redeploy)
+
+## Earlier
 - [ ] Annonces signalées: show listing images
 - [ ] Users (admin.tsx:374 area): add numbers the user pointed at
-- [x] Listing galleries: never mix in photos from other users or retain removed secondary photos
-- [x] New listing identifiers: generate collision-resistant ids on the server and block cross-host overwrites
+
+## Sep 25 — pricing / multilingual SEO / currencies
+- [ ] Smart pricing: verify rules end to end, fix gaps
+- [ ] Per-language URLs (/fr/...), hreflang, canonical, html lang, multilingual sitemap
+- [ ] Structured data: LodgingBusiness, BreadcrumbList, Organization/WebSite
+- [ ] Host listing currency + conversion from listing currency + booking stores currency & FX
+- [ ] Admin finance grouped by currency

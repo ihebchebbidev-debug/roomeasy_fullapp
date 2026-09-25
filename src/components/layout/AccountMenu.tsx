@@ -38,7 +38,7 @@ export function AccountMenu({ variant = "light" }: { variant?: "light" | "dark" 
         size="sm"
         className={cn(
           "rounded-full",
-          variant === "dark" && "bg-lime text-lime-foreground hover:brightness-105",
+          variant === "dark" && "bg-primary text-primary-foreground hover:brightness-110",
         )}
       >
         <Link to="/auth">{t.app.auth.signIn}</Link>
@@ -50,9 +50,9 @@ export function AccountMenu({ variant = "light" }: { variant?: "light" | "dark" 
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={t.app.nav.profile}
-        className="flex shrink-0 items-center gap-2 rounded-full bg-lime py-1.5 pr-2 pl-1.5 font-bold text-lime-foreground transition-transform hover:scale-[1.03] active:scale-95 sm:pr-4"
+        className="flex shrink-0 items-center gap-2 rounded-full bg-primary py-1.5 pr-2 pl-1.5 font-bold text-primary-foreground transition-transform hover:scale-[1.03] active:scale-95 sm:pr-4"
       >
-        <UserAvatar name={session.name} src={session.avatarUrl} className="size-7 bg-lime-foreground/10" />
+        <UserAvatar name={session.name} src={session.avatarUrl} className="size-7 bg-primary-foreground/15" />
         <span className="hidden max-w-28 truncate text-sm sm:block">{session.name}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

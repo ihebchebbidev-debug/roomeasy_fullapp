@@ -132,12 +132,12 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
             <p className="mt-3 text-xs text-muted-foreground">
               {cc.cancellationPolicy}: <span className="font-semibold">{cancellationLabel(policy, cc)}</span>
               {["pending", "confirmed"].includes(booking.status)
-                ? ` · ${cc.refundDue}: ${format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)))}`
+                ? ` · ${cc.refundDue}: ${format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}`
                 : ""}
             </p>
           </div>
           <div className="flex flex-col gap-4 border-t border-border pt-4 lg:items-end lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
-            <p className="font-display text-xl font-bold tabular-nums">{format(booking.totalUsd)}</p>
+            <p className="font-display text-xl font-bold tabular-nums">{format(booking.totalUsd, { from: booking.currency })}</p>
             <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap lg:justify-end">
                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link to="/stays/$propertyId" params={{ propertyId: property.id }}>{t.app.trips.view}</Link>

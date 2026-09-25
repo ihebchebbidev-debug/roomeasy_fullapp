@@ -17,7 +17,8 @@ export type PriceLine = {
 };
 
 export type PriceBreakdown = {
-  currency: "EUR";
+  /** The listing's currency; every amount below is in it. */
+  currency: string;
   nightly: number;
   nights: number;
   baseSubtotal: number;

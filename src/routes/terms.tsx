@@ -1,21 +1,22 @@
 import { CmsOrFallback } from "@/components/legal/CmsPage";
 import { createFileRoute } from "@tanstack/react-router";
-import { canonical, publicPageMeta } from "@/lib/seo";
+import { canonical, localeOf, publicPageMeta } from "@/lib/seo";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { pickCopy } from "@/i18n/copy";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/terms")({
-  head: () => ({
+  head: ({ match }) => ({
     meta: publicPageMeta({
+      locale: localeOf(match),
       title: "Conditions générales d'utilisation — RoomEasy",
       description:
         "Les règles de réservation, d'hébergement, d'annulation et de paiement applicables sur RoomEasy.",
       path: "/terms",
       type: "article",
     }),
-    links: canonical("/terms"),
+    links: canonical("/terms", localeOf(match)),
   }),
   component: () => (
     <CmsOrFallback slug="terms">

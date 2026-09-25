@@ -4,6 +4,8 @@ import {
   ArrowUpDown,
   CalendarDays,
   Filter,
+  List,
+  Map as MapIcon,
   MapPin,
   Minus,
   Plus,
@@ -42,11 +44,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { FilterPanel } from "@/components/listing/FilterPanel";
+import { ResultsMap } from "@/components/listing/ResultsMap";
+import { useSearchCopy } from "@/i18n/searchCopy";
 import { stayQuery, useStaySearch } from "@/hooks/useStaySearch";
 import {
   PRICE_CEILING,
   PRICE_FLOOR,
   activeFilterCount,
+  formatBounds,
+  parseBounds,
   parseStaySearch,
   selectedAmenities,
   selectedEquipment,
@@ -62,21 +68,22 @@ import { dateFnsLocale } from "@/i18n/dateLocale";
 import { interpolate, useLanguage } from "@/i18n/LanguageProvider";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { cn } from "@/lib/utils";
-import { canonical, KEYWORDS, publicPageMeta } from "@/lib/seo";
+import { canonical, localeOf, KEYWORDS, publicPageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/stays/")({
   validateSearch: (input: Partial<StaySearch>): Partial<StaySearch> =>
     parseStaySearch(input as Record<string, unknown>),
 
-  head: () => ({
+  head: ({ match }) => ({
     meta: publicPageMeta({
+      locale: localeOf(match),
       title: "Locations de vacances en France — RoomEasy",
       description:
         "Comparez appartements, villas, chalets et maisons d'hôtes en France : filtres par ville, dates, budget et équipements, avis vérifiés et prix tout compris.",
       path: "/stays",
       keywords: KEYWORDS.search,
     }),
-    links: canonical("/stays"),
+    links: canonical("/stays", localeOf(match)),
   }),
   component: StaysPage,
 });
@@ -86,6 +93,8 @@ function StaysPage() {
   const navigate = useNavigate({ from: "/stays/" });
   const { t, locale } = useLanguage();
   const cc = useClientCopy();
+  const sc = useSearchCopy();
+  const area = parseBounds(search.bounds);
   const { format: formatCurrency } = useCurrency();
   const { isFavorite, toggle } = useFavorites();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -108,7 +117,7 @@ function StaysPage() {
     hasMore,
     loading,
     sentinelRef,
-  } = useStaySearch(stayQuery(search, locale), 12);
+  } = useStaySearch(stayQuery(search, locale), search.view === "map" ? 100 : 12);
   const activeCount = activeFilterCount(search);
   const dateText = range?.from
     ? `${format(range.from, "dd MMM", { locale: dateLocale })}${range.to ? ` – ${format(range.to, "dd MMM", { locale: dateLocale })}` : ""}`
@@ -239,6 +248,28 @@ function StaysPage() {
                     </div>
                   </SheetContent>
                 </Sheet>
+                <div className="inline-flex rounded-full border border-border p-0.5" role="group">
+                  <Button
+                    size="sm"
+                    variant={search.view === "list" ? "default" : "ghost"}
+                    className="rounded-full"
+                    aria-pressed={search.view === "list"}
+                    onClick={() => update({ view: "list" })}
+                  >
+                    <List className="size-4" aria-hidden />
+                    <span className="hidden sm:inline">{sc.list}</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={search.view === "map" ? "default" : "ghost"}
+                    className="rounded-full"
+                    aria-pressed={search.view === "map"}
+                    onClick={() => update({ view: "map" })}
+                  >
+                    <MapIcon className="size-4" aria-hidden />
+                    <span className="hidden sm:inline">{sc.map}</span>
+                  </Button>
+                </div>
                 <Select value={search.sort} onValueChange={(sort: SortOption) => update({ sort })}>
                   <SelectTrigger
                     aria-label={t.explore.sortBy}
@@ -292,6 +323,21 @@ function StaysPage() {
                     onRemove={() => update({ baths: 0 })}
                   />
                 ) : null}
+                {area ? (
+                  <ActiveChip label={sc.areaActive} onRemove={() => update({ bounds: "" })} />
+                ) : null}
+                {search.instant ? (
+                  <ActiveChip label={sc.instant} onRemove={() => update({ instant: false })} />
+                ) : null}
+                {search.freeCancel ? (
+                  <ActiveChip label={sc.freeCancel} onRemove={() => update({ freeCancel: false })} />
+                ) : null}
+                {search.nights > 0 ? (
+                  <ActiveChip
+                    label={interpolate(sc.nights, { n: search.nights })}
+                    onRemove={() => update({ nights: 0 })}
+                  />
+                ) : null}
                 {search.superhost ? (
                   <ActiveChip
                     label={t.explore.superhostOnly}
@@ -331,7 +377,29 @@ function StaysPage() {
               </div>
             ) : null}
 
-            {loading ? (
+            {search.view === "map" ? (
+              <>
+                <ResultsMap
+                  items={visible}
+                  area={area}
+                  formatPrice={(value, from) => formatCurrency(value, { from })}
+                  searchLabel={sc.searchArea}
+                  onSearchArea={(bounds) => update({ bounds: formatBounds(bounds) })}
+                />
+                {visible.some((item) => !item.coords) ? (
+                  <p className="mt-2 text-xs text-muted-foreground">{sc.noCoords}</p>
+                ) : null}
+                {!loading && !visible.length ? (
+                  <EmptyState
+                    className="mt-6"
+                    icon={SlidersHorizontal}
+                    title={t.explore.noResults}
+                    description={t.explore.noResultsHint}
+                    action={<Button onClick={reset}>{t.explore.resetFilters}</Button>}
+                  />
+                ) : null}
+              </>
+            ) : loading ? (
               <div className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-busy>
                 {[0, 1, 2, 3, 4, 5].map((key) => (
                   <div key={key} className="space-y-3">
@@ -348,6 +416,7 @@ function StaysPage() {
                     <Reveal key={property.id} delay={(index % 3) * 90}>
                       <PropertyCard
                         property={property}
+                        priority={index < 3}
                         isFavorite={isFavorite(property.id)}
                         onToggleFavorite={(id) => {
                           const added = toggle(id);

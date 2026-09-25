@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { searchCache as sharedSearchCache, type SearchCacheEntry } from "@/lib/searchCache";
 
 import { backendEnabled, toProperty } from "@/api/backend";
 import { propertiesApi, type StayQueryDto } from "@/api/http/platform.http";
@@ -8,6 +9,8 @@ import {
   PRICE_FLOOR,
   selectedAmenities,
   selectedEquipment,
+  nightsBetween,
+  parseBounds,
   type StaySearch,
 } from "@/models/staySearch";
 
@@ -19,6 +22,8 @@ import {
 export function stayQuery(search: StaySearch, locale: string): StayQueryDto {
   const amenities = selectedAmenities(search.amenities).join(",");
   const equipment = selectedEquipment(search.equipment).join(",");
+    // With both dates set, the stay length always comes from the dates.
+  const nights = search.from && search.to ? nightsBetween(search.from, search.to) : search.nights;
   return {
     ...(search.where.trim() ? { where: search.where.trim() } : {}),
     ...(search.category !== "all" ? { category: search.category } : {}),
@@ -33,6 +38,11 @@ export function stayQuery(search: StaySearch, locale: string): StayQueryDto {
     ...(amenities ? { amenities } : {}),
     ...(equipment ? { equipment } : {}),
     ...(search.superhost ? { superhost: true } : {}),
+    ...(search.instant ? { instantBook: true } : {}),
+    ...(search.freeCancel ? { freeCancellation: true } : {}),
+    // Chosen dates decide the stay length; otherwise the stay-length filter does.
+    ...(nights ? { nights } : {}),
+    ...(parseBounds(search.bounds) ? { bounds: search.bounds } : {}),
     // Dates are part of the query: stays already taken never come back.
     ...(search.from && search.to && search.to > search.from
       ? { from: search.from, to: search.to }
@@ -54,6 +64,20 @@ export type StaySearchResult = {
   failed: boolean;
   sentinelRef: React.RefObject<HTMLDivElement | null>;
 };
+
+type CacheEntry = SearchCacheEntry<Property>;
+// Browser-only memory of recent first pages (the effect never runs on the server).
+// Kept short, always refreshed in the background, and wiped whenever this
+// browser changes anything on the server (hiding a listing, a booking...).
+const searchCache = sharedSearchCache as Map<string, CacheEntry>;
+const CACHE_TTL_MS = 30_000;
+function trimCache() {
+  while (searchCache.size > 30) {
+    const oldest = searchCache.keys().next().value;
+    if (oldest === undefined) break;
+    searchCache.delete(oldest);
+  }
+}
 
 /**
  * Paged search against the service. The results grow as the guest scrolls;
@@ -80,19 +104,42 @@ export function useStaySearch(query: StayQueryDto, pageSize = 12): StaySearchRes
     if (!backendEnabled) return;
     const parsed = JSON.parse(key) as StayQueryDto;
     const ticket = (requestRef.current += 1);
-    setLoading(true);
+    const cacheKey = `${pageSize}|${key}`;
+    const cached = searchCache.get(cacheKey);
     setFailed(false);
+    if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+      // Show the remembered results instantly, then refresh quietly.
+      setItems(cached.items);
+      setTotal(cached.total);
+      setHasMore(cached.hasMore);
+      setCounts(cached.counts);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
 
     void propertiesApi
       .search(parsed, pageSize, 0)
       .then((page) => {
         if (requestRef.current !== ticket) return;
-        setItems(page.items.map(toProperty));
+        const mapped = page.items.map(toProperty);
+        setItems(mapped);
         setTotal(page.total);
         setHasMore(page.hasMore);
+        const entry = searchCache.get(cacheKey);
+        searchCache.set(cacheKey, {
+          at: Date.now(),
+          items: mapped,
+          total: page.total,
+          hasMore: page.hasMore,
+          counts: entry?.counts ?? {},
+        });
+        trimCache();
       })
       .catch(() => {
         if (requestRef.current !== ticket) return;
+        // Never keep showing remembered results the server could not confirm.
+        searchCache.delete(cacheKey);
         setItems([]);
         setTotal(0);
         setHasMore(false);
@@ -105,10 +152,13 @@ export function useStaySearch(query: StayQueryDto, pageSize = 12): StaySearchRes
     void propertiesApi
       .categories(parsed)
       .then((result) => {
-        if (requestRef.current === ticket) setCounts(result);
+        if (requestRef.current !== ticket) return;
+        setCounts(result);
+        const entry = searchCache.get(cacheKey);
+        if (entry) entry.counts = result;
       })
       .catch(() => {
-        if (requestRef.current === ticket) setCounts({});
+        if (requestRef.current === ticket && !cached) setCounts({});
       });
   }, [key, pageSize]);
 

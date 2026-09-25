@@ -99,7 +99,7 @@ function Collection({ id, content, properties, category, sort = "recommended", i
       <div className="no-scrollbar -mx-7 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-7 pb-3 scroll-pl-7 scroll-pr-7 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 sm:scroll-pl-0 sm:scroll-pr-0 lg:grid-cols-4">
         {properties.slice(0, 8).map((property, index) => (
           <Reveal key={property.id} delay={(index % 4) * 60} className="w-[78vw] max-w-[19rem] shrink-0 snap-start sm:w-auto sm:max-w-none [&>*]:h-full">
-            <PropertyCard property={property} isFavorite={isFavorite(property.id)} onToggleFavorite={onToggleFavorite} />
+            <PropertyCard property={property} priority={index < 4} isFavorite={isFavorite(property.id)} onToggleFavorite={onToggleFavorite} />
           </Reveal>
         ))}
       </div>

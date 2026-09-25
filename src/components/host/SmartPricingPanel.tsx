@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { ruleSummary, useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { defaultSmartPricingRules, type NightPriceResult, type SmartPricingRules } from "@/lib/smartPricingEngine";
 
-type Props = { listings: { propertyId: string; name?: string; title?: string }[] };
+type Props = { listings: { propertyId: string; name?: string; title?: string; currency?: string | undefined }[] };
 
 
 function NumberField({ label, value, onChange, suffix }: { label: string; value: number; onChange: (v: number) => void; suffix?: string }) {
@@ -45,6 +45,10 @@ export function SmartPricingPanel({ listings }: Props) {
   const [basePrice, setBasePrice] = useState<number | null>(null);
   const [preview, setPreview] = useState<NightPriceResult[]>([]);
   const [busy, setBusy] = useState(false);
+  // Floor, ceiling and preview prices are in the listing's own currency.
+  const listingCurrency = listings.find((l) => l.propertyId === propertyId)?.currency ?? "EUR";
+  const money = (amount: number) =>
+    new Intl.NumberFormat(undefined, { style: "currency", currency: listingCurrency, maximumFractionDigits: 0 }).format(amount);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -145,11 +149,11 @@ export function SmartPricingPanel({ listings }: Props) {
           <p className="text-sm font-semibold">{c.minMax}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">{c.min}</Label>
+              <Label className="text-xs text-muted-foreground">{c.min} ({listingCurrency})</Label>
               <Input type="number" value={rules.floorUsd ?? ""} placeholder={c.none} onChange={(e) => set({ floorUsd: e.target.value === "" ? null : Number(e.target.value) })} className="h-9" />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">{c.max}</Label>
+              <Label className="text-xs text-muted-foreground">{c.max} ({listingCurrency})</Label>
               <Input type="number" value={rules.ceilingUsd ?? ""} placeholder={c.none} onChange={(e) => set({ ceilingUsd: e.target.value === "" ? null : Number(e.target.value) })} className="h-9" />
             </div>
           </div>
@@ -210,7 +214,7 @@ export function SmartPricingPanel({ listings }: Props) {
               <span className="text-xs text-muted-foreground">
                 {night.applied.length ? ruleSummary(c, night.applied) : c.basePrice}
               </span>
-              <span className="font-semibold tabular-nums">{night.finalPrice} €</span>
+              <span className="font-semibold tabular-nums">{money(night.finalPrice)}</span>
             </div>
           ))}
         </div>

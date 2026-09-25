@@ -107,6 +107,7 @@ export type PropertyDto = {
   baths: number;
   area: number;
   price: number;
+  currency?: string;
   cleaningFee: number;
   minNights: number;
   cancellationPolicy: string;
@@ -150,6 +151,11 @@ export type StayQueryDto = {
   amenities?: string;
   equipment?: string;
   superhost?: boolean;
+  instantBook?: boolean;
+  freeCancellation?: boolean;
+  nights?: number;
+  /** "south,west,north,east" */
+  bounds?: string;
   from?: string;
   to?: string;
   sort?: string;
@@ -254,6 +260,7 @@ export type PayoutDto = {
   hostName: string;
   amountUsd: number;
   commissionUsd: number;
+  currency?: string;
   status: "paid" | "scheduled";
   payoutDate: string;
   bookings: string[];
@@ -320,6 +327,8 @@ export const reviewsApi = {
     request<ReviewDto>("/reviews", { method: "POST", body }),
   reply: (reviewId: string, reply: string) =>
     request<ReviewDto>(`/reviews/${encodeURIComponent(reviewId)}/reply`, { method: "POST", body: { reply } }),
+  report: (reviewId: string, body: { reason: "abusive" | "false" | "off_topic" | "personal_data" | "other"; details?: string }) =>
+    request<{ ticketReference: string | null }>(`/reviews/${encodeURIComponent(reviewId)}/report`, { method: "POST", body }),
 };
 
 /* ------------------------------------------------------------------- admin */
@@ -486,15 +495,20 @@ export type PublicSettingsDto = {
   serviceFeeRate: number;
   taxRate: number;
   rateRules: RateRulesDto;
+  socialLinks?: Partial<SocialLinksDto>;
   updatedAt?: string;
 };
+
+export const SOCIAL_KEYS = ["instagram", "x", "facebook", "linkedin", "tiktok", "youtube"] as const;
+export type SocialKey = (typeof SOCIAL_KEYS)[number];
+export type SocialLinksDto = Record<SocialKey, string>;
 
 export type AdminSettingsDto = PublicSettingsDto & { commissionRate: number };
 
 export const settingsApi = {
   get: () => request<PublicSettingsDto>("/settings"),
   admin: () => request<AdminSettingsDto>("/settings/admin"),
-  saveAdmin: (body: Partial<{ serviceFeeRate: number; taxRate: number; commissionRate: number; weekend: number; longStay: number; lastMinute: number }>) =>
+  saveAdmin: (body: Partial<{ serviceFeeRate: number; taxRate: number; commissionRate: number; weekend: number; longStay: number; lastMinute: number; socialLinks: Partial<SocialLinksDto> }>) =>
     request<AdminSettingsDto>("/settings/admin", { method: "PUT", body }),
   integrations: () => request<IntegrationViewDto>("/settings/admin/integrations"),
   saveIntegrations: (body: Record<string, string>) =>

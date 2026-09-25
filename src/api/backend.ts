@@ -148,6 +148,7 @@ export function toProperty(dto: PropertyDto): Property {
     baths: dto.baths,
     area: dto.area,
     price: dto.price,
+    currency: dto.currency ?? "EUR",
     rating: dto.rating,
     reviewCount: dto.reviewCount,
     ...(dto.host?.name
@@ -177,6 +178,7 @@ type HostListingRow = {
   propertyId: string;
   status: string;
   approved: boolean;
+  currency?: string;
   nightlyUsd: number;
   /** Sent by the host listings endpoint; absent on the admin listing rows. */
   longStay?: { enabled: boolean; threshold: number; discount: number };
@@ -190,6 +192,7 @@ export function toHostListing(row: HostListingRow | AdminListingDto): HostListin
     propertyId: row.propertyId,
     status: (row.status as HostListing["status"]) ?? "draft",
     nightlyUsd: row.nightlyUsd,
+    currency: (row as HostListingRow).currency ?? "EUR",
     approved: row.approved,
     longStay: rules.longStay ?? { enabled: false, threshold: 7, discount: 0 },
     mobile: rules.mobile ?? { enabled: false, discount: 0 },
@@ -216,6 +219,7 @@ export function toPayout(dto: PayoutDto): Payout {
     id: dto.id,
     hostName: dto.hostName,
     amountUsd: dto.amountUsd,
+    currency: dto.currency ?? "EUR",
     status: dto.status,
     date: dto.payoutDate,
     transferId: dto.transferId ?? null,
@@ -275,7 +279,8 @@ type ServerBooking = {
   guests: number;
   status: Booking["status"];
   message: string | null;
-  price: { total: number; totalUsd?: number };
+  price: { total: number; totalUsd?: number; currency?: string };
+  currency?: string;
   payment?: unknown;
   createdAt?: string;
   updatedAt?: string;
@@ -291,6 +296,7 @@ export function toBooking(dto: ServerBooking): Booking {
     nights: dto.nights,
     guests: dto.guests,
     totalUsd: dto.price?.totalUsd ?? dto.price?.total ?? 0,
+    currency: (dto.currency ?? dto.price?.currency ?? "EUR").trim(),
     status: dto.status,
     reference: dto.reference,
     ...(dto.guest?.email ? { guestEmail: dto.guest.email } : {}),

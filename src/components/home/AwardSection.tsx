@@ -79,7 +79,7 @@ export function AwardSection() {
 
             <div className="mt-4 flex items-center justify-between">
               <p className="text-lg font-semibold">
-                {format(featured.price)}
+                {format(featured.price, { from: featured.currency })}
                 <span className="text-sm font-normal text-muted-foreground">
                   /{t.listings.night}
                 </span>
@@ -93,7 +93,7 @@ export function AwardSection() {
             <Link
               to="/stays/$propertyId"
               params={{ propertyId: featured.id }}
-              className="mt-4 block w-full rounded-full bg-lime py-3 text-center text-sm font-semibold text-lime-foreground transition-transform hover:scale-[1.02] active:scale-95"
+              className="mt-4 block w-full rounded-full bg-primary py-3 text-center text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02] hover:brightness-110 active:scale-95"
             >
               {t.award.book}
             </Link>

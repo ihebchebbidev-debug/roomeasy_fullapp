@@ -1,3 +1,5 @@
+import { Compass, TriangleAlert } from "lucide-react";
+import { StatusScreen } from "@/components/layout/StatusScreen";
 import { catalogApi } from "@/api/http/catalog.http";
 import { setPropertyTypes } from "@/models/property";
 import { useEffect } from "react";
@@ -23,26 +25,32 @@ import { Toaster } from "@/components/ui/sonner";
 import { useBackendHydration } from "@/hooks/useBackendHydration";
 import { ComingSoonGate } from "@/components/gate/ComingSoonGate";
 import { getGateState } from "@/lib/gate.functions";
+import type { UrlLocaleRef } from "@/i18n/urlLocale";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
+    <StatusScreen
+      icon={<Compass className="h-7 w-7" />}
+      eyebrow="Error 404"
+      title="Page not found"
+      text="The page you're looking for doesn't exist or has been moved."
+      actions={
+        <>
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Go home
           </Link>
-        </div>
-      </div>
-    </div>
+          <Link
+            to="/stays"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Browse stays
+          </Link>
+        </>
+      }
+    />
   );
 }
 
@@ -51,37 +59,35 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+    <StatusScreen
+      icon={<TriangleAlert className="h-7 w-7" />}
+      eyebrow="Something went wrong"
+      title="This page didn't load"
+      text="Something went wrong on our end. You can try refreshing or head back home."
+      actions={
+        <>
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Go home
           </a>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; urlLocale: UrlLocaleRef }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -96,10 +102,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://api.roomeasy.fr", crossOrigin: "use-credentials" },
+      { rel: "preconnect", href: "https://images.roomeasy.fr" },
+      { rel: "dns-prefetch", href: "https://images.unsplash.com" },
+      { rel: "dns-prefetch", href: "https://picsum.photos" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap",
       },
       {
         rel: "stylesheet",
@@ -121,8 +131,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const lang = (router.options.context as { urlLocale?: UrlLocaleRef } | undefined)?.urlLocale?.current ?? "en";
   return (
-    <html lang="en">
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

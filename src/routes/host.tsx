@@ -205,7 +205,7 @@ function HostPage() {
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{property?.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd)}
+                      {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd, { from: booking.currency })}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -245,7 +245,7 @@ function HostPage() {
                     <div className="min-w-0">
                       <p className="truncate font-semibold">{property?.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd)}
+                        {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd, { from: booking.currency })}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {cancellationLabel(policy, cc)} · {cc.refundDue}: {format(refund)}
@@ -287,7 +287,7 @@ function HostPage() {
             </div>
             <Button className="mt-5" onClick={() => { void remote.saveRateRules({ weekend: rateRules.weekend, longStay: rateRules.longStay, lastMinute: rateRules.lastMinute }); toast.success(t.app.host.ruleSaved); }}>{t.app.common.save}</Button>
           </Panel>
-          <SmartPricingPanel listings={listings.map((l) => ({ propertyId: l.propertyId, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
+          <SmartPricingPanel listings={listings.map((l) => ({ propertyId: l.propertyId, currency: l.currency, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
         </section>)) : null}
 
         {isReady && section === "stats" ? (bookings.length === 0 ? (
@@ -320,7 +320,7 @@ function HostPage() {
             <Panel key={payout.id}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="font-semibold">{format(payout.amountUsd)}</p>
+                  <p className="font-semibold">{format(payout.amountUsd, { from: payout.currency })}</p>
                   <p className="text-xs text-muted-foreground">{t.app.host.nextPayout}: {payout.date}</p>
                 </div>
                 <Badge className={cn("border-0", payout.status === "paid" ? "bg-emerald-500/15 text-emerald-700" : "bg-amber-500/15 text-amber-700")}>
@@ -453,7 +453,7 @@ function ListingRow({ listing }: { listing: HostListing }) {
           <div className="min-w-0">
             <p className="truncate font-display text-base font-semibold">{property.name}</p>
             <p className="mt-1 text-xs tracking-wide text-muted-foreground uppercase">
-              {t.app.host.nightlyRate} · <span className="tabular-nums">{format(listing.nightlyUsd)}</span>
+              {t.app.host.nightlyRate} · <span className="tabular-nums">{format(listing.nightlyUsd, { from: listing.currency })}</span>
             </p>
           </div>
         </div>
@@ -498,7 +498,7 @@ function ListingRow({ listing }: { listing: HostListing }) {
 function CalendarPanel() {
   const x = useExtra();
   const { locale } = useLanguage();
-  const { currency, format, convertFromUsd, convertToUsd } = useCurrency();
+  const { format: formatDisplay } = useCurrency();
   const { listings, calendar } = usePlatform();
   const properties = useAllProperties();
   const [listingId, setListingId] = useState(listings[0]?.propertyId ?? "");
@@ -509,6 +509,9 @@ function CalendarPanel() {
   const propertyId = listingId;
   const listing = listings.find((l) => l.propertyId === propertyId);
   const basePrice = listing?.nightlyUsd ?? properties.find((p) => p.id === propertyId)?.price ?? 0;
+  // Calendar prices are in the listing's own currency.
+  const listingCurrency = listing?.currency ?? properties.find((p) => p.id === propertyId)?.currency ?? "EUR";
+  const format = (amount: number) => formatDisplay(amount, { from: listingCurrency });
   const nights = calendar[propertyId] ?? {};
 
   const days = useMemo(() => {
@@ -579,7 +582,7 @@ function CalendarPanel() {
               key={day}
               type="button"
               aria-pressed={selected === day}
-              onClick={() => { setSelected(day); setPriceDraft(String(Math.round(convertFromUsd(state.price ?? basePrice)))); }}
+              onClick={() => { setSelected(day); setPriceDraft(String(Math.round(state.price ?? basePrice))); }}
               className={cn(
                 "flex aspect-square flex-col items-center justify-center rounded-lg border text-[11px] font-semibold transition-colors",
                 state.blocked
@@ -607,10 +610,10 @@ function CalendarPanel() {
           <p className="text-sm font-semibold">{x.selectedNight}: {selected}</p>
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <div className="space-y-1.5">
-               <Label htmlFor="night-price" className="text-xs">{x.customPrice} ({currency})</Label>
+               <Label htmlFor="night-price" className="text-xs">{x.customPrice} ({listingCurrency})</Label>
               <Input id="night-price" type="number" min={0} value={priceDraft} onChange={(event) => setPriceDraft(event.target.value)} className="h-11" />
             </div>
-             <Button onClick={() => { patchNight(selected, { price: convertToUsd(Number(priceDraft)) || basePrice }); toast.success(x.changesSaved); }}>
+             <Button onClick={() => { patchNight(selected, { price: Number(priceDraft) || basePrice }); toast.success(x.changesSaved); }}>
               {x.applyPrice}
             </Button>
           </div>

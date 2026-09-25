@@ -191,6 +191,8 @@ export type StatsInsightsDto = {
 };
 
 export type FinanceRowDto = {
+  /** Booking currency; amounts on this row are in it. */
+  currency?: string;
   bookingId: string;
   reference: string;
   createdAt: string;
@@ -212,6 +214,8 @@ export type FinanceRowDto = {
 };
 
 export type CommissionReportRowDto = {
+  /** Booking currency; amounts on this row are in it. */
+  currency?: string;
   hostId: string;
   hostName: string;
   hostEmail: string | null;
@@ -225,6 +229,8 @@ export type CommissionReportRowDto = {
 };
 
 export type AccountingRowDto = {
+  /** Booking currency; amounts on this row are in it. */
+  currency?: string;
   period: string;
   bookings: number;
   revenueUsd: number;

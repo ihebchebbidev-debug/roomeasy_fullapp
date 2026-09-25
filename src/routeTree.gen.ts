@@ -28,6 +28,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TripsRouteImport } from './routes/trips'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as BookingBookingIdRouteImport } from './routes/booking.$bookingId'
 import { Route as StaysIndexRouteImport } from './routes/stays.index'
 import { Route as StaysPropertyIdRouteImport } from './routes/stays.$propertyId'
@@ -130,6 +131,11 @@ const TripsRoute = TripsRouteImport.update({
   path: '/trips',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookingBookingIdRoute = BookingBookingIdRouteImport.update({
   id: '/booking/$bookingId',
   path: '/booking/$bookingId',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trips': typeof TripsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/booking/$bookingId': typeof BookingBookingIdRoute
   '/stays/$propertyId': typeof StaysPropertyIdRoute
   '/stays/': typeof StaysIndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trips': typeof TripsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/booking/$bookingId': typeof BookingBookingIdRoute
   '/stays/$propertyId': typeof StaysPropertyIdRoute
   '/stays': typeof StaysIndexRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trips': typeof TripsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/booking/$bookingId': typeof BookingBookingIdRoute
   '/stays/$propertyId': typeof StaysPropertyIdRoute
   '/stays/': typeof StaysIndexRoute
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/trips'
+    | '/verify-email'
     | '/booking/$bookingId'
     | '/stays/$propertyId'
     | '/stays/'
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/trips'
+    | '/verify-email'
     | '/booking/$bookingId'
     | '/stays/$propertyId'
     | '/stays'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/trips'
+    | '/verify-email'
     | '/booking/$bookingId'
     | '/stays/$propertyId'
     | '/stays/'
@@ -347,6 +359,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   TripsRoute: typeof TripsRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   BookingBookingIdRoute: typeof BookingBookingIdRoute
   StaysPropertyIdRoute: typeof StaysPropertyIdRoute
   StaysIndexRoute: typeof StaysIndexRoute
@@ -490,6 +503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TripsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/booking/$bookingId': {
       id: '/booking/$bookingId'
       path: '/booking/$bookingId'
@@ -555,6 +575,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   TripsRoute: TripsRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   BookingBookingIdRoute: BookingBookingIdRoute,
   StaysPropertyIdRoute: StaysPropertyIdRoute,
   StaysIndexRoute: StaysIndexRoute,

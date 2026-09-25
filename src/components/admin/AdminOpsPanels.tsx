@@ -1502,7 +1502,9 @@ export function BookingsDeskPanel() {
 export function FinancePanel() {
   const sp = useSmartPricingCopy();
   const copy = useAdminCopy();
-  const { format } = useCurrency();
+  const { format, formatCharged } = useCurrency();
+  // Rows keep their own booking currency: never convert or mix them.
+  const money = (amount: number, currency?: string) => formatCharged(amount, currency ?? "EUR");
   const [period, setPeriod] = useState<"month" | "quarter" | "year">("month");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -1629,14 +1631,14 @@ export function FinancePanel() {
               </thead>
               <tbody>
                 {accounting.map((row) => (
-                  <tr key={row.period} className="border-t border-border">
-                    <td className="py-1 pr-3 tabular-nums">{row.period}</td>
+                  <tr key={`${row.period}-${row.currency ?? ""}`} className="border-t border-border">
+                    <td className="py-1 pr-3 tabular-nums">{row.period} · {row.currency ?? "EUR"}</td>
                     <td className="py-1 pr-3 tabular-nums">{row.bookings}</td>
-                    <td className="py-1 pr-3 tabular-nums">{format(row.revenueUsd)}</td>
-                    <td className="py-1 pr-3 tabular-nums">{format(row.commissionUsd)}</td>
-                    <td className="py-1 pr-3 tabular-nums">{format(row.hostNetUsd)}</td>
-                    <td className="py-1 pr-3 tabular-nums">{format(row.paidUsd)}</td>
-                    <td className="py-1 pr-3 tabular-nums">{format(row.refundedUsd)}</td>
+                    <td className="py-1 pr-3 tabular-nums">{money(row.revenueUsd, row.currency)}</td>
+                    <td className="py-1 pr-3 tabular-nums">{money(row.commissionUsd, row.currency)}</td>
+                    <td className="py-1 pr-3 tabular-nums">{money(row.hostNetUsd, row.currency)}</td>
+                    <td className="py-1 pr-3 tabular-nums">{money(row.paidUsd, row.currency)}</td>
+                    <td className="py-1 pr-3 tabular-nums">{money(row.refundedUsd, row.currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1653,18 +1655,18 @@ export function FinancePanel() {
         ) : (
           <div className="grid gap-2">
             <Paged rows={report} text={rowText}>{(__rows) => __rows.map((row) => (
-              <div key={row.hostId} className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-sm">
+              <div key={`${row.hostId}-${row.currency ?? ""}`} className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-sm">
                 <div>
                   <p className="font-medium">{row.hostName}</p>
                   <p className="text-xs text-muted-foreground">
-                    {row.bookings} {copy.finBookings.toLowerCase()} · {row.commissionRate}%
+                    {row.bookings} {copy.finBookings.toLowerCase()} · {row.commissionRate}% · {row.currency ?? "EUR"}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-4 text-xs tabular-nums">
-                  <span>{copy.finRevenue}: {format(row.revenueUsd)}</span>
-                  <span>{copy.finCommission}: {format(row.commissionUsd)}</span>
-                  <span>{copy.finHostNet}: {format(row.hostNetUsd)}</span>
-                  <span>{copy.finUnpaid}: {format(row.unpaidUsd)}</span>
+                  <span>{copy.finRevenue}: {money(row.revenueUsd, row.currency)}</span>
+                  <span>{copy.finCommission}: {money(row.commissionUsd, row.currency)}</span>
+                  <span>{copy.finHostNet}: {money(row.hostNetUsd, row.currency)}</span>
+                  <span>{copy.finUnpaid}: {money(row.unpaidUsd, row.currency)}</span>
                 </div>
               </div>
             ))}</Paged>
@@ -1712,9 +1714,9 @@ export function FinancePanel() {
                   <Badge variant={row.paymentStatus === "paid" ? "default" : "outline"}>
                     {copy.finPaymentStatus}: {row.paymentStatus === "none" ? copy.finPaymentNone : row.paymentStatus}
                   </Badge>
-                  <span>{format(row.totalUsd)}</span>
+                  <span>{money(row.totalUsd, row.currency)}</span>
                   <span>
-                    {copy.finCommission} {format(row.commissionUsd)}
+                    {copy.finCommission} {money(row.commissionUsd, row.currency)}
                   </span>
                   <Button size="sm" variant="outline" onClick={() => void openInvoice(row.bookingId)}>
                     {copy.finInvoice}
@@ -1764,35 +1766,35 @@ export function FinancePanel() {
             <div className="mt-2 grid gap-1 text-sm">
               <div className="flex justify-between">
                 <span>
-                  {format(invoice.nightlyUsd)} × {invoice.nights} {copy.finNights}
+                  {money(invoice.nightlyUsd, invoice.booking.currency)} × {invoice.nights} {copy.finNights}
                 </span>
-                <span className="tabular-nums">{format(invoice.baseSubtotalUsd)}</span>
+                <span className="tabular-nums">{money(invoice.baseSubtotalUsd, invoice.booking.currency)}</span>
               </div>
               {invoice.discounts.map((discount) => (
                 <div key={discount.kind} className="flex justify-between text-muted-foreground">
                   <span>
                     {discount.kind} −{discount.percent}%
                   </span>
-                  <span className="tabular-nums">−{format(discount.amountUsd)}</span>
+                  <span className="tabular-nums">−{money(discount.amountUsd, invoice.booking.currency)}</span>
                 </div>
               ))}
               {invoice.cleaningFeeUsd > 0 ? (
                 <div className="flex justify-between">
                   <span>{copy.finInvoice} · cleaning</span>
-                  <span className="tabular-nums">{format(invoice.cleaningFeeUsd)}</span>
+                  <span className="tabular-nums">{money(invoice.cleaningFeeUsd, invoice.booking.currency)}</span>
                 </div>
               ) : null}
               <div className="flex justify-between">
                 <span>{copy.finCommission}</span>
-                <span className="tabular-nums">{format(invoice.booking.commissionUsd)}</span>
+                <span className="tabular-nums">{money(invoice.booking.commissionUsd, invoice.booking.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{copy.finHostNet}</span>
-                <span className="tabular-nums">{format(invoice.booking.hostNetUsd)}</span>
+                <span className="tabular-nums">{money(invoice.booking.hostNetUsd, invoice.booking.currency)}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-1 font-semibold">
                 <span>{copy.finRevenue}</span>
-                <span className="tabular-nums">{format(invoice.booking.totalUsd)}</span>
+                <span className="tabular-nums">{money(invoice.booking.totalUsd, invoice.booking.currency)}</span>
               </div>
             </div>
           </div>

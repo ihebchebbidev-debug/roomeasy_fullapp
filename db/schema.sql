@@ -112,6 +112,7 @@ CREATE TABLE app_user (
   email         text        NOT NULL UNIQUE CHECK (position('@' IN email) > 1),
   phone         text,
   verified      boolean     NOT NULL DEFAULT false,
+  email_verified boolean    NOT NULL DEFAULT false, -- separate from `verified` (identity check): confirms the signup email
   suspended     boolean     NOT NULL DEFAULT false,
   avatar_url    text,
   locale        text        NOT NULL DEFAULT 'en',
@@ -167,6 +168,16 @@ CREATE TABLE host_profile (
 );
 CREATE TRIGGER host_profile_touch BEFORE UPDATE ON host_profile
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE email_verification_token (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+  token_hash  text NOT NULL UNIQUE,
+  expires_at  timestamptz NOT NULL,
+  used_at     timestamptz,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX email_verification_user_idx ON email_verification_token(user_id, created_at DESC);
 
 -- Host team members with scoped access (src/data/platform.ts :: TeamMember)
 CREATE TABLE host_team_member (
@@ -402,6 +413,7 @@ CREATE TABLE booking (
   service_fee    numeric(12,2) NOT NULL DEFAULT 0 CHECK (service_fee >= 0),
   taxes          numeric(12,2) NOT NULL DEFAULT 0 CHECK (taxes >= 0),
   total_usd      numeric(12,2) NOT NULL CHECK (total_usd >= 0),
+  commission_rate numeric(5,2) NOT NULL CHECK (commission_rate BETWEEN 0 AND 100), -- Commission rate frozen at booking time
 
   created_at     timestamptz NOT NULL DEFAULT now(),
   updated_at     timestamptz NOT NULL DEFAULT now(),

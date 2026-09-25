@@ -1,4 +1,5 @@
 import { ApiError, type ApiErrorCode } from "@/api/types";
+import { clearSearchCache } from "@/lib/searchCache";
 
 /**
  * Tiny transport used by the HTTP adapters. It knows three things: where the
@@ -81,7 +82,7 @@ export async function requestWithMeta<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<{ data: T; meta?: ListMeta }> {
-  const url = new URL(`${API_BASE_URL}/api${path}`, API_BASE_URL || window.location.origin);
+  const url = new URL(`${API_BASE_URL}/api${path}`, API_BASE_URL || (typeof window !== "undefined" ? window.location.origin : "https://api.roomeasy.fr"));
   for (const [key, value] of Object.entries(options.query ?? {})) {
     if (value !== undefined && value !== "") url.searchParams.set(key, String(value));
   }
@@ -103,6 +104,9 @@ export async function requestWithMeta<T>(
   } catch {
     throw new ApiError("UNAVAILABLE", "The server could not be reached. Check your connection and try again.");
   }
+
+  // Any change sent to the server can affect which stays are listed.
+  if ((options.method ?? "GET") !== "GET" && response.ok) clearSearchCache();
 
   if (response.status === 204) return { data: undefined as T };
 
