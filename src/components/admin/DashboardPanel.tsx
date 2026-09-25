@@ -28,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { cn } from "@/lib/utils";
+import { useAdminT, type AdminT } from "@/i18n/adminAutoCopy";
 
 type Props = {
   overview: AdminOverviewDto | null;
@@ -42,15 +43,15 @@ const monthLabel = (m: string) => {
   return new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: "short", year: "2-digit" });
 };
 
-const revenueConfig = {
-  revenueUsd: { label: "Revenue", color: "var(--chart-1)" },
-  commissionUsd: { label: "Commission", color: "var(--chart-2)" },
-} satisfies ChartConfig;
-const bookingsConfig = { bookings: { label: "Bookings", color: "var(--chart-3)" } } satisfies ChartConfig;
-const occupancyConfig = { rate: { label: "Occupancy %", color: "var(--chart-2)" } } satisfies ChartConfig;
-
 export function DashboardPanel({ overview, canStats, onOpen }: Props) {
   const { format } = useCurrency();
+  const T = useAdminT();
+  const revenueConfig = {
+    revenueUsd: { label: T("Revenue"), color: "var(--chart-1)" },
+    commissionUsd: { label: T("Commission"), color: "var(--chart-2)" },
+  } satisfies ChartConfig;
+  const bookingsConfig = { bookings: { label: T("Bookings"), color: "var(--chart-3)" } } satisfies ChartConfig;
+  const occupancyConfig = { rate: { label: T("Occupancy %"), color: "var(--chart-2)" } } satisfies ChartConfig;
   const [compare, setCompare] = useState<StatsCompareDto | null>(null);
   const [insights, setInsights] = useState<StatsInsightsDto | null>(null);
   const [statsState, setStatsState] = useState<"loading" | "ready" | "error">(canStats ? "loading" : "ready");
@@ -94,45 +95,45 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
 
   const headline = [
     {
-      label: "Gross booking value",
+      label: T("Gross booking value"),
       value: format(revenue.grossUsd),
-      hint: `${bookings.total} bookings all time`,
+      hint: T("{n} bookings all time", { n: bookings.total }),
       icon: Wallet,
       change: compare?.change.revenueUsd,
       section: "finance",
     },
     {
-      label: "Platform commission",
+      label: T("Platform commission"),
       value: format(revenue.commissionUsd),
-      hint: `${takeRate}% take rate`,
+      hint: T("{n}% take rate", { n: takeRate }),
       icon: Percent,
       change: compare?.change.commissionUsd,
       section: "commissions",
     },
     {
-      label: "Average basket",
+      label: T("Average basket"),
       value: insights ? format(insights.averageBasketUsd) : "—",
-      hint: insights ? `Over ${insights.basketBookings} paid bookings` : "Per paid booking",
+      hint: insights ? T("Over {n} paid bookings", { n: insights.basketBookings }) : T("Per paid booking"),
       icon: ShoppingBag,
       section: "bookings",
     },
     {
-      label: `Occupancy (${months} mo)`,
+      label: T("Occupancy ({n} mo)", { n: months }),
       value: insights ? `${insights.occupancy.rate}%` : "—",
       hint: insights
-        ? `${insights.occupancy.nightsBooked.toLocaleString()} of ${insights.occupancy.nightsAvailable.toLocaleString()} nights`
-        : "Booked vs available nights",
+        ? T("{a} of {b} nights sold (past and current stays)", { a: insights.occupancy.nightsBooked.toLocaleString(), b: insights.occupancy.nightsAvailable.toLocaleString() })
+        : T("Booked vs available nights"),
       icon: TrendingUp,
       section: "reports",
     },
   ];
-  const periodText = `Last ${months} months`;
+  const periodText = T("Last {n} months", { n: months });
 
   const queue = [
-    { label: "Listings to approve", value: listings.awaitingApproval, section: "approvals", icon: Home },
-    { label: "Bookings awaiting host", value: bookings.pending, section: "bookings", icon: CalendarCheck },
-    { label: "Payouts to send", value: format(revenue.payoutsPendingUsd), raw: revenue.payoutsPendingUsd, section: "payouts", icon: Wallet },
-    { label: "Suspended members", value: users.suspended, section: "users", icon: AlertTriangle },
+    { label: T("Listings to approve"), value: listings.awaitingApproval, section: "approvals", icon: Home },
+    { label: T("Bookings awaiting host"), value: bookings.pending, section: "bookings", icon: CalendarCheck },
+    { label: T("Payouts to send"), value: format(revenue.payoutsPendingUsd), raw: revenue.payoutsPendingUsd, section: "payouts", icon: Wallet },
+    { label: T("Suspended members"), value: users.suspended, section: "users", icon: AlertTriangle },
   ];
 
   const series = (compare?.series ?? []).map((row) => ({ ...row, label: monthLabel(row.month) }));
@@ -146,7 +147,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
       {canStats ? (
         <section className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-4">
           <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <span className="text-xs font-semibold uppercase text-muted-foreground">Period</span>
+            <span className="text-xs font-semibold uppercase text-muted-foreground">{T("Period")}</span>
             <div className="grid grid-cols-4 gap-1 rounded-md bg-muted p-1">
               {[3, 6, 12, 24].map((m) => (
                 <button
@@ -158,17 +159,17 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     months === m ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {m === 24 ? "2 yrs" : `${m} mo`}
+                  {m === 24 ? T("2 yrs") : T("{n} mo", { n: m })}
                 </button>
               ))}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:flex">
             <Button size="sm" variant="outline" onClick={() => setReload((n) => n + 1)} disabled={statsState === "loading"}>
-              <RefreshCw className={cn("size-4", statsState === "loading" && "animate-spin")} /> Refresh
+              <RefreshCw className={cn("size-4", statsState === "loading" && "animate-spin")} /> {T("Refresh")}
             </Button>
             <Button size="sm" variant="outline" onClick={() => void adminOpsApi.downloadStatsCsv(months).catch(() => undefined)}>
-              <Download className="size-4" /> Export CSV
+              <Download className="size-4" /> {T("Export CSV")}
             </Button>
           </div>
         </section>
@@ -206,7 +207,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
 
       {/* Action queue */}
       <section className="rounded-lg border border-border bg-surface p-5 shadow-sm">
-        <h2 className="font-display text-base font-semibold">Needs your attention</h2>
+        <h2 className="font-display text-base font-semibold">{T("Needs your attention")}</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {queue.map(({ label, value, raw, section, icon: Icon }) => {
             const hot = Number(raw ?? value) > 0;
@@ -234,53 +235,53 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
       {/* Health rates */}
       <section className="grid gap-4 lg:grid-cols-3">
         <RateCard
-          title="Bookings"
+          title={T("Bookings")}
           icon={CalendarCheck}
           rows={[
-            { label: "Confirmed or completed", value: confirmRate, detail: `${bookings.confirmed + bookings.completed}` },
-            { label: "Cancelled", value: cancelRate, detail: `${bookings.cancelled}`, warn: cancelRate > 30 },
-            { label: "Pending", value: pct(bookings.pending, bookings.total), detail: `${bookings.pending}` },
+            { label: T("Confirmed or completed"), value: confirmRate, detail: `${bookings.confirmed + bookings.completed}` },
+            { label: T("Cancelled"), value: cancelRate, detail: `${bookings.cancelled}`, warn: cancelRate > 30 },
+            { label: T("Pending"), value: pct(bookings.pending, bookings.total), detail: `${bookings.pending}` },
           ]}
         />
         <RateCard
-          title="Listings"
+          title={T("Listings")}
           icon={Home}
           rows={[
-            { label: "Published", value: publishedRate, detail: `${listings.published} / ${listings.total}` },
-            { label: "Awaiting approval", value: pct(listings.awaitingApproval, listings.total), detail: `${listings.awaitingApproval}` },
-            { label: "Suspended", value: pct(listings.suspended, listings.total), detail: `${listings.suspended}`, warn: listings.suspended > 0 },
+            { label: T("Published"), value: publishedRate, detail: `${listings.published} / ${listings.total}` },
+            { label: T("Awaiting approval"), value: pct(listings.awaitingApproval, listings.total), detail: `${listings.awaitingApproval}` },
+            { label: T("Suspended"), value: pct(listings.suspended, listings.total), detail: `${listings.suspended}`, warn: listings.suspended > 0 },
           ]}
-          footer={`${listingsPerHost} published listings per host`}
+          footer={T("{n} published listings per host", { n: listingsPerHost })}
         />
         <RateCard
-          title="Members"
+          title={T("Members")}
           icon={Users}
           rows={[
-            { label: "Hosts", value: hostShare, detail: `${users.hosts}` },
-            { label: "Guests", value: pct(users.guests, users.total), detail: `${users.guests}` },
-            { label: "Suspended", value: pct(users.suspended, users.total), detail: `${users.suspended}`, warn: users.suspended > 0 },
+            { label: T("Hosts"), value: hostShare, detail: `${users.hosts}` },
+            { label: T("Guests"), value: pct(users.guests, users.total), detail: `${users.guests}` },
+            { label: T("Suspended"), value: pct(users.suspended, users.total), detail: `${users.suspended}`, warn: users.suspended > 0 },
           ]}
-          footer={`${users.total} members · ${users.admins} team accounts`}
+          footer={T("{a} members · {b} team accounts", { a: users.total, b: users.admins })}
         />
       </section>
 
       {/* Small stat strip */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <MiniStat icon={Star} label="Average rating" value={reviews.total ? reviews.averageRating.toFixed(2) : "—"} hint={`${reviews.total} reviews · ${reviews.hidden} hidden`} />
-        <MiniStat icon={BadgeCheck} label="Payouts sent" value={format(revenue.payoutsUsd)} hint="Paid to hosts" />
-        <MiniStat icon={CalendarX} label="Cancellation rate" value={`${cancelRate}%`} hint={`${bookings.cancelled} cancelled`} warn={cancelRate > 30} />
-        <MiniStat icon={Users} label="Hosts share" value={`${hostShare}%`} hint={`${users.hosts} hosts`} />
+        <MiniStat icon={Star} label={T("Average rating")} value={reviews.total ? reviews.averageRating.toFixed(2) : "—"} hint={T("{a} reviews · {b} hidden", { a: reviews.total, b: reviews.hidden })} />
+        <MiniStat icon={BadgeCheck} label={T("Payouts sent")} value={format(revenue.payoutsUsd)} hint={T("Paid to hosts")} />
+        <MiniStat icon={CalendarX} label={T("Cancellation rate")} value={`${cancelRate}%`} hint={T("{n} cancelled", { n: bookings.cancelled })} warn={cancelRate > 30} />
+        <MiniStat icon={Users} label={T("Hosts share")} value={`${hostShare}%`} hint={T("{n} hosts", { n: users.hosts })} />
       </section>
 
       {/* Charts */}
       {canStats ? (
         statsState === "error" ? (
-          <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted-foreground">Charts could not be loaded right now.</p>
+          <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted-foreground">{T("Charts could not be loaded right now.")}</p>
         ) : (
           <>
             <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-              <ChartCard title="Revenue & commission" subtitle={periodText}>
-                {statsState === "loading" ? <Skeleton className="aspect-auto h-56 w-full sm:h-64" /> : series.length === 0 ? <NoData /> : (
+              <ChartCard title={T("Revenue & commission")} subtitle={periodText}>
+                {statsState === "loading" ? <Skeleton className="aspect-auto h-56 w-full sm:h-64" /> : series.length === 0 ? <NoData T={T} /> : (
                   <ChartContainer config={revenueConfig} className="aspect-auto h-56 w-full sm:h-64">
                     {series.length < 3 ? (
                     <BarChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
@@ -304,8 +305,8 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                   </ChartContainer>
                 )}
               </ChartCard>
-              <ChartCard title="Bookings per month" subtitle={periodText}>
-                {statsState === "loading" ? <Skeleton className="aspect-auto h-56 w-full sm:h-64" /> : series.length === 0 ? <NoData /> : (
+              <ChartCard title={T("Bookings per month")} subtitle={periodText}>
+                {statsState === "loading" ? <Skeleton className="aspect-auto h-56 w-full sm:h-64" /> : series.length === 0 ? <NoData T={T} /> : (
                   <ChartContainer config={bookingsConfig} className="aspect-auto h-56 w-full sm:h-64">
                     <BarChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
@@ -320,8 +321,8 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
             </section>
 
             <section className="grid gap-4 xl:grid-cols-2">
-              <ChartCard title="Occupancy rate" subtitle={`Booked vs available nights, ${periodText.toLowerCase()}`}>
-                {statsState === "loading" ? <Skeleton className="h-56 w-full" /> : occupancy.length === 0 ? <NoData /> : (
+              <ChartCard title={T("Occupancy rate")} subtitle={T("Booked vs available nights, {p}", { p: periodText.toLowerCase() })}>
+                {statsState === "loading" ? <Skeleton className="h-56 w-full" /> : occupancy.length === 0 ? <NoData T={T} /> : (
                   <ChartContainer config={occupancyConfig} className="h-56 w-full">
                     <BarChart data={occupancy} margin={{ left: 0, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
@@ -333,8 +334,8 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                   </ChartContainer>
                 )}
               </ChartCard>
-              <ChartCard title="Top destinations" subtitle="By booking revenue">
-                {statsState === "loading" ? <Skeleton className="h-56 w-full" /> : topDestinations.length === 0 ? <NoData /> : (
+              <ChartCard title={T("Top destinations")} subtitle={T("By booking revenue")}>
+                {statsState === "loading" ? <Skeleton className="h-56 w-full" /> : topDestinations.length === 0 ? <NoData T={T} /> : (
                   <ul className="space-y-3">
                     {topDestinations.map((d) => (
                       <li key={`${d.city}-${d.country}`} className="min-w-0">
@@ -345,7 +346,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                             <span className="hidden truncate text-xs text-muted-foreground sm:inline">{d.country}</span>
                           </span>
                           <span className="shrink-0 tabular-nums">
-                            {format(d.revenueUsd)} <span className="text-xs text-muted-foreground">· {d.bookings} bk</span>
+                            {format(d.revenueUsd)} <span className="text-xs text-muted-foreground">· {d.bookings} {T("bk")}</span>
                           </span>
                         </div>
                         <Progress value={(d.revenueUsd / maxDest) * 100} className="mt-1.5 h-1.5" />
@@ -420,6 +421,6 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle: str
   );
 }
 
-function NoData() {
-  return <p className="grid h-40 place-items-center text-sm text-muted-foreground">No data for this period yet.</p>;
+function NoData({ T }: { T: AdminT }) {
+  return <p className="grid h-40 place-items-center text-sm text-muted-foreground">{T("No data for this period yet.")}</p>;
 }

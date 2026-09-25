@@ -1,4 +1,5 @@
 import { Paged, rowText } from "@/components/admin/ListControls";
+import { useAdminT } from "@/i18n/adminAutoCopy";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -78,6 +79,7 @@ const amenityKey = { en: "labelEn", fr: "labelFr", es: "labelEs", de: "labelDe",
 /* ------------------------------------------------------------------ amenities */
 
 export function AmenitiesPanel() {
+  const T = useAdminT();
   const [search, setSearch] = useState("");
   const { data, loading, reload } = useLoad(() => catalogApi.amenities(), { items: [] as AmenityDto[], groups: [] as string[] });
   const emptyAmenity = { id: "", group: "", labelEn: "", labelFr: "", labelEs: "", labelDe: "", labelPt: "", paid: false, active: true };
@@ -94,7 +96,7 @@ export function AmenitiesPanel() {
     setBusy(true);
     try {
       await catalogApi.saveAmenity(id, body);
-      toast.success("Amenity saved.");
+      toast.success(T("Amenity saved."));
       reload();
       return true;
     } catch (error) {
@@ -108,7 +110,7 @@ export function AmenitiesPanel() {
   async function remove(id: string) {
     try {
       const result = await catalogApi.removeAmenity(id);
-      toast.success(result.deleted ? "Amenity removed." : "Amenity in use — retired instead.");
+      toast.success(result.deleted ? T("Amenity removed.") : T("Amenity in use — retired instead."));
       reload();
     } catch (error) {
       fail(error);
@@ -117,7 +119,7 @@ export function AmenitiesPanel() {
 
   return (
     <div className="space-y-4">
-      <FormModal open={open} onClose={() => setOpen(false)} title={editingAmenity ? `Edit "${draft.id}"` : "Add an amenity"}>
+      <FormModal open={open} onClose={() => setOpen(false)} title={editingAmenity ? T('Edit "{id}"', { id: draft.id }) : T("Add an amenity")}>
         <form
           className="grid gap-3 sm:grid-cols-2"
           onSubmit={async (event) => {
@@ -127,11 +129,11 @@ export function AmenitiesPanel() {
           }}
         >
           <div className="space-y-1">
-            <Label>Code</Label>
-            <Input required disabled={editingAmenity} pattern="[a-z0-9_-]{2,80}" placeholder="e.g. sauna" value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
+            <Label>{T("Code")}</Label>
+            <Input required disabled={editingAmenity} pattern="[a-z0-9_-]{2,80}" placeholder={T("e.g. sauna")} value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
           </div>
           <div className="space-y-1">
-            <Label>Group</Label>
+            <Label>{T("Group")}</Label>
             <Input required list="amenity-groups" value={draft.group} onChange={(e) => setDraft({ ...draft, group: e.target.value })} />
             <datalist id="amenity-groups">
               {data.groups.map((g) => (
@@ -141,21 +143,21 @@ export function AmenitiesPanel() {
           </div>
           {LOCALES.map((l) => (
             <div key={l} className="space-y-1">
-              <Label>Name — {LOCALE_NAMES[l]}{l === "en" || l === "fr" ? " *" : ""}</Label>
+              <Label>{T("Name")} — {LOCALE_NAMES[l]}{l === "en" || l === "fr" ? " *" : ""}</Label>
               <Input required={l === "en" || l === "fr"} value={draft[amenityKey[l]]} onChange={(e) => setDraft({ ...draft, [amenityKey[l]]: e.target.value })} />
             </div>
           ))}
           <label className="flex items-center gap-2 text-sm">
-            <Switch checked={draft.paid} onCheckedChange={(paid) => setDraft({ ...draft, paid })} /> Paid extra
+            <Switch checked={draft.paid} onCheckedChange={(paid) => setDraft({ ...draft, paid })} /> {T("Paid extra")}
           </label>
           <div className="flex items-end justify-end gap-2 sm:col-span-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={busy}>Save amenity</Button>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>{T("Cancel")}</Button>
+            <Button type="submit" disabled={busy}>{T("Save amenity")}</Button>
           </div>
         </form>
       </FormModal>
 
-      <Card title={`Amenities (${data.items.length})`} action={<AddButton label="Add an amenity" onClick={() => { setDraft({ ...emptyAmenity, group: draft.group }); setOpen(true); }} />}>
+      <Card title={T("Amenities ({n})", { n: data.items.length })} action={<AddButton label={T("Add an amenity")} onClick={() => { setDraft({ ...emptyAmenity, group: draft.group }); setOpen(true); }} />}>
         {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={items} text={rowText}>{(__rows) => __rows.map((item) => (
@@ -165,7 +167,7 @@ export function AmenitiesPanel() {
                 {item.label.en} <span className="text-muted-foreground">/ {item.label.fr}</span>
               </span>
               <Badge variant="secondary">{item.group}</Badge>
-              {item.paid ? <Badge variant="outline">Paid</Badge> : null}
+              {item.paid ? <Badge variant="outline">{T("Paid")}</Badge> : null}
               <label className="flex items-center gap-2 text-xs">
                 <Switch
                   checked={item.active}
@@ -173,7 +175,7 @@ export function AmenitiesPanel() {
                     save(item.id, { group: item.group, labelEn: item.label.en, labelFr: item.label.fr, labelEs: item.label.es ?? "", labelDe: item.label.de ?? "", labelPt: item.label.pt ?? "", paid: item.paid, active })
                   }
                 />
-                {item.active ? "Active" : "Hidden"}
+                {item.active ? T("Active") : T("Hidden")}
               </label>
               <EditIconButton onConfirm={() => { setDraft({ id: item.id, group: item.group, labelEn: item.label.en, labelFr: item.label.fr, labelEs: item.label.es ?? "", labelDe: item.label.de ?? "", labelPt: item.label.pt ?? "", paid: item.paid, active: item.active }); setOpen(true); }} />
               <DeleteIconButton itemName={item.label.en} onConfirm={() => remove(item.id)} />
@@ -190,6 +192,7 @@ export function AmenitiesPanel() {
 const emptyCity: CityInput = { name: "", country: "", active: true, featured: false, sortOrder: 0 };
 
 export function CitiesPanel() {
+  const T = useAdminT();
   const { data, loading, reload } = useLoad(() => catalogApi.cities(), [] as CityDto[]);
   const { data: countries } = useLoad(() => catalogApi.countries(), [] as CountryDto[]);
   const [draft, setDraft] = useState<CityInput & { id?: string }>(emptyCity);
@@ -207,21 +210,21 @@ export function CitiesPanel() {
 
   return (
     <div className="space-y-4">
-      <FormModal open={open} onClose={() => setOpen(false)} title={draft.id ? "Edit city" : "Add a city"}>
+      <FormModal open={open} onClose={() => setOpen(false)} title={draft.id ? T("Edit city") : T("Add a city")}>
         <form
           className="grid gap-3 sm:grid-cols-2"
           onSubmit={(event) => {
             event.preventDefault();
             const { id, ...body } = draft;
-            run(() => (id ? catalogApi.updateCity(id, body) : catalogApi.createCity(body)), "City saved.").then(() => { setDraft(emptyCity); setOpen(false); });
+            run(() => (id ? catalogApi.updateCity(id, body) : catalogApi.createCity(body)), T("City saved.")).then(() => { setDraft(emptyCity); setOpen(false); });
           }}
         >
           <div className="space-y-1">
-            <Label>City</Label>
+            <Label>{T("City")}</Label>
             <Input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
           </div>
           <div className="space-y-1">
-            <Label>Country</Label>
+            <Label>{T("Country")}</Label>
             <select
               value={draft.country}
               onChange={(e) => setDraft({ ...draft, country: e.target.value })}
@@ -241,37 +244,37 @@ export function CitiesPanel() {
             </select>
           </div>
           <div className="space-y-1">
-            <Label>Order</Label>
+            <Label>{T("Order")}</Label>
             <Input type="number" min={0} value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
           </div>
           <div className="flex items-end gap-4">
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={draft.featured} onCheckedChange={(featured) => setDraft({ ...draft, featured })} /> Featured
+              <Switch checked={draft.featured} onCheckedChange={(featured) => setDraft({ ...draft, featured })} /> {T("Featured")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={draft.active} onCheckedChange={(active) => setDraft({ ...draft, active })} /> Active
             </label>
           </div>
           <div className="flex justify-end gap-2 sm:col-span-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit">{draft.id ? "Update city" : "Add city"}</Button>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>{T("Cancel")}</Button>
+            <Button type="submit">{draft.id ? T("Update city") : T("Add city")}</Button>
           </div>
         </form>
       </FormModal>
 
       <Card
-        title={`Cities (${data.length})`}
+        title={T("Cities ({n})", { n: data.length })}
         action={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => run(async () => toast.info(`${(await catalogApi.importCities()).added} cities imported.`), "Import finished.")}>
+            <Button variant="outline" size="sm" onClick={() => run(async () => toast.info(T("{n} cities imported.", { n: (await catalogApi.importCities()).added })), T("Import finished."))}>
               Import cities from listings
             </Button>
-            <AddButton label="Add a city" onClick={() => { setDraft(emptyCity); setOpen(true); }} />
+            <AddButton label={T("Add a city")} onClick={() => { setDraft(emptyCity); setOpen(true); }} />
           </div>
         }
       >
         {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
-        {!loading && data.length === 0 ? <p className="text-sm text-muted-foreground">No cities yet.</p> : null}
+        {!loading && data.length === 0 ? <p className="text-sm text-muted-foreground">{T("No cities yet.")}</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={data} text={rowText}>{(__rows) => __rows.map((city) => (
             <div key={city.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
@@ -279,10 +282,10 @@ export function CitiesPanel() {
                 {city.name} <span className="font-normal text-muted-foreground">{city.country}</span>
               </span>
               <span className="text-xs text-muted-foreground">{city.listings} listings</span>
-              {city.featured ? <Badge>Featured</Badge> : null}
-              {!city.active ? <Badge variant="outline">Hidden</Badge> : null}
+              {city.featured ? <Badge>{T("Featured")}</Badge> : null}
+              {!city.active ? <Badge variant="outline">{T("Hidden")}</Badge> : null}
               <EditIconButton onConfirm={() => { setDraft({ id: city.id, name: city.name, country: city.country, active: city.active, featured: city.featured, sortOrder: city.sortOrder }); setOpen(true); }} />
-<DeleteIconButton itemName={city.name} onConfirm={() => run(() => catalogApi.deleteCity(city.id), "City deleted.")} />
+<DeleteIconButton itemName={city.name} onConfirm={() => run(() => catalogApi.deleteCity(city.id), T("City deleted."))} />
             </div>
           ))}</Paged>
         </div>
@@ -294,6 +297,7 @@ export function CitiesPanel() {
 /* -------------------------------------------------------------- content pages */
 
 export function ContentPagesPanel() {
+  const T = useAdminT();
   const { data, reload } = useLoad(() => catalogApi.pages(), [] as ContentPageDto[]);
   const [slug, setSlug] = useState<string>("terms");
   const [locale, setLocale] = useState<string>("en");
@@ -307,7 +311,7 @@ export function ContentPagesPanel() {
   async function save() {
     try {
       await catalogApi.savePage(slug, locale, form);
-      toast.success("Page saved.");
+      toast.success(T("Page saved."));
       reload();
     } catch (error) {
       fail(error);
@@ -317,7 +321,7 @@ export function ContentPagesPanel() {
   async function remove() {
     try {
       await catalogApi.deletePage(slug, locale);
-      toast.success("Page deleted.");
+      toast.success(T("Page deleted."));
       reload();
     } catch (error) {
       fail(error);
@@ -325,7 +329,7 @@ export function ContentPagesPanel() {
   }
 
   return (
-    <Card title="Terms, Privacy and Help pages">
+    <Card title={T("Terms, Privacy and Help pages")}>
       <div className="flex flex-wrap gap-2">
         {PAGE_SLUGS.map((s) => (
           <Button key={s} size="sm" variant={s === slug ? "default" : "outline"} onClick={() => setSlug(s)}>
@@ -342,25 +346,25 @@ export function ContentPagesPanel() {
       </div>
       <p className="text-xs text-muted-foreground">
         {existing
-          ? `Last saved ${new Date(existing.updatedAt).toLocaleString()}${existing.updatedBy ? ` by ${existing.updatedBy}` : ""}.`
-          : "Not written yet — the public page shows the built-in text."}{" "}
+          ? `${T("Last saved {d}", { d: new Date(existing.updatedAt).toLocaleString() })}${existing.updatedBy ? T(" by {u}", { u: existing.updatedBy }) : ""}.`
+          : T("Not written yet — the public page shows the built-in text.")}{" "}
         Use the toolbar for bold, italic, headings, lists and links — the public page shows it exactly the same.
       </p>
       <div className="space-y-1">
-        <Label>Title</Label>
+        <Label>{T("Title")}</Label>
         <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
       </div>
       <div className="space-y-1">
-        <Label>Content</Label>
+        <Label>{T("Content")}</Label>
         <RichTextEditor value={form.body} onChange={(body) => setForm((f) => ({ ...f, body }))} />
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={form.published} onCheckedChange={(published) => setForm({ ...form, published })} /> Published
         </label>
-        <Button onClick={save} disabled={!form.title.trim()}>Save page</Button>
+        <Button onClick={save} disabled={!form.title.trim()}>{T("Save page")}</Button>
         {existing ? (
-          <DeleteIconButton label="Delete this version" onConfirm={remove} />
+          <DeleteIconButton label={T("Delete this version")} onConfirm={remove} />
         ) : null}
       </div>
     </Card>
@@ -370,6 +374,7 @@ export function ContentPagesPanel() {
 /* --------------------------------------------------------------- translations */
 
 export function TranslationsPanel() {
+  const T = useAdminT();
   const [locale, setLocale] = useState<string>("fr");
   const [rows, setRows] = useState<TranslationDto[]>([]);
   const [draft, setDraft] = useState({ key: "", value: "" });
@@ -382,7 +387,7 @@ export function TranslationsPanel() {
   async function save(key: string, value: string) {
     try {
       await catalogApi.saveTranslation(locale, key, value);
-      toast.success("Translation saved.");
+      toast.success(T("Translation saved."));
       reload();
     } catch (error) {
       fail(error);
@@ -390,7 +395,7 @@ export function TranslationsPanel() {
   }
 
   return (
-    <Card title="Translations">
+    <Card title={T("Translations")}>
       <p className="text-xs text-muted-foreground">
         Replace any text in the app for one language. Use the dotted key of the text, e.g. <code>app.admin.title</code> or{" "}
         <code>auth.login</code>. Changes appear for visitors within about a minute.
@@ -409,12 +414,12 @@ export function TranslationsPanel() {
           save(draft.key.trim(), draft.value).then(() => setDraft({ key: "", value: "" }));
         }}
       >
-        <Input required placeholder="Key" pattern="[A-Za-z0-9_.\-]{1,200}" value={draft.key} onChange={(e) => setDraft({ ...draft, key: e.target.value })} />
-        <Input required placeholder="New text" value={draft.value} onChange={(e) => setDraft({ ...draft, value: e.target.value })} />
-        <Button type="submit">Save</Button>
+        <Input required placeholder={T("Key")} pattern="[A-Za-z0-9_.\-]{1,200}" value={draft.key} onChange={(e) => setDraft({ ...draft, key: e.target.value })} />
+        <Input required placeholder={T("New text")} value={draft.value} onChange={(e) => setDraft({ ...draft, value: e.target.value })} />
+        <Button type="submit">{T("Save")}</Button>
       </form>
       <div className="divide-y divide-border">
-        {rows.length === 0 ? <p className="py-2 text-sm text-muted-foreground">No custom texts for this language.</p> : null}
+        {rows.length === 0 ? <p className="py-2 text-sm text-muted-foreground">{T("No custom texts for this language.")}</p> : null}
         <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((row) => (
           <div key={row.key} className="flex flex-wrap items-center gap-3 py-2 text-sm">
             <code className="w-64 truncate text-xs text-muted-foreground">{row.key}</code>
@@ -424,7 +429,7 @@ export function TranslationsPanel() {
                 catalogApi
                   .deleteTranslation(locale, row.key)
                   .then(() => {
-                    toast.success("Custom text removed.");
+                    toast.success(T("Custom text removed."));
                     reload();
                   })
                   .catch(fail)
@@ -441,6 +446,7 @@ export function TranslationsPanel() {
 const emptyType = { id: "", labels: { en: "", fr: "", es: "", de: "", pt: "" }, active: true, sortOrder: 0 };
 
 export function PropertyTypesPanel() {
+  const T = useAdminT();
   const { data, loading, reload } = useLoad(() => catalogApi.propertyTypes(), [] as PropertyTypeAdminDto[]);
   const [draft, setDraft] = useState(emptyType);
   const [open, setOpen] = useState(false);
@@ -449,7 +455,7 @@ export function PropertyTypesPanel() {
   async function save(id: string, body: { labels: typeof emptyType.labels; active: boolean; sortOrder: number }) {
     try {
       await catalogApi.savePropertyType(id, body);
-      toast.success("Property type saved.");
+      toast.success(T("Property type saved."));
       reload();
       return true;
     } catch (error) {
@@ -460,7 +466,7 @@ export function PropertyTypesPanel() {
 
   return (
     <div className="space-y-4">
-      <FormModal open={open} onClose={() => setOpen(false)} title={editing ? `Edit "${draft.id}"` : "Add a property type"}>
+      <FormModal open={open} onClose={() => setOpen(false)} title={editing ? T('Edit "{id}"', { id: draft.id }) : T("Add a property type")}>
         <form
           className="grid gap-3 sm:grid-cols-2"
           onSubmit={async (event) => {
@@ -470,12 +476,12 @@ export function PropertyTypesPanel() {
           }}
         >
           <div className="space-y-1">
-            <Label>Code</Label>
-            <Input required disabled={editing} pattern="[a-z0-9_-]{2,40}" placeholder="e.g. houseboat" value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
+            <Label>{T("Code")}</Label>
+            <Input required disabled={editing} pattern="[a-z0-9_-]{2,40}" placeholder={T("e.g. houseboat")} value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
           </div>
           {LOCALES.map((l) => (
             <div key={l} className="space-y-1">
-              <Label>Name — {LOCALE_NAMES[l]}{l === "en" ? " *" : ""}</Label>
+              <Label>{T("Name")} — {LOCALE_NAMES[l]}{l === "en" ? " *" : ""}</Label>
               <Input
                 required={l === "en"}
                 value={draft.labels[l]}
@@ -484,18 +490,18 @@ export function PropertyTypesPanel() {
             </div>
           ))}
           <div className="space-y-1">
-            <Label>Order</Label>
+            <Label>{T("Order")}</Label>
             <Input type="number" min={0} value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
           </div>
           <div className="flex items-end justify-end gap-2 sm:col-span-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit">{editing ? "Update" : "Add type"}</Button>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>{T("Cancel")}</Button>
+            <Button type="submit">{editing ? T("Update") : T("Add type")}</Button>
           </div>
         </form>
-        <p className="text-xs text-muted-foreground">The code can't be changed later. Empty names fall back to English.</p>
+        <p className="text-xs text-muted-foreground">{T("The code can't be changed later. Empty names fall back to English.")}</p>
       </FormModal>
 
-      <Card title={`Property types (${data.length})`} action={<AddButton label="Add a property type" onClick={() => { setDraft(emptyType); setOpen(true); }} />}>
+      <Card title={T("Property types ({n})", { n: data.length })} action={<AddButton label={T("Add a property type")} onClick={() => { setDraft(emptyType); setOpen(true); }} />}>
         {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={data} text={rowText}>{(__rows) => __rows.map((type) => (
@@ -507,13 +513,13 @@ export function PropertyTypesPanel() {
               <span className="text-xs text-muted-foreground">{type.listings} listings</span>
               <label className="flex items-center gap-2 text-xs">
                 <Switch checked={type.active} onCheckedChange={(active) => save(type.id, { labels: type.labels, active, sortOrder: type.sortOrder })} />
-                {type.active ? "Active" : "Hidden"}
+                {type.active ? T("Active") : T("Hidden")}
               </label>
               <EditIconButton onConfirm={() => { setDraft({ id: type.id, labels: type.labels, active: type.active, sortOrder: type.sortOrder }); setOpen(true); }} />
               <DeleteIconButton onConfirm={async () => {
                   try {
                     const r = await catalogApi.removePropertyType(type.id);
-                    toast.success(r.deleted ? "Type removed." : "Type in use — hidden instead.");
+                    toast.success(r.deleted ? T("Type removed.") : T("Type in use — hidden instead."));
                     reload();
                   } catch (error) {
                     fail(error);
@@ -532,6 +538,7 @@ export function PropertyTypesPanel() {
 const emptyCountry = { code: "", name: "", active: true, sortOrder: 0 };
 
 export function CountriesPanel() {
+  const T = useAdminT();
   const { data, loading, reload } = useLoad(() => catalogApi.countries(), [] as CountryDto[]);
   const [draft, setDraft] = useState(emptyCountry);
   const [search, setSearch] = useState("");
@@ -541,7 +548,7 @@ export function CountriesPanel() {
   async function save(code: string, body: { name: string; active: boolean; sortOrder: number }) {
     try {
       await catalogApi.saveCountry(code, body);
-      toast.success("Country saved.");
+      toast.success(T("Country saved."));
       reload();
       return true;
     } catch (error) {
@@ -554,7 +561,7 @@ export function CountriesPanel() {
 
   return (
     <div className="space-y-4">
-      <FormModal open={open} onClose={() => setOpen(false)} title={editing ? `Edit ${draft.code.toUpperCase()}` : "Add a country"}>
+      <FormModal open={open} onClose={() => setOpen(false)} title={editing ? T("Edit {c}", { c: draft.code.toUpperCase() }) : T("Add a country")}>
         <form
           className="grid gap-3 sm:grid-cols-2"
           onSubmit={async (event) => {
@@ -565,19 +572,19 @@ export function CountriesPanel() {
         >
           <div className="space-y-1">
             <Label>2-letter code</Label>
-            <Input required disabled={editing} maxLength={2} pattern="[A-Za-z]{2}" placeholder="e.g. TN" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} />
+            <Input required disabled={editing} maxLength={2} pattern="[A-Za-z]{2}" placeholder={T("e.g. TN")} value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} />
           </div>
           <div className="space-y-1">
-            <Label>Name (English)</Label>
+            <Label>{T("Name (English)")}</Label>
             <Input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
           </div>
           <div className="space-y-1">
-            <Label>Order</Label>
+            <Label>{T("Order")}</Label>
             <Input type="number" min={0} value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
           </div>
           <div className="flex items-end justify-end gap-2 sm:col-span-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit">{editing ? "Update" : "Add country"}</Button>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>{T("Cancel")}</Button>
+            <Button type="submit">{editing ? T("Update") : T("Add country")}</Button>
           </div>
         </form>
         <p className="text-xs text-muted-foreground">
@@ -585,7 +592,7 @@ export function CountriesPanel() {
         </p>
       </FormModal>
 
-      <Card title={`Countries (${data.length})`} action={<AddButton label="Add a country" onClick={() => { setDraft(emptyCountry); setOpen(true); }} />}>
+      <Card title={T("Countries ({n})", { n: data.length })} action={<AddButton label={T("Add a country")} onClick={() => { setDraft(emptyCountry); setOpen(true); }} />}>
         {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((c) => (
@@ -595,14 +602,14 @@ export function CountriesPanel() {
               <span className="text-xs text-muted-foreground">{c.listings} listings</span>
               <label className="flex items-center gap-2 text-xs">
                 <Switch checked={c.active} onCheckedChange={(active) => save(c.code, { name: c.name, active, sortOrder: c.sortOrder })} />
-                {c.active ? "Active" : "Hidden"}
+                {c.active ? T("Active") : T("Hidden")}
               </label>
               <EditIconButton onConfirm={() => { setDraft({ code: c.code, name: c.name, active: c.active, sortOrder: c.sortOrder }); setOpen(true); }} />
               <DeleteIconButton onConfirm={() =>
                   catalogApi
                     .deleteCountry(c.code)
                     .then(() => {
-                      toast.success("Country deleted.");
+                      toast.success(T("Country deleted."));
                       reload();
                     })
                     .catch(fail)

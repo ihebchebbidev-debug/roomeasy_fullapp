@@ -8,6 +8,7 @@
  * Each panel loads its own data from the Node backend and hides itself when
  * the signed-in administrator's role does not carry the capability.
  */
+import { useAdminT } from "@/i18n/adminAutoCopy";
 import { useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -1500,6 +1501,7 @@ export function BookingsDeskPanel() {
  * a spreadsheet export, and a printable invoice for a single reservation.
  */
 export function FinancePanel() {
+  const T = useAdminT();
   const sp = useSmartPricingCopy();
   const copy = useAdminCopy();
   const { format, formatCharged } = useCurrency();
@@ -1693,7 +1695,7 @@ export function FinancePanel() {
                 variant={paymentStatus === value ? "default" : "outline"}
                 onClick={() => setPaymentStatus(value)}
               >
-                {value === "all" ? copy.bkAll : value === "none" ? copy.finPaymentNone : value}
+                {value === "all" ? copy.bkAll : value === "none" ? copy.finPaymentNone : T(value)}
               </Button>
             ))}
           </div>
@@ -1719,7 +1721,7 @@ export function FinancePanel() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs tabular-nums">
                   <Badge variant={row.paymentStatus === "paid" ? "default" : "outline"}>
-                    {copy.finPaymentStatus}: {row.paymentStatus === "none" ? copy.finPaymentNone : row.paymentStatus}
+                    {copy.finPaymentStatus}: {row.paymentStatus === "none" ? copy.finPaymentNone : T(row.paymentStatus)}
                   </Badge>
                   <span>{money(row.totalUsd, row.currency)}</span>
                   <span>

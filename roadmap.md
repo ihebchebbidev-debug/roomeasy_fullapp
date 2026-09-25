@@ -38,3 +38,10 @@
 ## Sep 25 — backend performance (plan pending approval)
 - [x] Speed up server data fetching; caching must never show changed/deleted listings
 - [ ] Redeploy server + run migrate so speed-ups and indexes go live (blocked: user redeploy)
+
+## Sep 25 — admin audit fixes
+- [x] French for dashboard, catalog screens, menu, badges, finance statuses
+- [x] Listing rejection asks for a reason; queue excludes refused/suspended
+- [x] "Signalements" menu → "Statistiques"; reviews empty text; cookie banner off admin menu
+- [ ] Email sending (blocked: SMTP credentials from user)
+- [ ] Redeploy server for aligned "listings to approve" count (blocked: user redeploy)

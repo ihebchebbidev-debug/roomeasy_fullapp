@@ -65,6 +65,8 @@ import { DashboardPanel } from "@/components/admin/DashboardPanel";
 import { AmenitiesPanel, CitiesPanel, ContentPagesPanel, CountriesPanel, PropertyTypesPanel } from "@/components/admin/CatalogPanels";
 import { adminOpsApi, type AdminMeDto } from "@/api/http/adminOps.http";
 import { useAdminCopy } from "@/i18n/adminCopy";
+import { useAdminT } from "@/i18n/adminAutoCopy";
+import { RejectListingDialog } from "@/components/admin/RejectListingDialog";
 import { useSupportCopy } from "@/i18n/supportCopy";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -129,6 +131,8 @@ function AdminPage() {
   const [commission, setCommission] = useState(String(commissionRate));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const ac = useAdminCopy();
+  const T = useAdminT();
+  const [rejecting, setRejecting] = useState<{ id: string; name: string } | null>(null);
   const sc = useSupportCopy();
   const [me, setMe] = useState<AdminMeDto | null>(null);
   const [pendingDetails, setPendingDetails] = useState<Record<string, Property>>({});
@@ -151,7 +155,7 @@ function AdminPage() {
 
   const can = (capability: string) => me?.capabilities.includes(capability) ?? !backendEnabled;
   const accessResolved = accountDataStatus === "ready" && (!backendEnabled || me !== null);
-  const pending = listings.filter((l) => !l.approved);
+  const pending = listings.filter((l) => !l.approved && l.status !== "suspended");
 
   // Live "to do" counters for the sidebar, read from the server and refreshed every minute.
   const [todo, setTodo] = useState<{ support: number; reports: number; verifications: number }>({ support: 0, reports: 0, verifications: 0 });
@@ -269,7 +273,7 @@ function AdminPage() {
   type NavItem = { value: string; label: string; icon: typeof Users; group: "overview" | "moderation" | "members" | "finance" | "insights" | "system" };
 
   const navItems: NavItem[] = [
-    { value: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "overview" },
+    { value: "dashboard", label: T("Dashboard"), icon: LayoutDashboard, group: "overview" },
     { value: "approvals", label: t.app.admin.approvals, icon: ClipboardCheck, group: "moderation" },
     ...(can("listings.moderate") ? [{ value: "listing-reports", label: ac.tabReports, icon: Flag, group: "moderation" as const }] : []),
     { value: "moderation", label: cc.reviewModeration, icon: Star, group: "moderation" },
@@ -296,11 +300,11 @@ function AdminPage() {
       : []),
     ...(can("content.manage")
       ? [
-          { value: "amenities", label: "Amenities", icon: ListChecks, group: "system" as const },
-          { value: "property-types", label: "Property types", icon: Home, group: "system" as const },
-          { value: "countries", label: "Countries", icon: Globe, group: "system" as const },
-          { value: "cities", label: "Cities", icon: Building2, group: "system" as const },
-          { value: "pages", label: "Pages", icon: FileText, group: "system" as const },
+          { value: "amenities", label: T("Amenities"), icon: ListChecks, group: "system" as const },
+          { value: "property-types", label: T("Property types"), icon: Home, group: "system" as const },
+          { value: "countries", label: T("Countries"), icon: Globe, group: "system" as const },
+          { value: "cities", label: T("Cities"), icon: Building2, group: "system" as const },
+          { value: "pages", label: T("Pages"), icon: FileText, group: "system" as const },
         ]
       : []),
     ...(can("admins.manage") || can("users.manage") ? [{ value: "team", label: sc.tabTeam, icon: UserCog, group: "system" as const }] : []),
@@ -533,7 +537,7 @@ function AdminPage() {
                           {property?.name ?? listing.propertyId}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {format(listing.nightlyUsd)} · {t.app.host[listing.status]}
+                          {format(listing.nightlyUsd)} · {listing.status === "published" ? T("Awaiting review") : t.app.host[listing.status]}
                         </p>
                       </div>
                     </Link>
@@ -556,15 +560,7 @@ function AdminPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={async () => {
-                          if (!(await remote.rejectListing(listing.id))) return;
-                          setPlatform((s) => ({
-                            listings: s.listings.map((l) =>
-                              l.id === listing.id ? { ...l, status: "suspended" as const } : l,
-                            ),
-                          }));
-                          toast.success(t.app.admin.rejected);
-                        }}
+                        onClick={() => setRejecting({ id: listing.id, name: property?.name ?? listing.propertyId })}
                       >
                         <X className="size-4" aria-hidden />
                         {t.app.admin.reject}
@@ -576,6 +572,20 @@ function AdminPage() {
             </ul>
           )}
           <ShowMore controls={pendingList} />
+          <RejectListingDialog
+            open={!!rejecting}
+            onOpenChange={(o) => !o && setRejecting(null)}
+            listingName={rejecting?.name}
+            onConfirm={async (code, details) => {
+              if (!rejecting) return;
+              const id = rejecting.id;
+              if (!(await remote.rejectListing(id, code, details))) return;
+              setPlatform((s) => ({
+                listings: s.listings.map((l) => (l.id === id ? { ...l, status: "suspended" as const } : l)),
+              }));
+              toast.success(t.app.admin.rejected);
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="users" className="mt-0 rounded-2xl border border-border bg-surface p-5">
@@ -621,7 +631,7 @@ function AdminPage() {
                   ) : null}
                   <Button asChild size="sm" variant="outline">
                     <Link to="/admin/hosts/$userId" params={{ userId: user.id }}>
-                      View details
+                      {T("View details")}
                     </Link>
                   </Button>
                   {user.suspended ? (
@@ -688,7 +698,7 @@ function AdminPage() {
         <TabsContent value="moderation" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
           <ListToolbar controls={reviewList} />
           {reviewList.total === 0 ? (
-            <Empty text={t.app.admin.noReports} />
+            <Empty text={t.app.host.noReviews} />
           ) : (
             <ul className="divide-y divide-border border-y border-border">
               {reviewList.visible.map((review) => {

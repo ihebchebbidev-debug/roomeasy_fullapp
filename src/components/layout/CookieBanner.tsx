@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { remote } from "@/api/backend";
@@ -8,10 +8,12 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 export function CookieBanner() {
   const { t } = useLanguage();
   const { cookiesChoice } = usePlatform();
+  // Admin pages keep their menu on the left, so the banner moves to the right there.
+  const onAdmin = useRouterState({ select: (st) => st.location.pathname.startsWith("/admin") });
   if (cookiesChoice) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl border border-border bg-card/95 p-4 shadow-[0_24px_60px_-24px_rgb(0_0_0/0.45)] backdrop-blur">
+    <div className={`fixed bottom-4 ${onAdmin ? "right-4" : "left-4"} z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl border border-border bg-card/95 p-4 shadow-[0_24px_60px_-24px_rgb(0_0_0/0.45)] backdrop-blur`}>
       <div className="flex flex-col gap-3">
         <div className="space-y-1">
           <p className="text-sm leading-relaxed text-foreground">

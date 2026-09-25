@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useAdminT } from "@/i18n/adminAutoCopy";
 
 export type IdentityStatus = "none" | "pending" | "verified" | "rejected";
 
@@ -11,6 +12,7 @@ const styles: Record<IdentityStatus, { label: string; className: string }> = {
 };
 
 export function IdentityBadge({ status, className }: { status: IdentityStatus; className?: string }) {
+  const T = useAdminT();
   const s = styles[status] ?? styles.none;
-  return <Badge className={cn("border-0", s.className, className)}>{s.label}</Badge>;
+  return <Badge className={cn("border-0", s.className, className)}>{T(s.label)}</Badge>;
 }
