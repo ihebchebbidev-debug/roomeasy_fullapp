@@ -13,7 +13,7 @@ type NavItem = { to: string; label: string; icon?: LucideIcon };
 
 /** Shared signed-in chrome used by every in-app page. */
 export function SiteHeader() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { session, threads } = usePlatform();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const unread = threads.reduce((sum, thread) => sum + thread.unread, 0);
@@ -73,7 +73,7 @@ export function SiteHeader() {
       </div>
 
       <nav
-        aria-label="Mobile navigation"
+        aria-label={{ en: "Mobile navigation", fr: "Navigation mobile", es: "Navegación móvil", de: "Mobile Navigation", pt: "Navegação móvel" }[locale]}
         className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border bg-surface/95 px-2 pt-1.5 pb-[calc(0.4rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(15_23_42/0.08)] backdrop-blur-xl lg:hidden"
       >
         {mobileNav.map((item) => {

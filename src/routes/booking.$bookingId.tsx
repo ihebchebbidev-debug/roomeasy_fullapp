@@ -84,8 +84,8 @@ function BookingConfirmation() {
             <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/10">
               <CheckCircle2 className="size-8 text-emerald-600" aria-hidden />
             </span>
-            <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">{c.confirmTitle}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{c.confirmSubtitle}</p>
+            <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">{booking.status === "pending" ? c.pendingTitle : c.confirmTitle}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{booking.status === "pending" ? c.pendingSubtitle : c.confirmSubtitle}</p>
             <p className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm">
               <span className="text-muted-foreground">{c.reference}</span>
               <span className="font-mono font-semibold tracking-wide">{booking.reference}</span>

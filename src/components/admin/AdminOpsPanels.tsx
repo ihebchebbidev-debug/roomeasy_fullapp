@@ -9,8 +9,11 @@
  * the signed-in administrator's role does not carry the capability.
  */
 import { useAdminT } from "@/i18n/adminAutoCopy";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { localizedSubject } from "@/i18n/emailSubjects";
 import { useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { ImageOff } from "lucide-react";
@@ -21,7 +24,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { API_BASE_URL } from "@/api/http/client";
 import { adminOpsApi } from "@/api/http/adminOps.http";
 import { ChartPanel, GroupedBars, RankingBars, StatTile } from "@/components/admin/AdminCharts";
 import type {
@@ -48,7 +50,7 @@ import { useAdminCopy } from "@/i18n/adminCopy";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
-import { Paged, rowText } from "@/components/admin/ListControls";
+import { Paged, rowText, type ListFilter } from "@/components/admin/ListControls";
 
 /* ------------------------------------------------------------------ shared */
 
@@ -56,9 +58,9 @@ function Shell({ children }: { children: React.ReactNode }) {
   return <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">{children}</div>;
 }
 
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+function Card({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <div className={cn("min-w-0 rounded-lg border border-border bg-surface p-4", className)}>{children}</div>
+    <div id={id} className={cn("min-w-0 rounded-lg border border-border bg-surface p-4", className)}>{children}</div>
   );
 }
 
@@ -73,12 +75,15 @@ function useRemoteList<T>(load: () => Promise<T>, fallback: T) {
   const copy = useAdminCopy();
   const [data, setData] = useState<T>(fallback);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
+    setError(false);
     try {
       setData(await load());
     } catch (error) {
+      setError(true);
       toast.error(error instanceof Error ? error.message : copy.failed);
     } finally {
       setLoading(false);
@@ -89,7 +94,7 @@ function useRemoteList<T>(load: () => Promise<T>, fallback: T) {
     void reload();
   }, [reload]);
 
-  return { data, loading, reload, setData };
+  return { data, loading, error, reload, setData };
 }
 
 /** Runs a write, reports the outcome and refreshes the panel. */
@@ -139,12 +144,7 @@ export function ListingReportsPanel() {
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <UserAvatar
                     name={report.reporterName ?? "?"}
-                    src={
-                      report.reporterAvatar ??
-                      (report.reporterId
-                        ? `${API_BASE_URL}/api/accounts/${encodeURIComponent(report.reporterId)}/avatar`
-                        : null)
-                    }
+                    src={report.reporterAvatar}
                     className="size-5"
                   />
                   <span className="truncate">
@@ -326,13 +326,28 @@ export function CommissionsPanel() {
 
   return (
     <Shell>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
-      <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
-        <div key={row.hostId} className="p-4 sm:px-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate font-semibold">{row.hostName}</p>
-              <p className="truncate text-sm text-muted-foreground">{row.email}</p>
+      <div className="rounded-2xl border border-border bg-surface p-5">
+      <Paged rows={data} text={rowText}>{(__rows) => (
+        <ul className="divide-y divide-border">
+        {__rows.map((row) => (
+        <li key={row.hostId} className="py-4 first:pt-0 last:pb-0">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              {row.avatarUrl ? (
+                <img
+                  src={row.avatarUrl}
+                  alt={row.hostName}
+                  className="size-11 shrink-0 rounded-full border border-border object-cover"
+                />
+              ) : (
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-sm font-semibold text-muted-foreground">
+                  {row.hostName.slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{row.hostName}</p>
+                <p className="truncate text-sm text-muted-foreground">{row.email}</p>
+              </div>
             </div>
             <Badge variant="secondary">
               {row.commissionRate === null ? `${copy.defaultRate} ${row.defaultRate}%` : `${copy.ownRate} ${row.commissionRate}%`}
@@ -371,8 +386,10 @@ export function CommissionsPanel() {
               {copy.useDefault}
             </Button>
           </div>
-        </div>
-      ))}</Paged>
+        </li>
+        ))}
+        </ul>
+      )}</Paged>
       </div>
     </Shell>
   );
@@ -380,26 +397,11 @@ export function CommissionsPanel() {
 
 /* -------------------------------------------------- support & dispute desk */
 
-export function SupportDeskPanel({ adminId }: { adminId: string | null }) {
+export function SupportDeskPanel() {
+  const T = useAdminT();
   const copy = useAdminCopy();
-  const [filter, setFilter] = useState<TicketDto["status"]>("open");
-  const load = useCallback(() => adminOpsApi.tickets(filter), [filter]);
-  const { data, loading, reload } = useRemoteList<TicketDto[]>(load, []);
-  const [openTicket, setOpenTicket] = useState<TicketDto | null>(null);
-  const [reply, setReply] = useState("");
-  const [internal, setInternal] = useState(false);
-  const [actionReason, setActionReason] = useState("");
-
-  const openThread = async (id: string) => {
-    try {
-      setOpenTicket(await adminOpsApi.ticket(id));
-      setReply("");
-      setInternal(false);
-      setActionReason("");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : copy.failed);
-    }
-  };
+  const load = useCallback(() => adminOpsApi.tickets("all"), []);
+  const { data, loading } = useRemoteList<TicketDto[]>(load, []);
 
   const statusLabel = (status: TicketDto["status"]) =>
     status === "open"
@@ -414,7 +416,7 @@ export function SupportDeskPanel({ adminId }: { adminId: string | null }) {
               ? copy.ticketResolved
               : copy.ticketClosed;
 
-  const filters: TicketDto["status"][] = [
+  const statuses: TicketDto["status"][] = [
     "open",
     "awaiting_reply",
     "escalated",
@@ -423,272 +425,50 @@ export function SupportDeskPanel({ adminId }: { adminId: string | null }) {
     "closed",
   ];
 
-  const filterBar = (
-    <div className="mb-4 flex flex-wrap gap-2">
-      {filters.map((value) => (
-        <Button
-          key={value}
-          size="sm"
-          variant={filter === value ? "default" : "outline"}
-          onClick={() => {
-            setFilter(value);
-            setOpenTicket(null);
-          }}
-        >
-          {statusLabel(value)}
-        </Button>
-      ))}
-    </div>
-  );
+  const statusFilters: ListFilter<TicketDto>[] = statuses.map((status) => ({
+    value: status,
+    label: statusLabel(status),
+    test: (ticket) => ticket.status === status,
+  }));
 
-  if (loading)
-    return (
-      <div>
-        {filterBar}
-        <Note text={copy.loading} />
-      </div>
-    );
-  if (data.length === 0)
-    return (
-      <div>
-        {filterBar}
-        <Note text={copy.empty} />
-      </div>
-    );
+  if (loading) return <Note text={copy.loading} />;
+  if (data.length === 0) return <Note text={copy.empty} />;
 
   return (
-    <div>
-      {filterBar}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-      <Shell>
-        <Paged rows={data} text={rowText}>{(__rows) => __rows.map((ticket) => (
-          <Button
-            key={ticket.id}
-            type="button"
-            variant="ghost"
-            onClick={() => void openThread(ticket.id)}
-            className={cn(
-              "h-auto w-full whitespace-normal rounded-md border border-border bg-surface p-4 text-left shadow-none transition-colors hover:bg-muted/50",
-              openTicket?.id === ticket.id && "border-primary bg-muted/50",
-            )}
-          >
-            <span className="flex items-center justify-between gap-2">
-              <span className="truncate font-semibold">{ticket.subject}</span>
-              <Badge variant="secondary">{statusLabel(ticket.status)}</Badge>
-            </span>
-            <span className="mt-1 block truncate text-xs text-muted-foreground">
-              {copy.ticketRef} {ticket.reference} · {ticket.openedByName} · {ticket.category}
-            </span>
-          </Button>
-        ))}</Paged>
-      </Shell>
-
-
-      {openTicket ? (
-        <Card>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate font-display text-lg font-semibold">{openTicket.subject}</p>
-              <p className="text-xs text-muted-foreground">
-                {copy.ticketRef} {openTicket.reference} · {openTicket.openedByName}
-                {openTicket.assigneeName ? ` · ${openTicket.assigneeName}` : ""}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  void run(
-                    () => adminOpsApi.assignTicketToMe(openTicket.id, adminId),
-                    () => void openThread(openTicket.id),
-                    copy.saved,
-                    copy.failed,
-                  )
-                }
+    <Shell>
+      <Paged rows={data} text={rowText} filters={statusFilters}>{(__rows) => (
+        <ul className="col-span-full divide-y divide-border border-y border-border">
+          {__rows.map((ticket) => (
+            <li key={ticket.id} className="transition-colors hover:bg-muted/30">
+              <Link
+                to="/admin/tickets/$ticketId"
+                params={{ ticketId: ticket.id }}
+                className="flex min-w-0 items-center justify-between gap-4 p-4 text-left sm:px-5"
               >
-                {copy.assignToMe}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  void run(
-                    () => adminOpsApi.setTicketStatus(openTicket.id, "escalated"),
-                    () => {
-                      void openThread(openTicket.id);
-                      void reload();
-                    },
-                    copy.saved,
-                    copy.failed,
-                  )
-                }
-              >
-                {copy.ticketEscalated}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  void run(
-                    () => adminOpsApi.setTicketStatus(openTicket.id, "resolved"),
-                    () => {
-                      void openThread(openTicket.id);
-                      void reload();
-                    },
-                    copy.saved,
-                    copy.failed,
-                  )
-                }
-              >
-                {copy.resolveTicket}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  void run(
-                    () => adminOpsApi.setTicketStatus(openTicket.id, "closed"),
-                    () => {
-                      setOpenTicket(null);
-                      void reload();
-                    },
-                    copy.saved,
-                    copy.failed,
-                  )
-                }
-              >
-                {copy.closeTicket}
-              </Button>
-            </div>
-          </div>
-
-          <ul className="mt-4 space-y-3">
-            {(openTicket.messages ?? []).map((message) => (
-              <li
-                key={message.id}
-                className={cn(
-                  "rounded-md border border-border p-3 text-sm",
-                  message.internalNote && "border-dashed bg-muted/40",
+                <div className="flex min-w-0 items-center gap-3">
+                {ticket.openedByAvatar ? (
+                  <img src={ticket.openedByAvatar} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+                    {(ticket.openedByName || "?").charAt(0).toUpperCase()}
+                  </span>
                 )}
-              >
-                <p className="text-xs font-semibold text-muted-foreground">
-                  {message.authorName} · {new Date(message.sentAt).toLocaleString()}
-                  {message.internalNote ? ` · ${copy.internalNote}` : ""}
-                </p>
-                <p className="mt-1 whitespace-pre-line">{message.body}</p>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-4 rounded-md border border-border p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {copy.ticketActions}
-            </p>
-            <Input
-              className="mt-2"
-              value={actionReason}
-              onChange={(e) => setActionReason(e.target.value)}
-              placeholder={copy.actionReason}
-              aria-label={copy.actionReason}
-            />
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionReason.trim().length < 3}
-                onClick={() => {
-                  if (!openTicket.bookingId) {
-                    toast.error(copy.notLinkedBooking);
-                    return;
-                  }
-                  void run(
-                    () =>
-                      adminOpsApi.ticketAction(openTicket.id, {
-                        action: "cancel_booking",
-                        reason: actionReason.trim(),
-                        refundPercent: 100,
-                      }),
-                    () => {
-                      setActionReason("");
-                      void openThread(openTicket.id);
-                      void reload();
-                    },
-                    copy.saved,
-                    copy.failed,
-                  );
-                }}
-              >
-                {copy.cancelStay}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionReason.trim().length < 3}
-                onClick={() => {
-                  if (!openTicket.openedById) {
-                    toast.error(copy.notLinkedMember);
-                    return;
-                  }
-                  void run(
-                    () =>
-                      adminOpsApi.ticketAction(openTicket.id, {
-                        action: "suspend_member",
-                        reason: actionReason.trim(),
-                        days: 30,
-                      }),
-                    () => {
-                      setActionReason("");
-                      void openThread(openTicket.id);
-                      void reload();
-                    },
-                    copy.saved,
-                    copy.failed,
-                  );
-                }}
-              >
-                {copy.suspendMember}
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <Textarea
-              value={reply}
-              onChange={(e) => setReply(e.target.value)}
-              placeholder={copy.replyPlaceholder}
-              aria-label={copy.reply}
-              rows={4}
-            />
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} />
-              {copy.internalNote}
-            </label>
-            <Button
-              size="sm"
-              onClick={() => {
-                if (!reply.trim()) return;
-                void run(
-                  () => adminOpsApi.replyToTicket(openTicket.id, reply.trim(), internal),
-                  () => {
-                    setReply("");
-                    void openThread(openTicket.id);
-                    void reload();
-                  },
-                  copy.saved,
-                  copy.failed,
-                );
-              }}
-            >
-              {copy.sendReply}
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <Note text={copy.empty} />
-      )}
-      </div>
-    </div>
+                <div className="min-w-0">
+                  <h3 className="truncate font-sans text-sm font-semibold underline-offset-4 hover:underline">
+                    {ticket.subject}
+                  </h3>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {copy.ticketRef} {ticket.reference} · {ticket.openedByName} · {T(ticket.category)}
+                  </p>
+                </div>
+                </div>
+                <Badge variant="secondary" className="shrink-0">{statusLabel(ticket.status)}</Badge>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}</Paged>
+    </Shell>
   );
 }
 
@@ -958,6 +738,7 @@ function DeliverySettings() {
 
   const mail = status.smtp;
   const pay = status.payments;
+  const mailUnavailable = !mail.configured;
 
   return (
     <Card className="grid gap-3">
@@ -977,6 +758,11 @@ function DeliverySettings() {
         {mail.port ? `:${mail.port}` : ""} · {copy.mailSender}: {mail.from || "—"} · {copy.emailQueued}:{" "}
         {status.queue.queued} · {copy.emailFailed}: {status.queue.failed}
       </p>
+      {mailUnavailable ? (
+        <p className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-700">
+          {copy.mailConfigurationRequired}: {mail.missing.join(", ") || copy.mailMissing}
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap items-end gap-2">
         <span className="grid gap-1">
@@ -994,7 +780,7 @@ function DeliverySettings() {
         </span>
         <Button
           size="sm"
-          disabled={busy || testTo.trim().length < 5}
+          disabled={busy || mailUnavailable || testTo.trim().length < 5}
           onClick={() => void act(() => adminOpsApi.sendTestEmail(testTo.trim()), copy.saved)}
         >
           {copy.mailSend}
@@ -1002,7 +788,7 @@ function DeliverySettings() {
         <Button
           size="sm"
           variant="outline"
-          disabled={busy}
+          disabled={busy || mailUnavailable}
           onClick={() =>
             void act(async () => {
               const result = await adminOpsApi.verifyEmail();
@@ -1015,7 +801,7 @@ function DeliverySettings() {
         <Button
           size="sm"
           variant="outline"
-          disabled={busy}
+          disabled={busy || mailUnavailable}
           onClick={() => void act(() => adminOpsApi.dispatchEmails(), copy.saved)}
         >
           {copy.mailDrain}
@@ -1046,6 +832,8 @@ function DeliverySettings() {
 }
 
 export function NotificationsPanel() {
+  const T = useAdminT();
+  const { locale } = useLanguage();
   const copy = useAdminCopy();
   const load = useCallback(() => adminOpsApi.notifications(), []);
   const { data, loading, reload } = useRemoteList<NotificationDto[]>(load, []);
@@ -1076,7 +864,7 @@ export function NotificationsPanel() {
             <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
               <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span className="min-w-0">
-                  <span className="block truncate font-medium">{row.subject}</span>
+                  <span className="block truncate font-medium">{localizedSubject(locale, row.subject)}</span>
                   <span className="block truncate text-xs text-muted-foreground">
                     {copy.recipient}: {row.recipientEmail} · {row.template}
                   </span>
@@ -1315,6 +1103,7 @@ export function StatsComparePanel() {
  */
 export function BookingsDeskPanel() {
   const copy = useAdminCopy();
+  const T = useAdminT();
   const { format } = useCurrency();
   const [filters, setFilters] = useState<AdminBookingFilters>({});
   const [applied, setApplied] = useState<AdminBookingFilters>({});
@@ -1322,6 +1111,57 @@ export function BookingsDeskPanel() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<AdminBookingDto | null>(null);
   const [conversation, setConversation] = useState<BookingConversationDto | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ checkIn: "", checkOut: "", totalUsd: "", reason: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const startEdit = (booking: AdminBookingDto) => {
+    setEditForm({
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      totalUsd: String(booking.price.totalUsd),
+      reason: "",
+    });
+    setEditing(true);
+  };
+
+  const saveEdit = async () => {
+    if (!selected) return;
+    if (editForm.reason.trim().length < 5) {
+      toast.error(copy.reasonRequired);
+      return;
+    }
+    const patch: { checkIn?: string; checkOut?: string; totalUsd?: number; reason: string } = {
+      reason: editForm.reason.trim(),
+    };
+    if (editForm.checkIn && editForm.checkIn !== selected.checkIn) patch.checkIn = editForm.checkIn;
+    if (editForm.checkOut && editForm.checkOut !== selected.checkOut) patch.checkOut = editForm.checkOut;
+    const amount = Number(editForm.totalUsd);
+    if (editForm.totalUsd.trim() !== "" && !Number.isNaN(amount) && amount !== selected.price.totalUsd) {
+      patch.totalUsd = amount;
+    }
+    if (!patch.checkIn && !patch.checkOut && patch.totalUsd === undefined) {
+      setEditing(false);
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      await adminOpsApi.adjustBooking(selected.id, patch);
+      toast.success(copy.saved);
+      setSelected({
+        ...selected,
+        checkIn: patch.checkIn ?? selected.checkIn,
+        checkOut: patch.checkOut ?? selected.checkOut,
+        price: { ...selected.price, totalUsd: patch.totalUsd ?? selected.price.totalUsd },
+      });
+      setEditing(false);
+      setApplied((prev) => ({ ...prev }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : copy.failed);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -1345,8 +1185,9 @@ export function BookingsDeskPanel() {
     setConversation(null);
     try {
       setConversation(await adminOpsApi.bookingConversation(booking.id));
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : copy.failed);
+    } catch {
+      // No conversation available for this booking: the panel shows the empty state.
+      setConversation({ messages: [] } as unknown as BookingConversationDto);
     }
   };
 
@@ -1389,7 +1230,7 @@ export function BookingsDeskPanel() {
               <option value="">{copy.bkAll}</option>
               {(["pending", "confirmed", "completed", "cancelled", "declined"] as const).map((status) => (
                 <option key={status} value={status}>
-                  {status}
+                   {T(status)}
                 </option>
               ))}
             </select>
@@ -1420,74 +1261,213 @@ export function BookingsDeskPanel() {
       ) : rows.length === 0 ? (
         <Note text={copy.empty} />
       ) : (
-        <div className="grid gap-2">
-          <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((row) => (
-            <Card key={row.id} className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-semibold">
-                  {row.reference} · {row.propertyName}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {row.guest.name} · {row.checkIn} → {row.checkOut} · {row.nights} {copy.bkNights}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline">{row.status}</Badge>
-                <span className="text-sm font-semibold tabular-nums">{format(row.price.totalUsd)}</span>
-                <Button size="sm" variant="outline" onClick={() => void open(row)}>
-                  {copy.bkDetails}
-                </Button>
-              </div>
-            </Card>
-          ))}</Paged>
+        <div className="rounded-2xl border border-border bg-surface p-5">
+          <Paged rows={rows} text={rowText}>{(__rows) => (
+            <ul className="col-span-full divide-y divide-border border-y border-border">
+              {__rows.map((row) => (
+                <li
+                  key={row.id}
+                  className="grid gap-4 p-4 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5"
+                >
+                  <div className="flex min-w-0 items-center gap-4">
+                    {row.propertyPhoto ? (
+                      <img
+                        src={row.propertyPhoto}
+                        alt={row.propertyName}
+                        loading="lazy"
+                        className="size-16 shrink-0 rounded-md object-cover"
+                      />
+                    ) : (
+                      <div className="size-16 shrink-0 rounded-md bg-muted" aria-hidden />
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="truncate font-sans text-sm font-semibold">
+                        {row.reference} · {row.propertyName}
+                      </h3>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {row.guest.name} · {row.checkIn} → {row.checkOut} · {row.nights} {copy.bkNights}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">{T(row.status)}</Badge>
+                    <span className="text-sm font-semibold tabular-nums">{format(row.price.totalUsd)}</span>
+                    <Button size="sm" variant="outline" onClick={() => void open(row)}>
+                      {copy.bkDetails}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}</Paged>
         </div>
       )}
 
       {selected ? (
-        <Card>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold">
-                {selected.reference} · {selected.propertyName}
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-4 backdrop-blur-sm sm:p-8">
+        <div className="mx-auto max-w-3xl">
+          <Button size="sm" variant="outline" className="mb-3" onClick={() => { setSelected(null); setEditing(false); }}>
+            ← Retour aux réservations
+          </Button>
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+          {/* header: photo + reference + status */}
+          <div className="flex items-start gap-4 border-b border-border p-5">
+            {selected.propertyPhoto ? (
+              <img
+                src={selected.propertyPhoto}
+                alt={selected.propertyName}
+                className="size-20 shrink-0 rounded-xl border border-border object-cover"
+              />
+            ) : (
+              <div className="size-20 shrink-0 rounded-xl border border-border bg-muted" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold">{selected.propertyName}</p>
+                <Badge variant="outline">{T(selected.status)}</Badge>
+              </div>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {selected.reference} · {selected.propertyCity}, {selected.propertyCountry}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {selected.guest.name}
-                {selected.guest.email ? ` · ${selected.guest.email}` : ""}
-                {selected.guest.phone ? ` · ${selected.guest.phone}` : ""}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {selected.checkIn} → {selected.checkOut} · {selected.guests} · {format(selected.price.totalUsd)}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1">
+                <p className="text-sm">
+                  <span className="text-muted-foreground">{copy.bkFrom} → {copy.bkTo} : </span>
+                  <span className="font-semibold">{selected.checkIn} → {selected.checkOut}</span>
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">{copy.refundAmount} : </span>
+                  <span className="font-semibold">{format(selected.price.totalUsd)}</span>
+                </p>
+              </div>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => setSelected(null)}>
-              ✕
-            </Button>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button size="sm" variant="outline" onClick={() => (editing ? setEditing(false) : startEdit(selected))}>
+                {copy.changeBooking}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setSelected(null); setEditing(false); }}>
+                ✕
+              </Button>
+            </div>
           </div>
 
-          <p className="mt-4 text-sm">
-            <span className="font-semibold">{copy.bkPayment}: </span>
-            {selected.payment
-              ? `${selected.payment.method} ${selected.payment.brand} ···· ${selected.payment.last4} · ${selected.payment.status}` +
-                (selected.payment.refundedUsd > 0 ? ` · ${copy.bkRefunded} ${format(selected.payment.refundedUsd)}` : "")
-              : copy.bkNoPayment}
-          </p>
-
-          <p className="mt-4 font-semibold">{copy.bkConversation}</p>
-          {conversation && conversation.messages.length > 0 ? (
-            <div className="mt-2 grid max-h-80 gap-2 overflow-y-auto">
-              {conversation.messages.map((message) => (
-                <div key={message.id} className="rounded-md border border-border p-2 text-sm">
-                  <p className="text-xs text-muted-foreground">
-                    {message.senderName ?? message.senderRole} · {new Date(message.sentAt).toLocaleString()}
-                  </p>
-                  <p className="whitespace-pre-wrap">{message.text}</p>
+          {editing ? (
+            <div className="border-b border-border bg-background/60 p-5">
+              <p className="text-sm font-semibold">{copy.changeBooking}</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <Label htmlFor="bk-edit-in">{copy.bkFrom}</Label>
+                  <Input
+                    id="bk-edit-in"
+                    type="date"
+                    value={editForm.checkIn}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, checkIn: e.target.value }))}
+                  />
                 </div>
-              ))}
+                <div className="space-y-1">
+                  <Label htmlFor="bk-edit-out">{copy.bkTo}</Label>
+                  <Input
+                    id="bk-edit-out"
+                    type="date"
+                    value={editForm.checkOut}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, checkOut: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="bk-edit-amount">{copy.refundAmount} (USD)</Label>
+                  <Input
+                    id="bk-edit-amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.totalUsd}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, totalUsd: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="mt-3 space-y-1">
+                <Label htmlFor="bk-edit-reason">{copy.reason}</Label>
+                <Input
+                  id="bk-edit-reason"
+                  value={editForm.reason}
+                  placeholder={copy.reasonRequired}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, reason: e.target.value }))}
+                />
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Button size="sm" disabled={savingEdit} onClick={() => void saveEdit()}>
+                  {savingEdit ? "…" : copy.save}
+                </Button>
+                <Button size="sm" variant="outline" disabled={savingEdit} onClick={() => setEditing(false)}>
+                  ✕
+                </Button>
+              </div>
             </div>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">{copy.bkNoConversation}</p>
-          )}
-        </Card>
+          ) : null}
+
+          {/* info grid */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-b border-border p-5 sm:grid-cols-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkGuest ?? "Voyageur"}</p>
+              <p className="mt-1 truncate text-sm font-semibold">{selected.guest.name}</p>
+              {selected.guest.email ? <p className="truncate text-xs text-muted-foreground">{selected.guest.email}</p> : null}
+              {selected.guest.phone ? <p className="truncate text-xs text-muted-foreground">{selected.guest.phone}</p> : null}
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkHost ?? "Hôte"}</p>
+              <p className="mt-1 truncate text-sm font-semibold">{conversation?.hostName ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkFrom} → {copy.bkTo}</p>
+              <p className="mt-1 text-sm font-semibold">
+                {selected.checkIn} → {selected.checkOut}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {selected.nights} {copy.bkNights} · {selected.guests}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkListing}</p>
+              <p className="mt-1 truncate text-sm font-semibold">{selected.propertyName}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {selected.propertyCity}, {selected.propertyCountry}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkPayment}</p>
+              <p className="mt-1 text-sm font-semibold">
+                {selected.payment
+                  ? `${T(selected.payment.method)} ${selected.payment.brand} ···· ${selected.payment.last4} · ${T(selected.payment.status)}`
+                  : copy.bkNoPayment}
+              </p>
+              {selected.payment && selected.payment.refundedUsd > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {copy.bkRefunded} {format(selected.payment.refundedUsd)}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          {/* conversation */}
+          <div className="p-5">
+            <p className="text-sm font-semibold">{copy.bkConversation}</p>
+            {conversation && conversation.messages.length > 0 ? (
+              <div className="mt-3 grid max-h-80 gap-2 overflow-y-auto pr-1">
+                {conversation.messages.map((message) => (
+                  <div key={message.id} className="rounded-lg border border-border bg-background p-3 text-sm">
+                    <p className="text-xs text-muted-foreground">
+                      {message.senderName ?? message.senderRole} · {new Date(message.sentAt).toLocaleString()}
+                    </p>
+                    <p className="mt-1 whitespace-pre-wrap">{message.text}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">{copy.bkNoConversation}</p>
+            )}
+          </div>
+        </div>
+        </div>
+        </div>
       ) : null}
     </Shell>
   );
@@ -1531,6 +1511,8 @@ export function FinancePanel() {
   const openInvoice = async (bookingId: string) => {
     try {
       setInvoice(await adminOpsApi.invoice(bookingId));
+      // The invoice renders under the long lists: bring it into view.
+      requestAnimationFrame(() => document.getElementById("admin-invoice")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : copy.failed);
     }
@@ -1587,7 +1569,7 @@ export function FinancePanel() {
         const sum = (k: keyof AccountingRowDto, cur?: string) =>
           accounting.reduce((t, r) => (cur && (r.currency ?? "EUR") !== cur ? t : t + Number(r[k] ?? 0)), 0);
         // Never add different currencies together: one amount per currency.
-        const currencies = Array.from(new Set(accounting.map((r) => r.currency ?? "EUR")));
+        const currencies = Array.from(new Set(accounting.map((r) => r.currency ?? "DEV").filter(Boolean)));
         const perCurrency = (k: keyof AccountingRowDto) =>
           currencies.map((c) => money(sum(k, c), c)).join(" · ");
         const single = currencies.length === 1 ? currencies[0] : undefined;
@@ -1602,22 +1584,24 @@ export function FinancePanel() {
               <StatTile label={copy.finHostNet} value={perCurrency("hostNetUsd")} />
               <StatTile label={copy.finRefunded} value={perCurrency("refundedUsd")} tone={sum("refundedUsd") > 0 ? "danger" : "default"} />
             </div>
-            <ChartPanel title={copy.finAccounting} subtitle={copy.finRevenue + " · " + copy.finCommission + " · " + copy.finHostNet}>
-              <GroupedBars
-                data={accounting.map((r) => ({ period: r.period, revenueUsd: Math.round(r.revenueUsd), commissionUsd: Math.round(r.commissionUsd), hostNetUsd: Math.round(r.hostNetUsd) }))}
-                xKey="period"
-                series={[{ key: "revenueUsd", label: copy.finRevenue }, { key: "commissionUsd", label: copy.finCommission }, { key: "hostNetUsd", label: copy.finHostNet }]}
-              />
-            </ChartPanel>
+            {currencies.map((currency) => (
+              <ChartPanel key={currency} title={`${copy.finAccounting} · ${currency}`} subtitle={copy.finRevenue + " · " + copy.finCommission + " · " + copy.finHostNet}>
+                <GroupedBars
+                  data={accounting.filter((r) => (r.currency ?? "DEV") === currency).map((r) => ({ period: r.period, revenueUsd: Math.round(r.revenueUsd), commissionUsd: Math.round(r.commissionUsd), hostNetUsd: Math.round(r.hostNetUsd) }))}
+                  xKey="period"
+                  series={[{ key: "revenueUsd", label: copy.finRevenue }, { key: "commissionUsd", label: copy.finCommission }, { key: "hostNetUsd", label: copy.finHostNet }]}
+                />
+              </ChartPanel>
+            ))}
           </>
         );
       })() : null}
 
-      {report.length > 0 ? (
-        <ChartPanel title={copy.finReport} subtitle={copy.finCommission}>
-          <RankingBars label={copy.finCommission} data={[...report].sort((x, y) => y.commissionUsd - x.commissionUsd).slice(0, 8).map((r) => ({ name: r.hostName, value: Math.round(r.commissionUsd) }))} />
+      {Array.from(new Set(report.map((row) => row.currency ?? "DEV"))).map((currency) => (
+        <ChartPanel key={currency} title={`${copy.finReport} · ${currency}`} subtitle={copy.finCommission}>
+          <RankingBars label={copy.finCommission} data={report.filter((row) => (row.currency ?? "DEV") === currency).sort((x, y) => y.commissionUsd - x.commissionUsd).slice(0, 8).map((r) => ({ name: r.hostName, value: Math.round(r.commissionUsd) }))} />
         </ChartPanel>
-      ) : null}
+      ))}
 
       {/* accounting totals */}
       <Card>
@@ -1738,7 +1722,7 @@ export function FinancePanel() {
       </Card>
 
       {invoice ? (
-        <Card>
+        <Card id="admin-invoice" className="scroll-mt-24">
           <div className="mb-3 flex items-center justify-between gap-2">
             <p className="text-sm font-semibold">
               {copy.finInvoiceFor} {invoice.booking.reference}
@@ -1789,7 +1773,7 @@ export function FinancePanel() {
               ))}
               {invoice.cleaningFeeUsd > 0 ? (
                 <div className="flex justify-between">
-                  <span>{copy.finInvoice} · cleaning</span>
+                  <span>{copy.finCleaningFee}</span>
                   <span className="tabular-nums">{money(invoice.cleaningFeeUsd, invoice.booking.currency)}</span>
                 </div>
               ) : null}

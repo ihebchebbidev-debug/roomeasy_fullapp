@@ -12,7 +12,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { cn } from "@/lib/utils";
 
 export function Header() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { session } = usePlatform();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -65,7 +65,7 @@ export function Header() {
           <AccountMenu variant="dark" />
           <button
             type="button"
-            aria-label="Menu"
+            aria-label={{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
             className="grid size-10 shrink-0 place-items-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur transition-colors hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-lime focus-visible:outline-none lg:hidden"
@@ -76,10 +76,10 @@ export function Header() {
       </div>
 
       {mounted ? createPortal(
-        <div className="fixed inset-0 z-[90] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="fixed inset-0 z-[90] lg:hidden" role="dialog" aria-modal="true" aria-label={{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}>
           <button
             type="button"
-            aria-label="Close menu"
+            aria-label={{ en: "Close menu", fr: "Fermer le menu", es: "Cerrar menú", de: "Menü schließen", pt: "Fechar menu" }[locale]}
             onClick={() => setOpen(false)}
             className={cn(
               "absolute inset-0 bg-foreground/50 backdrop-blur-sm transition-opacity duration-300",
@@ -96,7 +96,7 @@ export function Header() {
               <BrandLogo className="h-10" />
               <button
                 type="button"
-                aria-label="Close menu"
+                aria-label={{ en: "Close menu", fr: "Fermer le menu", es: "Cerrar menú", de: "Menü schließen", pt: "Fechar menu" }[locale]}
                 onClick={() => setOpen(false)}
                 className="grid size-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >

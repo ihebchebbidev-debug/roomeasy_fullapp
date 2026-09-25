@@ -322,7 +322,7 @@ function CheckoutPage() {
               <StripeCardPayment
                 publishableKey={payConfig.publishableKey as string}
                 clientSecret={stripeStage.clientSecret}
-                returnUrl={`${window.location.origin}/booking/${stripeStage.bookingId}`}
+                returnUrl={`${window.location.origin}${locale === "en" ? "" : `/${locale}`}/booking/${stripeStage.bookingId}`}
                 totalLabel={formatCharged(quote?.total ?? 0)}
                 defaults={{
                   name,

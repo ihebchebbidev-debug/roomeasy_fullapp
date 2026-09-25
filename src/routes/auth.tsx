@@ -88,6 +88,14 @@ function AuthPage() {
   const [photoPending, setPhotoPending] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
 
+  const ph = pickCopy(locale, {
+    en: { title: "Add a profile photo", hint: "Help hosts and guests recognise you. You can also do this later.", choose: "Choose a photo", other: "Choose another photo", save: "Save and continue", skip: "Skip for now" },
+    fr: { title: "Ajoutez une photo de profil", hint: "Aidez les hôtes et les voyageurs à vous reconnaître. Vous pourrez aussi le faire plus tard.", choose: "Choisir une photo", other: "Choisir une autre photo", save: "Enregistrer et continuer", skip: "Passer pour l'instant" },
+    es: { title: "Añade una foto de perfil", hint: "Ayuda a anfitriones y viajeros a reconocerte. También puedes hacerlo más tarde.", choose: "Elegir una foto", other: "Elegir otra foto", save: "Guardar y continuar", skip: "Omitir por ahora" },
+    de: { title: "Profilfoto hinzufügen", hint: "Hilf Gastgebern und Gästen, dich zu erkennen. Du kannst das auch später tun.", choose: "Foto auswählen", other: "Anderes Foto wählen", save: "Speichern und weiter", skip: "Vorerst überspringen" },
+    pt: { title: "Adicione uma foto de perfil", hint: "Ajude anfitriões e viajantes a reconhecê-lo. Também pode fazê-lo mais tarde.", choose: "Escolher uma foto", other: "Escolher outra foto", save: "Guardar e continuar", skip: "Ignorar por agora" },
+  });
+
   const p = pickCopy(locale, {
     en: {
       phone: "Phone number",
@@ -220,12 +228,12 @@ function AuthPage() {
       <div className="absolute inset-0 -z-10 bg-navy/80" aria-hidden />
       <section className="w-full max-w-md rounded-[1.75rem] border border-border bg-surface p-7 text-center shadow-lift sm:p-9">
         <p className="text-xs font-semibold text-primary">2 / 2</p>
-        <h1 className="mt-2 font-display text-2xl font-bold">Add a profile photo</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Help hosts and guests recognise you. You can also do this later.</p>
+        <h1 className="mt-2 font-display text-2xl font-bold">{ph.title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{ph.hint}</p>
         <UserAvatar name={newAccount.name} src={photoPreview} className="mx-auto mt-7 size-28 text-4xl" />
         <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => void chooseSignupPhoto(event.target.files?.[0])} />
-        <Button type="button" variant="outline" className="mt-6 w-full rounded-full" onClick={() => photoInput.current?.click()} disabled={photoPending}>{photoPreview ? "Choose another photo" : "Choose a photo"}</Button>
-        <Button type="button" className="mt-3 w-full rounded-full" onClick={() => void finishSignup()} disabled={photoPending}>{photoPending ? <Loader2 className="size-4 animate-spin" /> : null}{photoPreview ? "Save and continue" : "Skip for now"}</Button>
+        <Button type="button" variant="outline" className="mt-6 w-full rounded-full" onClick={() => photoInput.current?.click()} disabled={photoPending}>{photoPreview ? ph.other : ph.choose}</Button>
+        <Button type="button" className="mt-3 w-full rounded-full" onClick={() => void finishSignup()} disabled={photoPending}>{photoPending ? <Loader2 className="size-4 animate-spin" /> : null}{photoPreview ? ph.save : ph.skip}</Button>
       </section>
     </main>
   );

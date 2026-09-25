@@ -34,6 +34,7 @@ import { Route as StaysIndexRouteImport } from './routes/stays.index'
 import { Route as StaysPropertyIdRouteImport } from './routes/stays.$propertyId'
 import { Route as AdminHostsUserIdRouteImport } from './routes/admin_.hosts.$userId'
 import { Route as AdminListingsListingIdRouteImport } from './routes/admin_.listings.$listingId'
+import { Route as AdminTicketsTicketIdRouteImport } from './routes/admin_.tickets.$ticketId'
 import { Route as ApiPublicExchangeRatesRouteImport } from './routes/api/public/exchange-rates'
 
 const IndexRoute = IndexRouteImport.update({
@@ -161,6 +162,11 @@ const AdminListingsListingIdRoute = AdminListingsListingIdRouteImport.update({
   path: '/admin/listings/$listingId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTicketsTicketIdRoute = AdminTicketsTicketIdRouteImport.update({
+  id: '/admin_/tickets/$ticketId',
+  path: '/admin/tickets/$ticketId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicExchangeRatesRoute = ApiPublicExchangeRatesRouteImport.update({
   id: '/api/public/exchange-rates',
   path: '/api/public/exchange-rates',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/stays/': typeof StaysIndexRoute
   '/admin/hosts/$userId': typeof AdminHostsUserIdRoute
   '/admin/listings/$listingId': typeof AdminListingsListingIdRoute
+  '/admin/tickets/$ticketId': typeof AdminTicketsTicketIdRoute
   '/api/public/exchange-rates': typeof ApiPublicExchangeRatesRoute
 }
 export interface FileRoutesByTo {
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/stays': typeof StaysIndexRoute
   '/admin/hosts/$userId': typeof AdminHostsUserIdRoute
   '/admin/listings/$listingId': typeof AdminListingsListingIdRoute
+  '/admin/tickets/$ticketId': typeof AdminTicketsTicketIdRoute
   '/api/public/exchange-rates': typeof ApiPublicExchangeRatesRoute
 }
 export interface FileRoutesById {
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/stays/': typeof StaysIndexRoute
   '/admin_/hosts/$userId': typeof AdminHostsUserIdRoute
   '/admin_/listings/$listingId': typeof AdminListingsListingIdRoute
+  '/admin_/tickets/$ticketId': typeof AdminTicketsTicketIdRoute
   '/api/public/exchange-rates': typeof ApiPublicExchangeRatesRoute
 }
 export interface FileRouteTypes {
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/stays/'
     | '/admin/hosts/$userId'
     | '/admin/listings/$listingId'
+    | '/admin/tickets/$ticketId'
     | '/api/public/exchange-rates'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/stays'
     | '/admin/hosts/$userId'
     | '/admin/listings/$listingId'
+    | '/admin/tickets/$ticketId'
     | '/api/public/exchange-rates'
   id:
     | '__root__'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/stays/'
     | '/admin_/hosts/$userId'
     | '/admin_/listings/$listingId'
+    | '/admin_/tickets/$ticketId'
     | '/api/public/exchange-rates'
   fileRoutesById: FileRoutesById
 }
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   StaysIndexRoute: typeof StaysIndexRoute
   AdminHostsUserIdRoute: typeof AdminHostsUserIdRoute
   AdminListingsListingIdRoute: typeof AdminListingsListingIdRoute
+  AdminTicketsTicketIdRoute: typeof AdminTicketsTicketIdRoute
   ApiPublicExchangeRatesRoute: typeof ApiPublicExchangeRatesRoute
 }
 
@@ -545,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminListingsListingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/tickets/$ticketId': {
+      id: '/admin_/tickets/$ticketId'
+      path: '/admin/tickets/$ticketId'
+      fullPath: '/admin/tickets/$ticketId'
+      preLoaderRoute: typeof AdminTicketsTicketIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/exchange-rates': {
       id: '/api/public/exchange-rates'
       path: '/api/public/exchange-rates'
@@ -581,6 +601,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaysIndexRoute: StaysIndexRoute,
   AdminHostsUserIdRoute: AdminHostsUserIdRoute,
   AdminListingsListingIdRoute: AdminListingsListingIdRoute,
+  AdminTicketsTicketIdRoute: AdminTicketsTicketIdRoute,
   ApiPublicExchangeRatesRoute: ApiPublicExchangeRatesRoute,
 }
 export const routeTree = rootRouteImport

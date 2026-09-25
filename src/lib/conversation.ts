@@ -16,7 +16,14 @@ export async function openConversation(
   const existing = getPlatform().threads.find((thread) => thread.propertyId === propertyId);
   if (existing) return true;
 
-  const intro = `Hi! I have a question about ${propertyName}.`;
+  const lang = typeof document !== "undefined" ? document.documentElement.lang.slice(0, 2) : "en";
+  const intros: Record<string, string> = {
+    fr: `Bonjour ! J'ai une question au sujet de ${propertyName}.`,
+    es: `¡Hola! Tengo una pregunta sobre ${propertyName}.`,
+    de: `Hallo! Ich habe eine Frage zu ${propertyName}.`,
+    pt: `Olá! Tenho uma pergunta sobre ${propertyName}.`,
+  };
+  const intro = intros[lang] ?? `Hi! I have a question about ${propertyName}.`;
 
   if (backendEnabled) {
     const created = await remote.startThread(propertyId, intro, bookingId);

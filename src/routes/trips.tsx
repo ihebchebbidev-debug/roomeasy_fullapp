@@ -116,11 +116,11 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
     <li className="group overflow-hidden rounded-xl border border-border bg-surface transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-lift">
       <div className="grid sm:grid-cols-[13rem_minmax(0,1fr)]">
         <div className="relative overflow-hidden"><img src={property.image} alt={property.name} loading="lazy" className="aspect-[16/9] h-full min-h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:aspect-auto" /></div>
-        <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className={cn("border-0", statusTone(booking.status))}>{t.app.status[booking.status]}</Badge>
-              <span className="text-xs text-muted-foreground">#{booking.id.toUpperCase()}</span>
+              <span className="text-xs text-muted-foreground">{booking.reference || `#${booking.id.toUpperCase()}`}</span>
             </div>
             <h2 className="mt-3 font-display text-lg font-bold leading-snug">{property.name}</h2>
             <p className="text-sm text-muted-foreground">{cityName(property, locale as never)}</p>

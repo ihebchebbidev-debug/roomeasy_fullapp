@@ -171,6 +171,7 @@ export function FilterPanel({
               key={rating}
               variant={search.rating === rating ? "default" : "outline"}
               size="sm"
+              className="min-w-0 truncate px-1 text-[11px]"
               onClick={() => update({ rating })}
             >
               {rating ? (
@@ -341,12 +342,13 @@ function Segmented({
   onSelect: (value: number) => void;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-1.5">
       {options.map((option) => (
         <Button
           key={option}
           variant={value === option ? "default" : "outline"}
           size="sm"
+          className="min-w-0 truncate px-0.5 text-[10px]"
           onClick={() => onSelect(option)}
         >
           {option ? `${option}+` : anyLabel}

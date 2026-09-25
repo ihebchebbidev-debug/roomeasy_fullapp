@@ -46,6 +46,7 @@ export type HostCommissionDto = {
   hostId: string;
   hostName: string;
   email: string;
+  avatarUrl: string | null;
   commissionRate: number | null;
   defaultRate: number;
   effectiveRate: number;
@@ -61,6 +62,7 @@ export type TicketMessageDto = {
   body: string;
   internalNote: boolean;
   sentAt: string;
+  avatarUrl?: string | null;
 };
 
 export type TicketDto = {
@@ -74,6 +76,7 @@ export type TicketDto = {
   openedByName: string;
   openedByRole: string;
   openedByEmail: string | null;
+  openedByAvatar?: string | null;
   bookingId: string | null;
   listingId: string | null;
   assignedTo: string | null;
@@ -150,6 +153,7 @@ export type AdminBookingDto = {
   reference: string;
   propertyId: string;
   propertyName: string;
+  propertyPhoto: string | null;
   propertyCity: string;
   propertyCountry: string;
   hostId: string | null;

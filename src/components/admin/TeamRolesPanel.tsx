@@ -2,7 +2,6 @@ import { ListToolbar, ShowMore, rowText, useListControls } from "@/components/ad
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { API_BASE_URL } from "@/api/http/client";
 import { adminTeamApi, type AdminMemberRow, type GrantableRole } from "@/api/http/support.http";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,7 +92,7 @@ export function TeamRolesPanel() {
               <div className="flex min-w-0 items-center gap-3">
                 <UserAvatar
                   name={row.fullName}
-                  src={`${API_BASE_URL}/api/accounts/${encodeURIComponent(row.id)}/avatar`}
+                  src={null}
                   className="size-11 shrink-0 text-base"
                 />
                 <div className="min-w-0">

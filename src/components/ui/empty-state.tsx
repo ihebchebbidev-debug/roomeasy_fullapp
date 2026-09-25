@@ -67,12 +67,14 @@ export function DataState({
   loading,
   error,
   retry,
+  onRetry,
   compact = false,
 }: {
   status: "idle" | "loading" | "ready" | "error";
   loading: string;
   error: string;
   retry: string;
+  onRetry?: () => void;
   compact?: boolean;
 }) {
   if (status === "ready") return null;
@@ -82,7 +84,7 @@ export function DataState({
       title={status === "error" ? error : loading}
       size={compact ? "compact" : "default"}
       action={status === "error" ? (
-        <button type="button" onClick={() => window.location.reload()} className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+        <button type="button" onClick={onRetry ?? (() => window.location.reload())} className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
           <RefreshCw className="size-4" aria-hidden />
           {retry}
         </button>

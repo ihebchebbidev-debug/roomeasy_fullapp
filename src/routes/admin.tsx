@@ -1,5 +1,4 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { API_BASE_URL } from "@/api/http/client";
 import { mediaUrl } from "@/lib/images";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { IdentityBadge } from "@/components/admin/IdentityBadge";
@@ -135,6 +134,8 @@ function AdminPage() {
   const [rejecting, setRejecting] = useState<{ id: string; name: string } | null>(null);
   const sc = useSupportCopy();
   const [me, setMe] = useState<AdminMeDto | null>(null);
+  const [meError, setMeError] = useState(false);
+  const [meReload, setMeReload] = useState(0);
   const [pendingDetails, setPendingDetails] = useState<Record<string, Property>>({});
   // Which payout is currently being sent, so its button can't be clicked twice.
   const [sendingPayoutId, setSendingPayoutId] = useState<string | null>(null);
@@ -142,20 +143,24 @@ function AdminPage() {
   // Which back-office modules this administrator's role unlocks.
   useEffect(() => {
     let active = true;
+    setMeError(false);
     void adminOpsApi
       .me()
       .then((data) => {
         if (active) setMe(data);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (active) setMeError(true);
+      });
     return () => {
       active = false;
     };
-  }, []);
+  }, [meReload]);
 
   const can = (capability: string) => me?.capabilities.includes(capability) ?? !backendEnabled;
-  const accessResolved = accountDataStatus === "ready" && (!backendEnabled || me !== null);
-  const pending = listings.filter((l) => !l.approved && l.status !== "suspended");
+  const accessResolved = accountDataStatus === "ready" && (!backendEnabled || me !== null || meError);
+  // Only a published, unapproved listing has actually been submitted for review.
+  const pending = listings.filter((l) => !l.approved && l.status === "published");
 
   // Live "to do" counters for the sidebar, read from the server and refreshed every minute.
   const [todo, setTodo] = useState<{ support: number; reports: number; verifications: number }>({ support: 0, reports: 0, verifications: 0 });
@@ -394,7 +399,7 @@ function AdminPage() {
             <div className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur-xl">
               <div className="flex min-w-0 items-center gap-2">
               <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-                <Button variant="ghost" size="icon" className="-ml-2 shadow-none lg:hidden" onClick={() => setMobileNavOpen(true)} aria-label="Open admin menu">
+                <Button variant="ghost" size="icon" className="-ml-2 shadow-none lg:hidden" onClick={() => setMobileNavOpen(true)} aria-label={T("Open admin menu")}>
                   <Menu className="size-[18px]" aria-hidden />
                 </Button>
                 <SheetContent side="left" className="flex w-[17.5rem] flex-col gap-0 overflow-hidden bg-sidebar p-0 shadow-none sm:max-w-[17.5rem]">
@@ -445,7 +450,7 @@ function AdminPage() {
                 ))}
               </div>
               {accountDataStatus !== "ready" ? (
-                <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} compact />
+                <DataState status={meError ? "error" : accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} onRetry={() => setMeReload((value) => value + 1)} compact />
               ) : null}
 
         <div className={cn("min-w-0 max-w-full", accountDataStatus !== "ready" && "hidden")}>
@@ -468,8 +473,8 @@ function AdminPage() {
         <TabsContent value="finance" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <FinancePanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="support" className="mt-0 min-w-0 max-w-full">
-          {backendEnabled ? <SupportDeskPanel adminId={me?.userId ?? null} /> : <Empty text={ac.empty} />}
+        <TabsContent value="support" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
+          {backendEnabled ? <SupportDeskPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
         <TabsContent value="booking-actions" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <BookingActionsPanel /> : <Empty text={ac.empty} />}
@@ -607,7 +612,7 @@ function AdminPage() {
                 >
                   <UserAvatar
                     name={user.name}
-                    src={`${API_BASE_URL}/api/accounts/${encodeURIComponent(user.id)}/avatar`}
+                    src={null}
                     className="size-11 shrink-0 text-base"
                   />
                   <div className="min-w-0">
@@ -710,6 +715,17 @@ function AdminPage() {
                   >
                     <div className="min-w-0">
                       <p className="flex items-center gap-2 font-semibold">
+                        {review.authorAvatar ? (
+                          <img
+                            src={review.authorAvatar}
+                            alt={review.author}
+                            className="size-8 shrink-0 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold uppercase text-muted-foreground">
+                            {review.author.charAt(0)}
+                          </span>
+                        )}
                         {review.author}
                         <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                           <Star className="size-3 fill-primary text-primary" aria-hidden />
@@ -842,6 +858,7 @@ function AdminPage() {
 function ReportsPanel() {
   const allProperties = useAllProperties();
   const { t } = useLanguage();
+  const T = useAdminT();
   const { format } = useCurrency();
   const [reports, setReports] = useState<AdminReportsDto | null>(null);
   const [loading, setLoading] = useState(backendEnabled);
@@ -937,7 +954,7 @@ function ReportsPanel() {
             <li key={row.hostId}>
               <Link to="/admin/hosts/$userId" params={{ userId: row.hostId }} className="-mx-2 flex min-w-0 items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-muted/60">
                 {rank(i)}
-                <UserAvatar name={row.hostName} src={`${API_BASE_URL}/api/accounts/${encodeURIComponent(row.hostId)}/avatar`} className="size-11 text-base" />
+                 <UserAvatar name={row.hostName} src={null} className="size-11 text-base" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{row.hostName}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{row.listings} {t.app.admin.reportListings}</span>
@@ -955,9 +972,9 @@ function ReportsPanel() {
           <div className="mt-4">
             <Donut centerLabel={t.app.admin.reportCancellations} data={(() => {
               const sorted = [...cancellations].sort((x, y) => y.count - x.count);
-              const head = sorted.slice(0, 4).map((r) => ({ name: r.reason, value: r.count }));
+              const head = sorted.slice(0, 4).map((r) => ({ name: T(r.reason), value: r.count }));
               const rest = sorted.slice(4).reduce((sum, r) => sum + r.count, 0);
-              return rest > 0 ? [...head, { name: "Other", value: rest }] : head;
+              return rest > 0 ? [...head, { name: T("Other"), value: rest }] : head;
             })()} />
           </div>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -968,7 +985,7 @@ function ReportsPanel() {
                   <div className="flex items-start justify-between gap-3">
                     <span className="flex min-w-0 items-start gap-2 text-sm">
                       <X className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
-                      <span className="line-clamp-2 break-words">{row.reason}</span>
+                       <span className="line-clamp-2 break-words">{T(row.reason)}</span>
                     </span>
                     <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums">{row.count}</span>
                   </div>

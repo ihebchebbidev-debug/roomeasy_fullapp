@@ -131,18 +131,21 @@ function StaysPage() {
 
       <section className="relative isolate overflow-hidden border-b border-border bg-sky-panel">
         <HeroBackdrop />
+        {/* layered scrim keeps white type readable over the photos */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/45" />
+        <div className="absolute inset-0 bg-[radial-gradient(60%_55%_at_35%_45%,rgb(0_0_0/0.35),transparent_75%)]" />
         <div className="relative mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-          <p className="text-sm font-bold text-primary">{t.explore.eyebrow}</p>
+          <p className="text-sm font-bold text-white/90 drop-shadow-[0_1px_8px_rgb(0_0_0/0.5)]">{t.explore.eyebrow}</p>
           <div className="mt-2 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div>
-              <h1 className="max-w-3xl font-display text-3xl font-bold text-balance sm:text-5xl">
+              <h1 className="max-w-3xl font-display text-3xl font-bold text-balance text-white drop-shadow-[0_2px_18px_rgb(0_0_0/0.55)] sm:text-5xl">
                 {t.explore.title}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/95 drop-shadow-[0_1px_10px_rgb(0_0_0/0.5)] sm:text-base">
                 {t.explore.subtitle}
               </p>
             </div>
-            <p className="text-sm font-semibold text-muted-foreground">
+            <p className="text-sm font-semibold text-white/90 drop-shadow-[0_1px_8px_rgb(0_0_0/0.5)]">
               {interpolate(t.explore.curated, { count: total })}
             </p>
           </div>

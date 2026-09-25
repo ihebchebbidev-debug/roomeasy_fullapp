@@ -28,7 +28,7 @@ export const Route = createFileRoute("/admin_/listings/$listingId")({
 
 function AdminListingDetail() {
   const { listingId } = Route.useParams();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { listings, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
   const listing = listings.find((item) => item.id === listingId);
@@ -163,7 +163,7 @@ function AdminListingDetail() {
         {listing && property ? (
           <ListingPreview listing={listing} property={property} />
         ) : accountDataStatus === "ready" && !listing ? (
-          <EmptyState title="This listing could not be found." />
+          <EmptyState title={{ en: "This listing could not be found.", fr: "Cette annonce est introuvable.", es: "No se ha encontrado este anuncio.", de: "Dieses Inserat wurde nicht gefunden.", pt: "Este anúncio não foi encontrado." }[locale]} />
         ) : (
           <EmptyState title={t.app.common.loading} />
         )}

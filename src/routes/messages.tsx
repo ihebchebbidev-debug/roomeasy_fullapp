@@ -184,7 +184,7 @@ function MessagesPage() {
             <header className="grid h-[4.75rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4">
               <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileView("list")} aria-label={copy.conversations}><ArrowLeft /></Button>
               <div className="flex min-w-0 items-center gap-3"><UserAvatar name={active.withName} src={active.withAvatar} className="size-9" /><div className="min-w-0"><h2 className="truncate font-display text-base font-semibold">{active.withName}</h2><p className="truncate text-xs text-muted-foreground">{property.name}</p></div></div>
-              <div className="flex gap-1"><Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileView("details")}>{copy.info}</Button><Button variant="ghost" size="icon" aria-label="More options"><MoreHorizontal /></Button></div>
+              <div className="flex gap-1"><Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileView("details")}>{copy.info}</Button><Button variant="ghost" size="icon" aria-label={{ en: "More options", fr: "Plus d'options", es: "Más opciones", de: "Weitere Optionen", pt: "Mais opções" }[locale]}><MoreHorizontal /></Button></div>
             </header>
              <ul ref={streamRef} className="flex-1 space-y-4 overflow-y-auto bg-background/70 p-4 sm:p-6">
                <li className="mx-auto w-fit rounded-full border border-border bg-surface px-3 py-1 text-[10px] font-semibold text-muted-foreground">{copy.today}</li>

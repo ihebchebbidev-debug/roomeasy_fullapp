@@ -26,27 +26,30 @@ import { useBackendHydration } from "@/hooks/useBackendHydration";
 import { ComingSoonGate } from "@/components/gate/ComingSoonGate";
 import { getGateState } from "@/lib/gate.functions";
 import type { UrlLocaleRef } from "@/i18n/urlLocale";
+import { statusCopy } from "@/i18n/statusCopy";
+import { useRouterState } from "@tanstack/react-router";
 
 function NotFoundComponent() {
+  const c = statusCopy(useRouterState({ select: (st) => st.location.pathname }));
   return (
     <StatusScreen
       icon={<Compass className="h-7 w-7" />}
-      eyebrow="Error 404"
-      title="Page not found"
-      text="The page you're looking for doesn't exist or has been moved."
+      eyebrow={c.nfEyebrow}
+      title={c.nfTitle}
+      text={c.nfText}
       actions={
         <>
           <Link
             to="/"
             className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            {c.home}
           </Link>
           <Link
             to="/stays"
             className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Browse stays
+            {c.browse}
           </Link>
         </>
       }
@@ -57,13 +60,14 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const c = statusCopy(useRouterState({ select: (st) => st.location.pathname }));
 
   return (
     <StatusScreen
       icon={<TriangleAlert className="h-7 w-7" />}
-      eyebrow="Something went wrong"
-      title="This page didn't load"
-      text="Something went wrong on our end. You can try refreshing or head back home."
+      eyebrow={c.errEyebrow}
+      title={c.errTitle}
+      text={c.errText}
       actions={
         <>
           <button
@@ -73,13 +77,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            {c.retry}
           </button>
           <a
             href="/"
             className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            {c.home}
           </a>
         </>
       }

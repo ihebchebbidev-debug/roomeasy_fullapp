@@ -28,7 +28,7 @@ const LOCALES = ["en", "fr", "es", "de", "pt"] as const;
 const PAGE_SLUGS = ["terms", "privacy", "help"] as const;
 
 function fail(error: unknown) {
-  toast.error(error instanceof Error ? error.message : "Something went wrong.");
+  toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
 }
 
 function useLoad<T>(loader: () => Promise<T>, initial: T) {
@@ -158,7 +158,7 @@ export function AmenitiesPanel() {
       </FormModal>
 
       <Card title={T("Amenities ({n})", { n: data.items.length })} action={<AddButton label={T("Add an amenity")} onClick={() => { setDraft({ ...emptyAmenity, group: draft.group }); setOpen(true); }} />}>
-        {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">{T("Loading…")}</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={items} text={rowText}>{(__rows) => __rows.map((item) => (
             <div key={item.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
@@ -230,7 +230,7 @@ export function CitiesPanel() {
               onChange={(e) => setDraft({ ...draft, country: e.target.value })}
               className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
-              <option value="">Choose a country…</option>
+              <option value="">{T("Choose a country…")}</option>
               {draft.country && !countries.some((c) => c.name === draft.country) ? (
                 <option value={draft.country}>{draft.country}</option>
               ) : null}
@@ -238,7 +238,7 @@ export function CitiesPanel() {
                 .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
                 .map((c) => (
                   <option key={c.code} value={c.name}>
-                    {c.name}{c.active ? "" : " (hidden)"}
+                    {c.name}{c.active ? "" : ` (${T("Hidden").toLowerCase()})`}
                   </option>
                 ))}
             </select>
@@ -252,7 +252,7 @@ export function CitiesPanel() {
               <Switch checked={draft.featured} onCheckedChange={(featured) => setDraft({ ...draft, featured })} /> {T("Featured")}
             </label>
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={draft.active} onCheckedChange={(active) => setDraft({ ...draft, active })} /> Active
+               <Switch checked={draft.active} onCheckedChange={(active) => setDraft({ ...draft, active })} /> {T("Active")}
             </label>
           </div>
           <div className="flex justify-end gap-2 sm:col-span-2">
@@ -267,13 +267,13 @@ export function CitiesPanel() {
         action={
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => run(async () => toast.info(T("{n} cities imported.", { n: (await catalogApi.importCities()).added })), T("Import finished."))}>
-              Import cities from listings
+              {T("Import cities from listings")}
             </Button>
             <AddButton label={T("Add a city")} onClick={() => { setDraft(emptyCity); setOpen(true); }} />
           </div>
         }
       >
-        {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">{T("Loading…")}</p> : null}
         {!loading && data.length === 0 ? <p className="text-sm text-muted-foreground">{T("No cities yet.")}</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={data} text={rowText}>{(__rows) => __rows.map((city) => (
@@ -281,7 +281,7 @@ export function CitiesPanel() {
               <span className="min-w-40 flex-1 font-medium">
                 {city.name} <span className="font-normal text-muted-foreground">{city.country}</span>
               </span>
-              <span className="text-xs text-muted-foreground">{city.listings} listings</span>
+               <span className="text-xs text-muted-foreground">{T("{n} listings", { n: city.listings })}</span>
               {city.featured ? <Badge>{T("Featured")}</Badge> : null}
               {!city.active ? <Badge variant="outline">{T("Hidden")}</Badge> : null}
               <EditIconButton onConfirm={() => { setDraft({ id: city.id, name: city.name, country: city.country, active: city.active, featured: city.featured, sortOrder: city.sortOrder }); setOpen(true); }} />
@@ -348,7 +348,7 @@ export function ContentPagesPanel() {
         {existing
           ? `${T("Last saved {d}", { d: new Date(existing.updatedAt).toLocaleString() })}${existing.updatedBy ? T(" by {u}", { u: existing.updatedBy }) : ""}.`
           : T("Not written yet — the public page shows the built-in text.")}{" "}
-        Use the toolbar for bold, italic, headings, lists and links — the public page shows it exactly the same.
+         {T("Use the toolbar for bold, italic, headings, lists and links — the public page shows it exactly the same.")}
       </p>
       <div className="space-y-1">
         <Label>{T("Title")}</Label>
@@ -360,7 +360,7 @@ export function ContentPagesPanel() {
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">
-          <Switch checked={form.published} onCheckedChange={(published) => setForm({ ...form, published })} /> Published
+           <Switch checked={form.published} onCheckedChange={(published) => setForm({ ...form, published })} /> {T("Published")}
         </label>
         <Button onClick={save} disabled={!form.title.trim()}>{T("Save page")}</Button>
         {existing ? (
@@ -502,7 +502,7 @@ export function PropertyTypesPanel() {
       </FormModal>
 
       <Card title={T("Property types ({n})", { n: data.length })} action={<AddButton label={T("Add a property type")} onClick={() => { setDraft(emptyType); setOpen(true); }} />}>
-        {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">{T("Loading…")}</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={data} text={rowText}>{(__rows) => __rows.map((type) => (
             <div key={type.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
@@ -510,7 +510,7 @@ export function PropertyTypesPanel() {
               <span className="min-w-40 flex-1">
                 {type.labels.en} <span className="text-muted-foreground">/ {type.labels.fr || "—"}</span>
               </span>
-              <span className="text-xs text-muted-foreground">{type.listings} listings</span>
+               <span className="text-xs text-muted-foreground">{T("{n} listings", { n: type.listings })}</span>
               <label className="flex items-center gap-2 text-xs">
                 <Switch checked={type.active} onCheckedChange={(active) => save(type.id, { labels: type.labels, active, sortOrder: type.sortOrder })} />
                 {type.active ? T("Active") : T("Hidden")}
@@ -571,7 +571,7 @@ export function CountriesPanel() {
           }}
         >
           <div className="space-y-1">
-            <Label>2-letter code</Label>
+             <Label>{T("2-letter code")}</Label>
             <Input required disabled={editing} maxLength={2} pattern="[A-Za-z]{2}" placeholder={T("e.g. TN")} value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} />
           </div>
           <div className="space-y-1">
@@ -588,18 +588,18 @@ export function CountriesPanel() {
           </div>
         </form>
         <p className="text-xs text-muted-foreground">
-          Hosts can only pick active countries. Other languages show the country name automatically from its code.
+           {T("Hosts can only pick active countries. Other languages show the country name automatically from its code.")}
         </p>
       </FormModal>
 
       <Card title={T("Countries ({n})", { n: data.length })} action={<AddButton label={T("Add a country")} onClick={() => { setDraft(emptyCountry); setOpen(true); }} />}>
-        {loading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">{T("Loading…")}</p> : null}
         <div className="divide-y divide-border">
           <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((c) => (
             <div key={c.code} className="flex flex-wrap items-center gap-3 py-2 text-sm">
               <code className="w-10 text-xs text-muted-foreground">{c.code}</code>
               <span className="min-w-40 flex-1">{c.name}</span>
-              <span className="text-xs text-muted-foreground">{c.listings} listings</span>
+               <span className="text-xs text-muted-foreground">{T("{n} listings", { n: c.listings })}</span>
               <label className="flex items-center gap-2 text-xs">
                 <Switch checked={c.active} onCheckedChange={(active) => save(c.code, { name: c.name, active, sortOrder: c.sortOrder })} />
                 {c.active ? T("Active") : T("Hidden")}

@@ -1128,14 +1128,25 @@ async function shrinkImage(file: File, maxSide = 1600, quality = 0.82): Promise<
       element.onerror = reject;
       element.src = source;
     });
-    const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(image.width * scale);
-    canvas.height = Math.round(image.height * scale);
-    const context = canvas.getContext("2d");
-    if (!context) return source;
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const encoded = canvas.toDataURL("image/jpeg", quality);
+    // The whole listing (up to 10 photos) is sent in one request and the
+    // server rejects requests over ~1 MB, so each photo gets a size budget.
+    const budget = 90_000;
+    let side = Math.min(maxSide, 1280);
+    let q = Math.min(quality, 0.78);
+    let encoded = source;
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const scale = Math.min(1, side / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+      const context = canvas.getContext("2d");
+      if (!context) return source;
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      encoded = canvas.toDataURL("image/jpeg", q);
+      if (encoded.length <= budget) break;
+      if (q > 0.6) q -= 0.08;
+      else side = Math.round(side * 0.85);
+    }
     return encoded.length < source.length ? encoded : source;
   } catch {
     return source;
