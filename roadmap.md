@@ -27,3 +27,14 @@
 - [ ] Structured data: LodgingBusiness, BreadcrumbList, Organization/WebSite
 - [ ] Host listing currency + conversion from listing currency + booking stores currency & FX
 - [ ] Admin finance grouped by currency
+
+## Sep 25 — end-to-end QA findings (live server)
+- [ ] Emails never sent: mailbox password missing on server (blocked: user sets SMTP password)
+- [x] Finance headline cards add EUR and USD together as one € total
+- [x] Admin stays on sign-in page after login (guest is redirected)
+- [x] Sign-up confirmation email filed under "password_reset" type
+- [x] My trips takes 5–10 s to load
+
+## Sep 25 — backend performance (plan pending approval)
+- [x] Speed up server data fetching; caching must never show changed/deleted listings
+- [ ] Redeploy server + run migrate so speed-ups and indexes go live (blocked: user redeploy)

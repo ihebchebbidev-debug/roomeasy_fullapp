@@ -1582,16 +1582,23 @@ export function FinancePanel() {
       </div>
 
       {accounting.length > 0 ? (() => {
-        const sum = (k: keyof AccountingRowDto) => accounting.reduce((t, r) => t + Number(r[k] ?? 0), 0);
-        const rev = sum("revenueUsd");
-        const com = sum("commissionUsd");
+        const sum = (k: keyof AccountingRowDto, cur?: string) =>
+          accounting.reduce((t, r) => (cur && (r.currency ?? "EUR") !== cur ? t : t + Number(r[k] ?? 0)), 0);
+        // Never add different currencies together: one amount per currency.
+        const currencies = Array.from(new Set(accounting.map((r) => r.currency ?? "EUR")));
+        const perCurrency = (k: keyof AccountingRowDto) =>
+          currencies.map((c) => money(sum(k, c), c)).join(" · ");
+        const single = currencies.length === 1 ? currencies[0] : undefined;
+        const rev = sum("revenueUsd", single);
+        const com = sum("commissionUsd", single);
+
         return (
           <>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <StatTile label={copy.finRevenue} value={format(rev)} hint={`${sum("bookings")} ${copy.finBookings.toLowerCase()}`} />
-              <StatTile label={copy.finCommission} value={format(com)} hint={rev > 0 ? `${Math.round((com / rev) * 100)}%` : undefined} tone="primary" />
-              <StatTile label={copy.finHostNet} value={format(sum("hostNetUsd"))} />
-              <StatTile label={copy.finRefunded} value={format(sum("refundedUsd"))} tone={sum("refundedUsd") > 0 ? "danger" : "default"} />
+              <StatTile label={copy.finRevenue} value={perCurrency("revenueUsd")} hint={`${sum("bookings")} ${copy.finBookings.toLowerCase()}`} />
+              <StatTile label={copy.finCommission} value={perCurrency("commissionUsd")} hint={single && rev > 0 ? `${Math.round((com / rev) * 100)}%` : undefined} tone="primary" />
+              <StatTile label={copy.finHostNet} value={perCurrency("hostNetUsd")} />
+              <StatTile label={copy.finRefunded} value={perCurrency("refundedUsd")} tone={sum("refundedUsd") > 0 ? "danger" : "default"} />
             </div>
             <ChartPanel title={copy.finAccounting} subtitle={copy.finRevenue + " · " + copy.finCommission + " · " + copy.finHostNet}>
               <GroupedBars

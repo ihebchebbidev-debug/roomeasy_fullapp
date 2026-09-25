@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Compass, Home } from "lucide-react";
 
+import { StatusScreen } from "@/components/layout/StatusScreen";
 import { Button } from "@/components/ui/button";
 import { pickCopy } from "@/i18n/copy";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -58,30 +59,27 @@ function NotFoundPage() {
   const c = pickCopy(locale, copyByLocale);
 
   return (
-    <main className="grid min-h-screen place-items-center bg-background px-6 text-center">
-      <div className="max-w-md">
-        <p className="font-mono text-sm tracking-[0.3em] text-muted-foreground uppercase">404</p>
-        <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-          {c.title}
-        </h1>
-        <p className="mt-3 text-muted-foreground">
-          {c.text}
-        </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <Button asChild className="rounded-full">
+    <StatusScreen
+      icon={<Compass className="h-7 w-7" />}
+      eyebrow="404"
+      title={c.title}
+      text={c.text}
+      actions={
+        <>
+          <Button asChild size="lg">
             <Link to="/">
               <Home className="size-4" aria-hidden />
               {c.home}
             </Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-full">
+          <Button asChild size="lg" variant="outline">
             <Link to="/stays">
               <Compass className="size-4" aria-hidden />
               {c.browse}
             </Link>
           </Button>
-        </div>
-      </div>
-    </main>
+        </>
+      }
+    />
   );
 }

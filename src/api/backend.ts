@@ -381,17 +381,21 @@ export async function hydrateAccount(): Promise<void> {
         )
       : null;
 
+  if (bookings) setPlatform({ bookings: (bookings as unknown as ServerBooking[]).map(toBooking) });
   if (threads) {
-    const withMessages = await Promise.all(
+    // Show conversations at once; fill in each thread's messages in the
+    // background so trips and dashboards are not held up by them.
+    setPlatform({ threads: threads.map((thread) => toThread(thread as ThreadDto)) });
+    void Promise.all(
       threads.map((thread) =>
-        runRemote(() => messagingApi.thread(thread.id, false), "A conversation could not be opened."),
+        runQuiet(() => messagingApi.thread(thread.id, false)),
       ),
-    );
-    setPlatform({
-      threads: withMessages.map((full, index) => toThread(full ?? (threads[index] as ThreadDto))),
+    ).then((full) => {
+      setPlatform({
+        threads: full.map((row, index) => toThread(row ?? (threads[index] as ThreadDto))),
+      });
     });
   }
-  if (bookings) setPlatform({ bookings: (bookings as unknown as ServerBooking[]).map(toBooking) });
 
   if (session.role === "host" || session.role === "admin") {
     const [dashboard, listings, payouts, team, rateRules, reviews] = await Promise.all([
@@ -464,14 +468,23 @@ async function mergeOwnProperties(listings: HostListing[]): Promise<void> {
   const missing = listings.filter((listing) => !known.has(listing.propertyId));
   if (missing.length === 0) return;
 
-  const loaded = await Promise.all(
-    missing.map((listing) =>
-      runRemote(
-        () => request<{ property: PropertyDto | null }>(`/listings/${encodeURIComponent(listing.id)}`),
-        "One of your listings could not be loaded.",
-      ),
+  // One request for all of them; older servers without the batch call fall
+  // back to one request per listing.
+  const batch = await runQuiet(() =>
+    request<{ listingId: string; property: PropertyDto | null }[]>(
+      `/listings/batch?ids=${missing.map((listing) => encodeURIComponent(listing.id)).join(",")}`,
     ),
   );
+  const loaded = batch
+    ? batch
+    : await Promise.all(
+        missing.map((listing) =>
+          runRemote(
+            () => request<{ property: PropertyDto | null }>(`/listings/${encodeURIComponent(listing.id)}`),
+            "One of your listings could not be loaded.",
+          ),
+        ),
+      );
   const extra = loaded
     .map((row) => row?.property)
     .filter((property): property is PropertyDto => Boolean(property))
@@ -509,7 +522,8 @@ export const remote = {
     setAccessToken(result.token);
     const session = toSessionUser(result.account);
     setPlatform({ session });
-    await hydrateAccount();
+    // Load the rest of the account in the background so sign-in moves on at once.
+    void hydrateAccount();
     return session;
   },
 
@@ -522,7 +536,8 @@ export const remote = {
     setAccessToken(result.token);
     const session = toSessionUser(result.account);
     setPlatform({ session });
-    await hydrateAccount();
+    // Load the rest of the account in the background so sign-in moves on at once.
+    void hydrateAccount();
     return session;
   },
 
@@ -564,7 +579,8 @@ export const remote = {
     if (!account) return null;
     const session = toSessionUser(account);
     setPlatform({ session });
-    await hydrateAccount();
+    // Load the rest of the account in the background so sign-in moves on at once.
+    void hydrateAccount();
     return session;
   },
 
