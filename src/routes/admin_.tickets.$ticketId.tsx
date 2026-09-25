@@ -29,7 +29,7 @@ export const Route = createFileRoute("/admin_/tickets/$ticketId")({
 function AdminTicketDetail() {
   const { ticketId } = Route.useParams();
   const copy = useAdminCopy();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const adminId = null;
 
   const [ticket, setTicket] = useState<TicketDto | null>(null);
@@ -109,7 +109,7 @@ function AdminTicketDetail() {
               <div className="min-w-0">
                 <p className="truncate font-display text-lg font-semibold">{ticket.subject}</p>
                 <p className="text-xs text-muted-foreground">
-                  {copy.ticketRef} {ticket.reference} · {ticket.openedByName} · {translateAdmin("fr", ticket.category)}
+                  {copy.ticketRef} {ticket.reference} · {ticket.openedByName} · {translateAdmin(locale, ticket.category)}
                   {ticket.assigneeName ? ` · ${ticket.assigneeName}` : ""}
                 </p>
               </div>

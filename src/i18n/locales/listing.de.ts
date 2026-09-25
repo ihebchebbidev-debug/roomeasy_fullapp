@@ -141,4 +141,7 @@ export const listingDe: ListingCopy = {
   idFilesHint: "Lade deutliche Fotos oder Scans deines Dokuments hoch (JPEG, PNG oder WebP).",
   idFilesAdded: "{n} Datei(en) angehängt",
   idMissing: "Wähle eine Dokumentart und gib die Nummer ein.",
+  currencyLabel: "Währung des Inserats",
+  currencyHint: "Preise, Reinigungsgebühr und Kalender gelten in dieser Währung. Gäste sehen einen umgerechneten Preis und zahlen in ihr.",
+  mapPinRequired: "Setze die Markierung auf die Karte (klicke auf die Karte).",
 };

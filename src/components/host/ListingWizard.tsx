@@ -43,22 +43,6 @@ import { amenityIds, propertyTypes, type AmenityId, type CancellationPolicy } fr
  * single `ListingDraft`, which is the JSON payload handed to `listingApi`.
  */
 
-const LISTING_CURRENCY_LABEL: Record<string, string> = {
-  en: "Listing currency",
-  fr: "Devise de l'annonce",
-  es: "Moneda del anuncio",
-  de: "Währung des Inserats",
-  pt: "Moeda do anúncio",
-};
-
-const LISTING_CURRENCY_HINT: Record<string, string> = {
-  en: "Your prices, cleaning fee and calendar are in this currency. Guests see a converted price and pay in it.",
-  fr: "Vos prix, frais de ménage et calendrier sont dans cette devise. Les voyageurs voient un prix converti et paient dans cette devise.",
-  es: "Tus precios, tarifa de limpieza y calendario están en esta moneda. Los huéspedes ven un precio convertido y pagan en ella.",
-  de: "Preise, Reinigungsgebühr und Kalender gelten in dieser Währung. Gäste sehen einen umgerechneten Preis und zahlen in ihr.",
-  pt: "Os seus preços, taxa de limpeza e calendário estão nesta moeda. Os hóspedes veem um preço convertido e pagam nela.",
-};
-
 export function ListingWizard({
   initial,
   mode,
@@ -620,7 +604,7 @@ export function ListingWizard({
               ) : null}
               {showError("coords") ? (
                 <p className="text-sm font-medium text-destructive">
-                  {{ fr: "Placez l'épingle sur la carte (cliquez sur la carte).", es: "Coloca el pin en el mapa (haz clic en el mapa).", de: "Setzen Sie die Stecknadel auf der Karte (auf die Karte klicken).", pt: "Coloque o pino no mapa (clique no mapa)." }[locale as "fr"] ?? "Place the pin on the map (click the map)."}
+                  {c.mapPinRequired}
                 </p>
               ) : null}
             </div>
@@ -772,7 +756,7 @@ export function ListingWizard({
           {step === "pricing" ? (
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={LISTING_CURRENCY_LABEL[locale] ?? "Listing currency"}>
+                <Field label={c.currencyLabel}>
                   <select
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                     value={listingCurrency}
@@ -784,7 +768,7 @@ export function ListingWizard({
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-muted-foreground">{LISTING_CURRENCY_HINT[locale] ?? ""}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{c.currencyHint}</p>
                 </Field>
                 <Field label={`${c.price} (${listingCurrency})`} error={showError("nightlyUsd")}>
                   <Input

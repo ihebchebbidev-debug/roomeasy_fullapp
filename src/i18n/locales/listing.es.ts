@@ -141,4 +141,7 @@ export const listingEs: ListingCopy = {
   idFilesHint: "Sube fotos o escaneos nítidos de tu documento (JPEG, PNG o WebP).",
   idFilesAdded: "{n} archivo(s) adjunto(s)",
   idMissing: "Elige un tipo de documento e introduce su número.",
+  currencyLabel: "Moneda del anuncio",
+  currencyHint: "Tus precios, tarifa de limpieza y calendario están en esta moneda. Los huéspedes ven un precio convertido y pagan en ella.",
+  mapPinRequired: "Coloca el pin en el mapa (haz clic en el mapa).",
 };

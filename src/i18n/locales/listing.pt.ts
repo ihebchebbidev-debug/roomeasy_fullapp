@@ -141,4 +141,7 @@ export const listingPt: ListingCopy = {
   idFilesHint: "Carregue fotos ou digitalizações nítidas do documento (JPEG, PNG ou WebP).",
   idFilesAdded: "{n} ficheiro(s) anexado(s)",
   idMissing: "Escolha um tipo de documento e introduza o número.",
+  currencyLabel: "Moeda do anúncio",
+  currencyHint: "Os seus preços, taxa de limpeza e calendário estão nesta moeda. Os hóspedes veem um preço convertido e pagam nela.",
+  mapPinRequired: "Coloque o marcador no mapa (clique no mapa).",
 };

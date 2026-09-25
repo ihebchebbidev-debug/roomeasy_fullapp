@@ -197,7 +197,7 @@ function HostPage() {
         {isReady && section === "requests" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.requests}</h2>
           {requests.length === 0 ? <EmptyState icon={Inbox} title={t.app.host.noRequests} size="compact" /> : null}
-          <Paged rows={requests} filters={[{ value: "pending", label: locale === "fr" ? "En attente" : "Pending", test: (b) => b.status === "pending" }, { value: "confirmed", label: locale === "fr" ? "Confirmées" : "Confirmed", test: (b) => b.status === "confirmed" }, { value: "cancelled", label: locale === "fr" ? "Annulées" : "Cancelled", test: (b) => String(b.status).includes("cancel") || b.status === "declined" }]} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === x.propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((booking) => {
+          <Paged rows={requests} filters={[{ value: "pending", label: t.app.status.pending, test: (b) => b.status === "pending" }, { value: "confirmed", label: t.app.status.confirmed, test: (b) => b.status === "confirmed" }, { value: "cancelled", label: t.app.status.cancelled, test: (b) => String(b.status).includes("cancel") || b.status === "declined" }]} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === x.propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((booking) => {
             const property = properties.find((p) => p.id === booking.propertyId);
             return (
               <Panel key={booking.id}>

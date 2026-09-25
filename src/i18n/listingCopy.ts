@@ -149,6 +149,9 @@ const en = {
   idFilesAdded: "{n} file(s) attached",
   idSubmit: "Send and continue",
   idMissing: "Choose a document type and enter its number.",
+  currencyLabel: "Listing currency",
+  currencyHint: "Your prices, cleaning fee and calendar are in this currency. Guests see a converted price and pay in it.",
+  mapPinRequired: "Place the pin on the map (click the map).",
 };
 
 const fr: typeof en = {
@@ -291,6 +294,9 @@ const fr: typeof en = {
   idFilesAdded: "{n} fichier(s) joint(s)",
   idSubmit: "Envoyer et continuer",
   idMissing: "Choisissez un type de document et saisissez son numéro.",
+  currencyLabel: "Devise de l'annonce",
+  currencyHint: "Vos prix, frais de ménage et calendrier sont dans cette devise. Les voyageurs voient un prix converti et paient dans cette devise.",
+  mapPinRequired: "Placez l'épingle sur la carte (cliquez sur la carte).",
 };
 
 export type ListingCopy = typeof en;

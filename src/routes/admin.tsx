@@ -223,14 +223,20 @@ function AdminPage() {
     acc[idStatus(u)] = (acc[idStatus(u)] ?? 0) + 1;
     return acc;
   }, {});
-  const fr = locale === "fr";
+  const filterLabels = {
+    en: { pending: "To verify", verified: "Verified", rejected: "Refused", none: "No document", visible: "Visible", hidden: "Hidden", low: "Rating ≤ 2" },
+    fr: { pending: "À vérifier", verified: "Vérifiés", rejected: "Refusés", none: "Sans document", visible: "Visibles", hidden: "Masqués", low: "Note ≤ 2" },
+    es: { pending: "Por verificar", verified: "Verificados", rejected: "Rechazados", none: "Sin documento", visible: "Visibles", hidden: "Ocultos", low: "Valoración ≤ 2" },
+    de: { pending: "Zu prüfen", verified: "Verifiziert", rejected: "Abgelehnt", none: "Kein Dokument", visible: "Sichtbar", hidden: "Ausgeblendet", low: "Bewertung ≤ 2" },
+    pt: { pending: "Por verificar", verified: "Verificados", rejected: "Recusados", none: "Sem documento", visible: "Visíveis", hidden: "Ocultos", low: "Avaliação ≤ 2" },
+  }[locale];
   const userPage = useListControls(users, {
     text: (u) => `${u.name} ${u.email} ${u.phone ?? ""}`,
     filters: [
-      { value: "pending", label: fr ? "À vérifier" : "To verify", test: (u) => idStatus(u) === "pending" },
-      { value: "verified", label: fr ? "Vérifiés" : "Verified", test: (u) => idStatus(u) === "verified" },
-      { value: "rejected", label: fr ? "Refusés" : "Refused", test: (u) => idStatus(u) === "rejected" },
-      { value: "none", label: fr ? "Sans document" : "No document", test: (u) => idStatus(u) === "none" },
+      { value: "pending", label: filterLabels.pending, test: (u) => idStatus(u) === "pending" },
+      { value: "verified", label: filterLabels.verified, test: (u) => idStatus(u) === "verified" },
+      { value: "rejected", label: filterLabels.rejected, test: (u) => idStatus(u) === "rejected" },
+      { value: "none", label: filterLabels.none, test: (u) => idStatus(u) === "none" },
     ],
   });
   void filteredUsers; void idCounts; void setIdFilter;
@@ -240,9 +246,9 @@ function AdminPage() {
   const reviewList = useListControls(reviews, {
     text: (r) => `${r.author} ${r.text} ${allProperties.find((p) => p.id === r.propertyId)?.name ?? ""}`,
     filters: [
-      { value: "visible", label: locale === "fr" ? "Visibles" : "Visible", test: (r) => !r.hidden },
-      { value: "hidden", label: locale === "fr" ? "Masqués" : "Hidden", test: (r) => Boolean(r.hidden) },
-      { value: "low", label: locale === "fr" ? "Note ≤ 2" : "Rating ≤ 2", test: (r) => r.rating <= 2 },
+      { value: "visible", label: filterLabels.visible, test: (r) => !r.hidden },
+      { value: "hidden", label: filterLabels.hidden, test: (r) => Boolean(r.hidden) },
+      { value: "low", label: filterLabels.low, test: (r) => r.rating <= 2 },
     ],
   });
   const payoutList = useListControls(payouts, {

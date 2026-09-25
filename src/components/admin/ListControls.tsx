@@ -8,6 +8,14 @@ import { cn } from "@/lib/utils";
 
 export const PAGE_SIZE = 20;
 
+const listCopy = {
+  en: { search: "Search…", searchLabel: "Search", clear: "Clear", results: "result(s)", filter: "Filter", all: "All", of: "of", previous: "Previous", next: "Next" },
+  fr: { search: "Rechercher…", searchLabel: "Rechercher", clear: "Effacer", results: "résultat(s)", filter: "Filtrer", all: "Tous", of: "sur", previous: "Précédent", next: "Suivant" },
+  es: { search: "Buscar…", searchLabel: "Buscar", clear: "Borrar", results: "resultado(s)", filter: "Filtrar", all: "Todos", of: "de", previous: "Anterior", next: "Siguiente" },
+  de: { search: "Suchen…", searchLabel: "Suchen", clear: "Löschen", results: "Ergebnis(se)", filter: "Filtern", all: "Alle", of: "von", previous: "Zurück", next: "Weiter" },
+  pt: { search: "Pesquisar…", searchLabel: "Pesquisar", clear: "Limpar", results: "resultado(s)", filter: "Filtrar", all: "Todos", of: "de", previous: "Anterior", next: "Seguinte" },
+};
+
 export type ListFilter<T> = { value: string; label: string; test: (row: T) => boolean };
 
 /**
@@ -64,7 +72,7 @@ export function ListToolbar({ controls, extra, placeholder }: {
   placeholder?: string;
 }) {
   const { locale } = useLanguage();
-  const fr = locale === "fr";
+  const copy = listCopy[locale];
   return (
     <div className="mb-4 space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -73,16 +81,16 @@ export function ListToolbar({ controls, extra, placeholder }: {
           <Input
             value={controls.query}
             onChange={(e) => controls.setQuery(e.target.value)}
-            placeholder={placeholder ?? (fr ? "Rechercher…" : "Search…")}
+            placeholder={placeholder ?? copy.search}
             className="h-11 rounded-full bg-surface pl-10 pr-10"
-            aria-label={fr ? "Rechercher" : "Search"}
+            aria-label={copy.searchLabel}
           />
           {controls.query ? (
             <button
               type="button"
               onClick={() => controls.setQuery("")}
               className="absolute right-3 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label={fr ? "Effacer" : "Clear"}
+              aria-label={copy.clear}
             >
               <X className="size-3.5" />
             </button>
@@ -90,12 +98,12 @@ export function ListToolbar({ controls, extra, placeholder }: {
         </div>
         {extra}
         <span className="shrink-0 text-xs text-muted-foreground tabular-nums sm:pl-2">
-          {controls.total} {fr ? "résultat(s)" : "result(s)"}
+          {controls.total} {copy.results}
         </span>
       </div>
       {controls.filters.length > 0 && (
-        <div className="flex flex-wrap gap-2" role="group" aria-label={fr ? "Filtrer" : "Filter"}>
-          {[{ value: "all", label: fr ? "Tous" : "All" }, ...controls.filters].map((f) => {
+        <div className="flex flex-wrap gap-2" role="group" aria-label={copy.filter}>
+          {[{ value: "all", label: copy.all }, ...controls.filters].map((f) => {
             const on = controls.filter === f.value;
             const count = controls.counts?.[f.value];
             return (
@@ -125,7 +133,7 @@ export function ListToolbar({ controls, extra, placeholder }: {
 /** Numbered pagination shown under every list. */
 export function ShowMore({ controls }: { controls: Pick<Controls, "visible" | "total"> & Partial<Pick<Controls, "page" | "pages" | "setPage" | "start">> }) {
   const { locale } = useLanguage();
-  const fr = locale === "fr";
+  const copy = listCopy[locale];
   const { page = 1, pages = 1, setPage, start = 0 } = controls;
   if (!setPage || controls.total === 0) return null;
 
@@ -138,11 +146,11 @@ export function ShowMore({ controls }: { controls: Pick<Controls, "visible" | "t
   return (
     <div className="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
       <span className="text-xs text-muted-foreground tabular-nums">
-        {start + 1}–{start + controls.visible.length} {fr ? "sur" : "of"} {controls.total}
+        {start + 1}–{start + controls.visible.length} {copy.of} {controls.total}
       </span>
       {pages > 1 && (
         <nav className="flex items-center gap-1" aria-label="Pagination">
-          <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label={fr ? "Précédent" : "Previous"}>
+          <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label={copy.previous}>
             <ChevronLeft className="size-4" />
           </Button>
           {nums.map((n, i) =>
@@ -161,7 +169,7 @@ export function ShowMore({ controls }: { controls: Pick<Controls, "visible" | "t
               </Button>
             ),
           )}
-          <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={page >= pages} onClick={() => setPage(page + 1)} aria-label={fr ? "Suivant" : "Next"}>
+          <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={page >= pages} onClick={() => setPage(page + 1)} aria-label={copy.next}>
             <ChevronRight className="size-4" />
           </Button>
         </nav>

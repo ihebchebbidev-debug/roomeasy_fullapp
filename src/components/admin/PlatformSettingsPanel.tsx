@@ -12,6 +12,12 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 
 type Field = { key: string; label: [string, string]; type?: "text" | "password" | "number" | "select"; options?: string[]; placeholder?: string };
 
+const SETTINGS_COPY = {
+  es: { "Settings unavailable.": "Ajustes no disponibles.", "Could not load the current fees.": "No se pudieron cargar las tarifas actuales.", "Nothing changed.": "No hay cambios.", "Settings saved.": "Ajustes guardados.", "Could not save.": "No se pudo guardar.", "Fees saved.": "Tarifas guardadas.", "Social links saved.": "Enlaces sociales guardados.", "Test email sent.": "Correo de prueba enviado.", "Stripe connected.": "Stripe conectado.", "Test failed.": "La prueba falló.", "server file": "archivo del servidor", Yes: "Sí", No: "No", Hide: "Ocultar", Show: "Mostrar", Copy: "Copiar", Copied: "Copiado.", Save: "Guardar", "Send a test email to": "Enviar un correo de prueba a", "Test email": "Probar correo", "Test Stripe": "Probar Stripe", "Fees and pricing": "Tarifas y precios", "Save fees": "Guardar tarifas", "Social media": "Redes sociales", "These links appear in the site footer. Leave a field empty to hide that network.": "Estos enlaces aparecen en el pie de página. Deja un campo vacío para ocultar esa red.", "Save social links": "Guardar redes sociales", "SMTP server": "Servidor SMTP", Port: "Puerto", "Secure connection (SSL)": "Conexión segura (SSL)", Username: "Usuario", Password: "Contraseña", "Sender address": "Dirección de envío", "Sender name": "Nombre del remitente", "Reply-to address": "Dirección de respuesta", "Test mode (sends nothing)": "Modo de prueba (no envía nada)", "Publishable key": "Clave pública", "Secret key": "Clave secreta", "Webhook secret": "Secreto del webhook", "Stripe Connect country": "País de Stripe Connect", "Platform commission (%)": "Comisión de la plataforma (%)", "Guest service fee (%)": "Tarifa de servicio al huésped (%)", "Tax (%)": "Impuesto (%)", "Weekend increase (%)": "Aumento de fin de semana (%)", "Long-stay discount (%)": "Descuento por estancia larga (%)", "Last-minute discount (%)": "Descuento de última hora (%)" },
+  de: { "Settings unavailable.": "Einstellungen nicht verfügbar.", "Could not load the current fees.": "Die aktuellen Gebühren konnten nicht geladen werden.", "Nothing changed.": "Keine Änderungen.", "Settings saved.": "Einstellungen gespeichert.", "Could not save.": "Speichern nicht möglich.", "Fees saved.": "Gebühren gespeichert.", "Social links saved.": "Social-Media-Links gespeichert.", "Test email sent.": "Test-E-Mail gesendet.", "Stripe connected.": "Stripe verbunden.", "Test failed.": "Test fehlgeschlagen.", "server file": "Serverdatei", Yes: "Ja", No: "Nein", Hide: "Ausblenden", Show: "Anzeigen", Copy: "Kopieren", Copied: "Kopiert.", Save: "Speichern", "Send a test email to": "Test-E-Mail senden an", "Test email": "E-Mail testen", "Test Stripe": "Stripe testen", "Fees and pricing": "Gebühren und Preise", "Save fees": "Gebühren speichern", "Social media": "Soziale Medien", "These links appear in the site footer. Leave a field empty to hide that network.": "Diese Links erscheinen in der Fußzeile. Lassen Sie ein Feld leer, um das Netzwerk auszublenden.", "Save social links": "Social-Media-Links speichern", "SMTP server": "SMTP-Server", Port: "Port", "Secure connection (SSL)": "Sichere Verbindung (SSL)", Username: "Benutzername", Password: "Passwort", "Sender address": "Absenderadresse", "Sender name": "Absendername", "Reply-to address": "Antwortadresse", "Test mode (sends nothing)": "Testmodus (sendet nichts)", "Publishable key": "Öffentlicher Schlüssel", "Secret key": "Geheimer Schlüssel", "Webhook secret": "Webhook-Geheimnis", "Stripe Connect country": "Stripe-Connect-Land", "Platform commission (%)": "Plattformprovision (%)", "Guest service fee (%)": "Servicegebühr für Gäste (%)", "Tax (%)": "Steuer (%)", "Weekend increase (%)": "Wochenendaufschlag (%)", "Long-stay discount (%)": "Langzeitrabatt (%)", "Last-minute discount (%)": "Last-Minute-Rabatt (%)" },
+  pt: { "Settings unavailable.": "Definições indisponíveis.", "Could not load the current fees.": "Não foi possível carregar as taxas atuais.", "Nothing changed.": "Sem alterações.", "Settings saved.": "Definições guardadas.", "Could not save.": "Não foi possível guardar.", "Fees saved.": "Taxas guardadas.", "Social links saved.": "Ligações sociais guardadas.", "Test email sent.": "E-mail de teste enviado.", "Stripe connected.": "Stripe ligado.", "Test failed.": "O teste falhou.", "server file": "ficheiro do servidor", Yes: "Sim", No: "Não", Hide: "Ocultar", Show: "Mostrar", Copy: "Copiar", Copied: "Copiado.", Save: "Guardar", "Send a test email to": "Enviar um e-mail de teste para", "Test email": "Testar e-mail", "Test Stripe": "Testar Stripe", "Fees and pricing": "Taxas e preços", "Save fees": "Guardar taxas", "Social media": "Redes sociais", "These links appear in the site footer. Leave a field empty to hide that network.": "Estas ligações aparecem no rodapé. Deixe um campo vazio para ocultar essa rede.", "Save social links": "Guardar redes sociais", "SMTP server": "Servidor SMTP", Port: "Porta", "Secure connection (SSL)": "Ligação segura (SSL)", Username: "Utilizador", Password: "Palavra-passe", "Sender address": "Endereço de envio", "Sender name": "Nome do remetente", "Reply-to address": "Endereço de resposta", "Test mode (sends nothing)": "Modo de teste (não envia nada)", "Publishable key": "Chave pública", "Secret key": "Chave secreta", "Webhook secret": "Segredo do webhook", "Stripe Connect country": "País do Stripe Connect", "Platform commission (%)": "Comissão da plataforma (%)", "Guest service fee (%)": "Taxa de serviço do hóspede (%)", "Tax (%)": "Imposto (%)", "Weekend increase (%)": "Aumento de fim de semana (%)", "Long-stay discount (%)": "Desconto de longa duração (%)", "Last-minute discount (%)": "Desconto de última hora (%)" },
+} as const;
+
 const EMAIL_FIELDS: Field[] = [
   { key: "SMTP_HOST", label: ["Serveur SMTP", "SMTP server"], placeholder: "smtp.example.com" },
   { key: "SMTP_PORT", label: ["Port", "Port"], type: "number", placeholder: "465" },
@@ -42,7 +48,8 @@ const SOCIAL_PLACEHOLDERS: Record<SocialKey, string> = {
 export function PlatformSettingsPanel() {
   const { locale } = useLanguage();
   const fr = locale === "fr";
-  const L = (pair: [string, string]) => (fr ? pair[0] : pair[1]);
+  const T = (english: string, french = english) => fr ? french : (SETTINGS_COPY[locale as keyof typeof SETTINGS_COPY] as Record<string, string> | undefined)?.[english] ?? english;
+  const L = (pair: [string, string]) => T(pair[1], pair[0]);
 
   const [view, setView] = useState<IntegrationViewDto | null>(null);
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -59,7 +66,7 @@ export function PlatformSettingsPanel() {
     settingsApi.integrations().then((v) => {
       setView(v);
       setDraft(Object.fromEntries(Object.entries(v).map(([k, f]) => [k, f.value])));
-    }).catch(() => toast.error(fr ? "Réglages indisponibles." : "Settings unavailable."));
+    }).catch(() => toast.error(T("Settings unavailable.", "Réglages indisponibles.")));
     settingsApi.admin().then((s) => { setSocial({ ...emptySocial, ...(s.socialLinks ?? {}) }); setFees({
       commissionRate: String(s.commissionRate),
       serviceFeeRate: String(+(s.serviceFeeRate * 100).toFixed(2)),
@@ -67,7 +74,7 @@ export function PlatformSettingsPanel() {
       weekend: String(s.rateRules.weekend),
       longStay: String(s.rateRules.longStay),
       lastMinute: String(s.rateRules.lastMinute),
-    }); setFeesLoaded(true); }).catch(() => toast.error(fr ? "Impossible de charger les frais actuels." : "Could not load the current fees."));
+    }); setFeesLoaded(true); }).catch(() => toast.error(T("Could not load the current fees.", "Impossible de charger les frais actuels.")));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -78,14 +85,14 @@ export function PlatformSettingsPanel() {
       const value = (draft[f.key] ?? "").trim();
       if (value !== view[f.key]?.value) patch[f.key] = value;
     }
-    if (!Object.keys(patch).length) { toast.info(fr ? "Aucun changement." : "Nothing changed."); return; }
+    if (!Object.keys(patch).length) { toast.info(T("Nothing changed.", "Aucun changement.")); return; }
     setBusy(id);
     try {
       const v = await settingsApi.saveIntegrations(patch);
       setView(v);
       setDraft((d) => ({ ...d, ...Object.fromEntries(fields.map((f) => [f.key, v[f.key]?.value ?? ""])) }));
-      toast.success(fr ? "Réglages enregistrés." : "Settings saved.");
-    } catch { toast.error(fr ? "Enregistrement impossible." : "Could not save."); }
+      toast.success(T("Settings saved.", "Réglages enregistrés."));
+    } catch { toast.error(T("Could not save.", "Enregistrement impossible.")); }
     finally { setBusy(null); }
   }
 
@@ -100,8 +107,8 @@ export function PlatformSettingsPanel() {
         longStay: Number(fees.longStay) || 0,
         lastMinute: Number(fees.lastMinute) || 0,
       });
-      toast.success(fr ? "Frais enregistrés." : "Fees saved.");
-    } catch { toast.error(fr ? "Enregistrement impossible." : "Could not save."); }
+      toast.success(T("Fees saved.", "Frais enregistrés."));
+    } catch { toast.error(T("Could not save.", "Enregistrement impossible.")); }
     finally { setBusy(null); }
   }
 
@@ -114,8 +121,8 @@ export function PlatformSettingsPanel() {
       const saved = await settingsApi.saveAdmin({ socialLinks: cleaned });
       setSocial({ ...emptySocial, ...(saved.socialLinks ?? cleaned) });
       await queryClient.invalidateQueries({ queryKey: ["public-settings"] });
-      toast.success(fr ? "Réseaux sociaux enregistrés." : "Social links saved.");
-    } catch { toast.error(fr ? "Enregistrement impossible." : "Could not save."); }
+      toast.success(T("Social links saved.", "Réseaux sociaux enregistrés."));
+    } catch { toast.error(T("Could not save.", "Enregistrement impossible.")); }
     finally { setBusy(null); }
   }
 
@@ -123,9 +130,9 @@ export function PlatformSettingsPanel() {
     setBusy(kind);
     try {
       const r = kind === "email" ? await settingsApi.testEmail(testTo) : await settingsApi.testStripe();
-      if (r.ok) toast.success(kind === "email" ? (fr ? "Email de test envoyé." : "Test email sent.") : (fr ? "Stripe connecté." : "Stripe connected."));
+      if (r.ok) toast.success(kind === "email" ? T("Test email sent.", "Email de test envoyé.") : T("Stripe connected.", "Stripe connecté."));
       else toast.error(r.error ?? "Error");
-    } catch { toast.error(fr ? "Test impossible." : "Test failed."); }
+    } catch { toast.error(T("Test failed.", "Test impossible.")); }
     finally { setBusy(null); }
   }
 
@@ -136,13 +143,13 @@ export function PlatformSettingsPanel() {
       <div key={f.key} className="space-y-1.5">
         <Label htmlFor={id} className="flex items-center gap-2">
           {L(f.label)}
-          {meta?.source === "env" && <Badge variant="outline" className="text-[10px]">{fr ? "fichier serveur" : "server file"}</Badge>}
+          {meta?.source === "env" && <Badge variant="outline" className="text-[10px]">{T("server file", "fichier serveur")}</Badge>}
         </Label>
         {f.type === "select" ? (
           <select id={id} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
             value={draft[f.key] ?? ""} onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}>
             <option value="">—</option>
-            {f.options!.map((o) => <option key={o} value={o}>{o === "true" ? (fr ? "Oui" : "Yes") : (fr ? "Non" : "No")}</option>)}
+            {f.options!.map((o) => <option key={o} value={o}>{o === "true" ? T("Yes", "Oui") : T("No", "Non")}</option>)}
           </select>
         ) : (
           <div className="flex gap-2">
@@ -150,13 +157,13 @@ export function PlatformSettingsPanel() {
               className="font-mono text-sm" placeholder={f.placeholder}
               value={draft[f.key] ?? ""} onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })} />
             {f.type === "password" && (
-              <Button type="button" variant="outline" size="icon" aria-label={shown[f.key] ? "Hide" : "Show"}
+              <Button type="button" variant="outline" size="icon" aria-label={shown[f.key] ? T("Hide", "Masquer") : T("Show", "Afficher")}
                 onClick={() => setShown({ ...shown, [f.key]: !shown[f.key] })}>
                 {shown[f.key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             )}
-            <Button type="button" variant="outline" size="icon" aria-label="Copy" disabled={!draft[f.key]}
-              onClick={() => { void navigator.clipboard.writeText(draft[f.key] ?? ""); toast.success(fr ? "Copié." : "Copied."); }}>
+            <Button type="button" variant="outline" size="icon" aria-label={T("Copy", "Copier")} disabled={!draft[f.key]}
+              onClick={() => { void navigator.clipboard.writeText(draft[f.key] ?? ""); toast.success(T("Copied.", "Copié.")); }}>
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -178,13 +185,13 @@ export function PlatformSettingsPanel() {
       <section className={card}>
         <h3 className="flex items-center gap-2 font-semibold"><Mail className="size-4" />{fr ? "Email (SMTP)" : "Email (SMTP)"}</h3>
         <div className="grid gap-4 sm:grid-cols-2">{EMAIL_FIELDS.map(renderField)}</div>
-        <Button disabled={busy === "smtp" || !view} onClick={() => saveGroup(EMAIL_FIELDS, "smtp")}>{fr ? "Enregistrer" : "Save"}</Button>
+        <Button disabled={busy === "smtp" || !view} onClick={() => saveGroup(EMAIL_FIELDS, "smtp")}>{T("Save", "Enregistrer")}</Button>
         <div className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="test-to">{fr ? "Envoyer un email de test à" : "Send a test email to"}</Label>
+            <Label htmlFor="test-to">{T("Send a test email to", "Envoyer un e-mail de test à")}</Label>
             <Input id="test-to" type="email" value={testTo} onChange={(e) => setTestTo(e.target.value)} />
           </div>
-          <Button variant="outline" disabled={!testTo || busy === "email"} onClick={() => runTest("email")}>{fr ? "Tester l'email" : "Test email"}</Button>
+          <Button variant="outline" disabled={!testTo || busy === "email"} onClick={() => runTest("email")}>{T("Test email", "Tester l'e-mail")}</Button>
         </div>
       </section>
 
@@ -192,13 +199,13 @@ export function PlatformSettingsPanel() {
         <h3 className="flex items-center gap-2 font-semibold"><CreditCard className="size-4" />Stripe</h3>
         <div className="grid gap-4">{STRIPE_FIELDS.map(renderField)}</div>
         <div className="flex flex-wrap gap-2">
-          <Button disabled={busy === "stripe-save" || !view} onClick={() => saveGroup(STRIPE_FIELDS, "stripe-save")}>{fr ? "Enregistrer" : "Save"}</Button>
-          <Button variant="outline" disabled={busy === "stripe"} onClick={() => runTest("stripe")}>{fr ? "Tester Stripe" : "Test Stripe"}</Button>
+          <Button disabled={busy === "stripe-save" || !view} onClick={() => saveGroup(STRIPE_FIELDS, "stripe-save")}>{T("Save", "Enregistrer")}</Button>
+          <Button variant="outline" disabled={busy === "stripe"} onClick={() => runTest("stripe")}>{T("Test Stripe", "Tester Stripe")}</Button>
         </div>
       </section>
 
       <section className={`${card} xl:col-span-2`}>
-        <h3 className="flex items-center gap-2 font-semibold"><Percent className="size-4" />{fr ? "Frais et tarification" : "Fees and pricing"}</h3>
+        <h3 className="flex items-center gap-2 font-semibold"><Percent className="size-4" />{T("Fees and pricing", "Frais et tarification")}</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           {feeField("commissionRate", ["Commission plateforme (%)", "Platform commission (%)"])}
           {feeField("serviceFeeRate", ["Frais de service voyageur (%)", "Guest service fee (%)"])}
@@ -207,13 +214,13 @@ export function PlatformSettingsPanel() {
           {feeField("longStay", ["Remise long séjour (%)", "Long-stay discount (%)"])}
           {feeField("lastMinute", ["Remise dernière minute (%)", "Last-minute discount (%)"])}
         </div>
-        <Button disabled={busy === "fees" || !feesLoaded} onClick={saveFees}>{fr ? "Enregistrer les frais" : "Save fees"}</Button>
+        <Button disabled={busy === "fees" || !feesLoaded} onClick={saveFees}>{T("Save fees", "Enregistrer les frais")}</Button>
       </section>
 
       <section className={`${card} xl:col-span-2`}>
-        <h3 className="flex items-center gap-2 font-semibold"><Share2 className="size-4" />{fr ? "Réseaux sociaux" : "Social media"}</h3>
+        <h3 className="flex items-center gap-2 font-semibold"><Share2 className="size-4" />{T("Social media", "Réseaux sociaux")}</h3>
         <p className="text-sm text-muted-foreground">
-          {fr ? "Ces liens s'affichent dans le pied de page. Laissez vide pour masquer un réseau." : "These links appear in the site footer. Leave a field empty to hide that network."}
+          {T("These links appear in the site footer. Leave a field empty to hide that network.", "Ces liens s'affichent dans le pied de page. Laissez vide pour masquer un réseau.")}
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SOCIAL_KEYS.map((k) => (
@@ -224,7 +231,7 @@ export function PlatformSettingsPanel() {
             </div>
           ))}
         </div>
-        <Button disabled={busy === "social" || !feesLoaded} onClick={saveSocial}>{fr ? "Enregistrer les réseaux" : "Save social links"}</Button>
+        <Button disabled={busy === "social" || !feesLoaded} onClick={saveSocial}>{T("Save social links", "Enregistrer les réseaux")}</Button>
       </section>
     </div>
   );
