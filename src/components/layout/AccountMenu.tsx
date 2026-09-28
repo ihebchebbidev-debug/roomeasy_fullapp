@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useSignInReturn } from "@/hooks/useSignInReturn";
 import { LogOut, Settings, UserRound } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 /** Account drop-down (profile, settings, log out) shared by every header. */
 export function AccountMenu({ variant = "light" }: { variant?: "light" | "dark" }) {
+  const signInReturn = useSignInReturn();
   const { t, locale } = useLanguage();
   const { session } = usePlatform();
   const navigate = useNavigate();
@@ -41,7 +43,7 @@ export function AccountMenu({ variant = "light" }: { variant?: "light" | "dark" 
           variant === "dark" && "bg-primary text-primary-foreground hover:brightness-110",
         )}
       >
-        <Link to="/auth">{t.app.auth.signIn}</Link>
+        <Link to="/auth" search={signInReturn()}>{t.app.auth.signIn}</Link>
       </Button>
     );
   }

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, MessageSquare, CheckCircle2, MoreHorizontal, Paperclip, Search, Send, Smile, Star, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAllProperties } from "@/hooks/useAllProperties";
 import { useEnsureStays } from "@/hooks/useEnsureStays";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { backendEnabled, remote, serverOffline } from "@/api/backend";
+import { backendEnabled, refreshThreads, remote, serverOffline } from "@/api/backend";
 import { setPlatform, usePlatform } from "@/hooks/usePlatform";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { pickCopy } from "@/i18n/copy";
@@ -34,6 +34,9 @@ function isEmojiOnly(text: string): boolean {
 }
 
 export const Route = createFileRoute("/messages")({
+  // The phone view (list, conversation, details) lives in history so Back steps through it.
+  validateSearch: (search: Record<string, unknown>): { view?: "thread" | "details" } =>
+    search["view"] === "thread" || search["view"] === "details" ? { view: search["view"] } : {},
   head: () => ({ meta: [
       { name: "robots", content: "noindex, nofollow" },
     { title: "Guest messages — RoomEasy" },
@@ -57,7 +60,17 @@ function MessagesPage() {
   const [activeId, setActiveId] = useState(threads[0]?.id ?? "");
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
-  const [mobileView, setMobileView] = useState<"list" | "thread" | "details">("list");
+  const mobileView = Route.useSearch().view ?? "list";
+  const navigateMessages = useNavigate({ from: "/messages" });
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
+  const setMobileView = (view: "list" | "thread" | "details") => {
+    if (view === mobileView) return;
+    const order = { list: 0, thread: 1, details: 2 } as const;
+    // Stepping back uses the browser history so the phone's Back button agrees.
+    if (order[view] < order[mobileView] && canGoBack) return router.history.back();
+    void navigateMessages({ search: view === "list" ? {} : { view }, replace: order[view] < order[mobileView] });
+  };
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,6 +120,13 @@ function MessagesPage() {
     const stream = streamRef.current;
     if (stream) stream.scrollTop = stream.scrollHeight;
   }, [messageCount, activeId]);
+
+  // New messages from the other side show up without reloading the page.
+  useEffect(() => {
+    const tick = () => { if (document.visibilityState === "visible") void refreshThreads(); };
+    const timer = window.setInterval(tick, 10_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (activeId && mobileView !== "details") inputRef.current?.focus();

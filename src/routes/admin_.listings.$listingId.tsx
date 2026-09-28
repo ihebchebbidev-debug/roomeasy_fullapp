@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/layout/BackLink";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Check, RotateCcw, ShieldOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -83,10 +84,10 @@ function AdminListingDetail() {
       <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Button asChild variant="ghost" size="sm" className="justify-self-start">
-            <Link to="/admin">
+            <BackLink to="/admin">
               <ArrowLeft className="size-4" aria-hidden />
               {t.app.admin.title}
-            </Link>
+            </BackLink>
           </Button>
 
 

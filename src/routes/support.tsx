@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSignInReturn } from "@/hooks/useSignInReturn";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/support")({
 });
 
 function SupportPage() {
+  const signInReturn = useSignInReturn();
   const c = useSupportCopy();
   const session = useSession();
   const [tickets, setTickets] = useState<MemberTicket[]>([]);
@@ -123,7 +125,7 @@ function SupportPage() {
           <p className="text-sm text-muted-foreground">{c.needSignIn}</p>
           <div className="mt-4 flex gap-2">
             <Button asChild>
-              <Link to="/auth">{c.signIn}</Link>
+              <Link to="/auth" search={signInReturn()}>{c.signIn}</Link>
             </Button>
             <Button asChild variant="outline">
               <Link to="/help">{c.helpFirst}</Link>

@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/layout/BackLink";
 import { Paged, rowText } from "@/components/admin/ListControls";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
@@ -98,10 +99,10 @@ function AdminHostProfile() {
       <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 lg:px-8">
           <Button asChild variant="ghost" size="sm">
-            <Link to="/admin">
+            <BackLink to="/admin">
               <ArrowLeft className="size-4" aria-hidden />
               {T("Back office")}
-            </Link>
+            </BackLink>
           </Button>
         </div>
       </div>

@@ -1,19 +1,19 @@
 import { format } from "date-fns";
-import { CalendarDays, Check, Loader2, MapPin, Minus, Navigation, Plus, Search, Users, X } from "lucide-react";
+import { CalendarDays, Check, MapPin, Minus, Navigation, Plus, Search, Users, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { DateRange } from "react-day-picker";
-import { toast } from "sonner";
 
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { dateFnsLocale } from "@/i18n/dateLocale";
 import { useClientCopy } from "@/i18n/clientCopy";
-import { interpolate, useLanguage } from "@/i18n/LanguageProvider";
+import { useLanguage } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { cityName } from "@/data/properties";
 import { useAllProperties } from "@/hooks/useAllProperties";
+import { PRICE_CEILING } from "@/models/staySearch";
 
 function Field({
   icon,
@@ -50,7 +50,6 @@ export function SearchBar() {
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(1);
   const [rooms, setRooms] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);
   const [whereOpen, setWhereOpen] = useState(false);
@@ -69,13 +68,7 @@ export function SearchBar() {
     : null;
 
   function submit() {
-    setLoading(true);
-    window.setTimeout(() => {
-      setLoading(false);
-      toast.success(
-        interpolate(t.search.submitted, { where: where || cc.wherePlaceholder }),
-      );
-      void navigate({
+    void navigate({
         to: "/stays",
         search: {
           where: where.trim(),
@@ -84,13 +77,12 @@ export function SearchBar() {
           guests: adults + children,
           rooms,
           category: "all",
-          maxPrice: 400,
+          maxPrice: PRICE_CEILING,
           rating: 0,
           beds: 0,
           sort: "recommended",
         },
       });
-    }, 700);
   }
 
   return (
@@ -231,16 +223,10 @@ export function SearchBar() {
 
       <Button
         type="submit"
-        disabled={loading}
         className="h-12 rounded-2xl px-8 font-bold shadow-[0_10px_24px_-10px_var(--primary)] transition-transform hover:scale-[1.02] active:scale-95 sm:h-auto sm:rounded-full"
       >
-
-        {loading ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden />
-        ) : (
-          <Search className="size-4" aria-hidden />
-        )}
-        {loading ? t.search.searching : t.search.search}
+        <Search className="size-4" aria-hidden />
+        {t.search.search}
       </Button>
     </form>
   );

@@ -186,8 +186,14 @@ function AuthPage() {
       toast.success(
         created ? t.app.auth.created : interpolate(t.app.auth.signedIn, { name: session.name || safeName }),
       );
-      const destination = (returnTo ??
-        (session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips")) as "/admin" | "/host" | "/trips";
+      // A traveller always lands on their trips: a saved host/admin address
+      // must never open a back office the account has no access to.
+      const home = session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips";
+      const allowed =
+        returnTo &&
+        !(returnTo.startsWith("/admin") && session.role !== "admin") &&
+        !(returnTo.startsWith("/host") && session.role === "guest");
+      const destination = ((allowed ? returnTo : home) ?? home) as "/admin" | "/host" | "/trips";
       if (created) setNewAccount({ name: session.name || safeName, to: destination });
       else enterApp(session.name || safeName, destination);
       return;

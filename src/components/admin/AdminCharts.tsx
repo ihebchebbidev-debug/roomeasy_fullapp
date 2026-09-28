@@ -27,14 +27,14 @@ export function ChartPanel({ title, subtitle, children, className, action }: { t
 export function StatTile({ label, value, hint, tone = "default" }: { label: string; value: string; hint?: string | undefined; tone?: "default" | "primary" | "success" | "danger" }) {
   return (
     <div className="min-w-0 rounded-lg border border-border bg-surface p-3 shadow-sm sm:p-4">
-      <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="break-words text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={cn(
-        "mt-1 truncate font-display text-lg font-bold tabular-nums sm:text-2xl",
+        "mt-1 break-all font-display text-base font-bold leading-tight tabular-nums sm:text-xl xl:text-2xl",
         tone === "primary" && "text-primary",
         tone === "success" && "text-emerald-600 dark:text-emerald-400",
         tone === "danger" && "text-destructive",
-      )}>{value}</p>
-      {hint ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{hint}</p> : null}
+      )} title={value}>{value}</p>
+      {hint ? <p className="mt-0.5 break-words text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }

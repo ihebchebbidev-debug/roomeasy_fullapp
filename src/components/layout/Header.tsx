@@ -1,6 +1,5 @@
-import { BedDouble, ChevronRight, Home, LifeBuoy, Luggage, Menu, UserRound, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { BedDouble, ChevronRight, Home, LifeBuoy, Luggage, Menu, UserRound } from "lucide-react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { AccountMenu } from "@/components/layout/AccountMenu";
@@ -9,25 +8,13 @@ import { BrandLogo } from "@/components/layout/BrandLogo";
 import { LanguageSelector } from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { usePlatform } from "@/hooks/usePlatform";
-import { cn } from "@/lib/utils";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   const { t, locale } = useLanguage();
   const { session } = usePlatform();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-    const id = window.setTimeout(() => setMounted(false), 300);
-    return () => window.clearTimeout(id);
-  }, [open]);
 
   const links = [
     { to: "/stays", label: t.nav.stays, icon: BedDouble },
@@ -63,86 +50,46 @@ export function Header() {
             <LanguageSelector variant="dark" />
           </div>
           <AccountMenu variant="dark" />
-          <button
-            type="button"
-            aria-label={{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-            className="grid size-10 shrink-0 place-items-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur transition-colors hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-lime focus-visible:outline-none lg:hidden"
-          >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}
+                className="size-10 shrink-0 rounded-full border border-white/25 bg-white/15 text-white backdrop-blur hover:bg-white/25 hover:text-white focus-visible:ring-lime lg:hidden"
+              >
+                <Menu className="size-5" aria-hidden />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="z-[100] flex w-80 max-w-[85vw] flex-col gap-0 border-border bg-surface p-0 lg:hidden">
+              <SheetTitle className="sr-only">{{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}</SheetTitle>
+              <SheetDescription className="sr-only">{t.brand}</SheetDescription>
+              <div className="flex items-center border-b border-border px-5 py-4">
+                <BrandLogo className="h-10" />
+              </div>
+              <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
+                {links.map((l) => (
+                  <SheetClose asChild key={l.to}>
+                    <Link to={l.to} className="group flex items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-base font-semibold transition-colors hover:bg-secondary active:bg-secondary">
+                      <span className="flex items-center gap-3"><l.icon className="size-4 text-muted-foreground" aria-hidden />{l.label}</span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
+                    </Link>
+                  </SheetClose>
+                ))}
+              </nav>
+              <div className="flex flex-col gap-3 border-t border-border p-5">
+                <div className="flex items-center gap-2"><LanguageSelector /><CurrencySelector /></div>
+                <SheetClose asChild>
+                  <Link to={accountTo} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95">
+                    <UserRound className="size-4" aria-hidden /><span className="max-w-40 truncate">{accountLabel}</span>
+                  </Link>
+                </SheetClose>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-
-      {mounted ? createPortal(
-        <div className="fixed inset-0 z-[90] lg:hidden" role="dialog" aria-modal="true" aria-label={{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}>
-          <button
-            type="button"
-            aria-label={{ en: "Close menu", fr: "Fermer le menu", es: "Cerrar menú", de: "Menü schließen", pt: "Fechar menu" }[locale]}
-            onClick={() => setOpen(false)}
-            className={cn(
-              "absolute inset-0 bg-foreground/50 backdrop-blur-sm transition-opacity duration-300",
-              open ? "opacity-100" : "opacity-0",
-            )}
-          />
-          <aside
-            className={cn(
-              "absolute inset-y-0 right-0 flex w-80 max-w-[85vw] flex-col border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out",
-              open ? "translate-x-0" : "translate-x-full",
-            )}
-          >
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <BrandLogo className="h-10" />
-              <button
-                type="button"
-                aria-label={{ en: "Close menu", fr: "Fermer le menu", es: "Cerrar menú", de: "Menü schließen", pt: "Fechar menu" }[locale]}
-                onClick={() => setOpen(false)}
-                className="grid size-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                <X className="size-4" aria-hidden />
-              </button>
-            </div>
-
-            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
-              {links.map((l) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setOpen(false)}
-                  className="group flex items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-base font-semibold transition-colors hover:bg-secondary active:bg-secondary"
-                >
-                  <span className="flex items-center gap-3">
-                    <l.icon className="size-4 text-muted-foreground" aria-hidden />
-                    {l.label}
-                  </span>
-                  <ChevronRight
-                    className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                    aria-hidden
-                  />
-                </Link>
-              ))}
-
-            </nav>
-
-            <div className="flex flex-col gap-3 border-t border-border p-5">
-              <div className="flex items-center gap-2">
-                <LanguageSelector />
-                <CurrencySelector />
-              </div>
-              <Link
-                to={accountTo}
-                onClick={() => setOpen(false)}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
-              >
-                <UserRound className="size-4" aria-hidden />
-                <span className="max-w-40 truncate">{accountLabel}</span>
-              </Link>
-            </div>
-          </aside>
-        </div>,
-        document.body,
-      ) : null}
     </header>
   );
 }

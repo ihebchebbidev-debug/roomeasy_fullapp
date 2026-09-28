@@ -24,9 +24,9 @@ const EMAIL_FIELDS: Field[] = [
   { key: "SMTP_SECURE", label: ["Connexion sécurisée (SSL)", "Secure connection (SSL)"], type: "select", options: ["true", "false"] },
   { key: "SMTP_USER", label: ["Identifiant", "Username"] },
   { key: "SMTP_PASSWORD", label: ["Mot de passe", "Password"], type: "password" },
-  { key: "MAIL_FROM_ADDRESS", label: ["Adresse d'envoi", "Sender address"], placeholder: "no-reply@example.com" },
+  { key: "MAIL_FROM_ADDRESS", label: ["Adresse d'envoi", "Sender address"], placeholder: "no-reply@roomeasy.fr" },
   { key: "MAIL_FROM_NAME", label: ["Nom d'envoi", "Sender name"] },
-  { key: "MAIL_REPLY_TO", label: ["Adresse de réponse", "Reply-to address"] },
+  { key: "MAIL_REPLY_TO", label: ["Adresse de réponse", "Reply-to address"], placeholder: "contact@roomeasy.fr" },
   { key: "MAIL_DRY_RUN", label: ["Mode test (n'envoie rien)", "Test mode (sends nothing)"], type: "select", options: ["false", "true"] },
 ];
 
@@ -65,7 +65,11 @@ export function PlatformSettingsPanel() {
   useEffect(() => {
     settingsApi.integrations().then((v) => {
       setView(v);
-      setDraft(Object.fromEntries(Object.entries(v).map(([k, f]) => [k, f.value])));
+      const d: Record<string, string> = Object.fromEntries(Object.entries(v).map(([k, f]) => [k, f.value]));
+      // Customer-required defaults for email addresses.
+      if (!d["MAIL_FROM_ADDRESS"]) d["MAIL_FROM_ADDRESS"] = "no-reply@roomeasy.fr";
+      if (!d["MAIL_REPLY_TO"]) d["MAIL_REPLY_TO"] = "contact@roomeasy.fr";
+      setDraft(d);
     }).catch(() => toast.error(T("Settings unavailable.", "Réglages indisponibles.")));
     settingsApi.admin().then((s) => { setSocial({ ...emptySocial, ...(s.socialLinks ?? {}) }); setFees({
       commissionRate: String(s.commissionRate),

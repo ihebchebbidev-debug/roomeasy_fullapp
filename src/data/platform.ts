@@ -45,6 +45,8 @@ export type Booking = {
   message?: string;
   price?: import("@/models/booking").PriceBreakdown;
   payment?: import("@/models/booking").PaymentRecord;
+  /** The guest's own review of this stay, as stored on the server. */
+  review?: { id: string; rating: number; text: string };
   createdAt?: string;
   updatedAt?: string;
 };

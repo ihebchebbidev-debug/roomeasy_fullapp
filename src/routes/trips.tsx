@@ -23,6 +23,17 @@ import { useBookingCopy } from "@/i18n/booking";
 import { useCancelBooking } from "@/hooks/useBookingApi";
 import { backendEnabled, remote } from "@/api/backend";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { openConversation } from "@/lib/conversation";
 import { cn } from "@/lib/utils";
@@ -98,7 +109,8 @@ function TripsPage() {
 }
 
 function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
-  const { t } = useLanguage();
+  const { t, locale: lang } = useLanguage();
+  const fr = String(lang).startsWith("fr");
   const { format } = useCurrency();
   const x = useExtra();
   const navigate = useNavigate();
@@ -167,27 +179,49 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                 <Receipt className="size-3.5" aria-hidden />{t.app.trips.receipt}
               </Button>
               {["pending", "confirmed"].includes(booking.status) ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-destructive sm:w-auto"
-                  disabled={cancelBooking.isPending}
-                  onClick={async () => {
-                    try {
-                      await cancelBooking.mutateAsync(booking.id);
-                      setPlatform((current) => ({
-                        bookings: current.bookings.map((row) =>
-                          row.id === booking.id ? { ...row, status: "cancelled" as BookingStatus } : row,
-                        ),
-                      }));
-                      toast.success(t.app.trips.cancelled);
-                    } catch {
-                      toast.error(c.errors.NOT_CANCELLABLE);
-                    }
-                  }}
-                >
-                  {t.app.trips.cancel}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-destructive sm:w-auto"
+                      disabled={cancelBooking.isPending}
+                    >
+                      {t.app.trips.cancel}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{fr ? "Annuler cette réservation ?" : "Cancel this booking?"}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {property.name} · {booking.from} → {booking.to}. {cc.refundDue}:{" "}
+                        {format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}.{" "}
+                        {fr ? "Cette action est définitive." : "This cannot be undone."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{fr ? "Garder ma réservation" : "Keep my booking"}</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={async () => {
+                          try {
+                            await cancelBooking.mutateAsync(booking.id);
+                            setPlatform((current) => ({
+                              bookings: current.bookings.map((row) =>
+                                row.id === booking.id ? { ...row, status: "cancelled" as BookingStatus } : row,
+                              ),
+                            }));
+                            toast.success(t.app.trips.cancelled);
+                          } catch {
+                            toast.error(c.errors.NOT_CANCELLABLE);
+                          }
+                        }}
+                      >
+                        {fr ? "Oui, annuler" : "Yes, cancel booking"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               ) : null}
             </div>
           </div>
@@ -201,7 +235,9 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
 function ReviewForm({ booking }: { booking: Booking }) {
   const x = useExtra();
   const { session, reviews } = usePlatform();
-  const existing = reviews.find((review) => review.id === `rv-${booking.id}`);
+  const [savedHere, setSavedHere] = useState<{ rating: number; text: string } | null>(null);
+  const existing =
+    booking.review ?? savedHere ?? reviews.find((review) => review.id === `rv-${booking.id}`);
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
 
@@ -223,6 +259,7 @@ function ReviewForm({ booking }: { booking: Booking }) {
           // The server owns published reviews; only mirror it locally once it saved.
           const saved = await remote.createReview(booking.id, rating, comment);
           if (backendEnabled && saved === null) return;
+          setSavedHere({ rating, text: comment });
           setPlatform((state) => ({
             reviews: [
               {

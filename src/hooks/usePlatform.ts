@@ -71,7 +71,11 @@ const listeners = new Set<() => void>();
 
 function persist() {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // Only what the first screen needs is kept on the device; bookings,
+    // messages, users and money figures are always reloaded from the server
+    // so nothing private stays behind on a shared computer.
+    const kept: Partial<PlatformState> = { session: state.session, cookiesChoice: state.cookiesChoice };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(kept));
   } catch {
     /* storage unavailable */
   }
@@ -87,7 +91,10 @@ function hydrate() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      state = { ...initialState, ...(JSON.parse(raw) as Partial<PlatformState>) };
+      const saved = JSON.parse(raw) as Partial<PlatformState>;
+      state = { ...initialState, session: saved.session ?? null, cookiesChoice: saved.cookiesChoice ?? null };
+      // Rewrite older, fuller copies with the trimmed version.
+      persist();
       emit();
     }
   } catch {

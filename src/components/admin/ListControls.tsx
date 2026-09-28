@@ -1,3 +1,4 @@
+import { useRememberedState } from "@/hooks/useRememberedState";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
@@ -24,10 +25,10 @@ export type ListFilter<T> = { value: string; label: string; test: (row: T) => bo
  */
 export function useListControls<T>(
   rows: T[] | null | undefined,
-  options: { text: (row: T) => string; filters?: ListFilter<T>[] | undefined },
+  options: { text: (row: T) => string; filters?: ListFilter<T>[] | undefined; remember?: string },
 ) {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [query, setQuery] = useRememberedState(options.remember && `${options.remember}.q`, "");
+  const [filter, setFilter] = useRememberedState(options.remember && `${options.remember}.f`, "all");
   const [page, setPage] = useState(1);
 
   useEffect(() => setPage(1), [query, filter]);
@@ -66,13 +67,22 @@ export function useListControls<T>(
 
 type Controls = ReturnType<typeof useListControls<any>>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export function ListToolbar({ controls, extra, placeholder }: {
+export function ListToolbar({ controls, extra, placeholder, suggestions }: {
   controls: Pick<Controls, "query" | "setQuery" | "filter" | "setFilter" | "filters" | "total"> & { counts?: Record<string, number> };
   extra?: ReactNode;
   placeholder?: string;
+  /** Values offered as autocomplete suggestions while typing. */
+  suggestions?: string[] | undefined;
 }) {
   const { locale } = useLanguage();
   const copy = listCopy[locale];
+  const [focused, setFocused] = useState(false);
+  const q = controls.query.trim().toLowerCase();
+  const matches = suggestions && focused
+    ? Array.from(new Set(suggestions.filter(Boolean)))
+        .filter((s) => !q || (s.toLowerCase().includes(q) && s.toLowerCase() !== q))
+        .slice(0, 8)
+    : [];
   return (
     <div className="mb-4 space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -81,10 +91,30 @@ export function ListToolbar({ controls, extra, placeholder }: {
           <Input
             value={controls.query}
             onChange={(e) => controls.setQuery(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setTimeout(() => setFocused(false), 150)}
             placeholder={placeholder ?? copy.search}
             className="h-11 rounded-full bg-surface pl-10 pr-10"
             aria-label={copy.searchLabel}
+            autoComplete="off"
           />
+          {matches.length > 0 ? (
+            <ul className="absolute left-0 right-0 top-12 z-30 max-h-64 overflow-auto rounded-xl border border-border bg-popover p-1 text-sm shadow-lg" role="listbox">
+              {matches.map((s) => (
+                <li key={s}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    onMouseDown={(e) => { e.preventDefault(); controls.setQuery(s); setFocused(false); }}
+                    className="block w-full truncate rounded-lg px-3 py-2 text-left hover:bg-muted"
+                  >
+                    {s}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {controls.query ? (
             <button
               type="button"
@@ -179,16 +209,19 @@ export function ShowMore({ controls }: { controls: Pick<Controls, "visible" | "t
 }
 
 /** Render-prop version, safe to use after early returns. */
-export function Paged<T>({ rows, text, filters, children }: {
+export function Paged<T>({ rows, text, filters, suggest, children }: {
   rows: T[] | null | undefined;
   text: (row: T) => string;
   filters?: ListFilter<T>[];
+  /** Per-row suggestion labels (e.g. listing name, city). */
+  suggest?: (row: T) => string[];
   children: (rows: T[]) => ReactNode;
 }) {
   const controls = useListControls(rows, { text, filters });
+  const suggestions = suggest ? (rows ?? []).flatMap(suggest) : undefined;
   return (
     <>
-      <div className="col-span-full"><ListToolbar controls={controls} /></div>
+      <div className="col-span-full"><ListToolbar controls={controls} suggestions={suggestions} /></div>
       {children(controls.visible)}
       <div className="col-span-full"><ShowMore controls={controls} /></div>
     </>

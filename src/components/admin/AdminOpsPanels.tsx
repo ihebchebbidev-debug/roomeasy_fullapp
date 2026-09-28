@@ -1,3 +1,4 @@
+import { useRememberedState } from "@/hooks/useRememberedState";
 /**
  * Back-office panels for the client's admin specification: reported listings,
  * identity checks and account closures, per-host commission, booking
@@ -677,16 +678,57 @@ export function BookingActionsPanel() {
 
 export function AuditPanel() {
   const copy = useAdminCopy();
+  const T = useAdminT();
   const load = useCallback(() => adminOpsApi.auditLog(), []);
   const { data, loading } = useRemoteList<AuditEntryDto[]>(load, []);
+  const [kind, setKind] = useRememberedState("admin.audit.kind", "all");
+  const [admin, setAdmin] = useRememberedState("admin.audit.admin", "all");
+  const [action, setAction] = useRememberedState("admin.audit.action", "all");
+  const [from, setFrom] = useRememberedState("admin.audit.from", "");
+  const [to, setTo] = useRememberedState("admin.audit.to", "");
 
   if (loading) return <Note text={copy.loading} />;
   if (data.length === 0) return <Note text={copy.empty} />;
 
+  const uniq = (values: (string | null)[]) => Array.from(new Set(values.filter((v): v is string => !!v))).sort();
+  const kinds = uniq(data.map((e) => e.target.kind));
+  const admins = uniq(data.map((e) => e.adminName));
+  const actions = uniq(data.map((e) => e.action));
+  const rows = data.filter((e) => {
+    if (kind !== "all" && e.target.kind !== kind) return false;
+    if (admin !== "all" && e.adminName !== admin) return false;
+    if (action !== "all" && e.action !== action) return false;
+    const t = new Date(e.createdAt).getTime();
+    if (from && t < new Date(from).getTime()) return false;
+    if (to && t > new Date(to).getTime() + 86_399_999) return false;
+    return true;
+  });
+  const sel = "h-9 rounded-md border border-input bg-background px-2 text-sm";
+  const active = kind !== "all" || admin !== "all" || action !== "all" || from || to;
+
   return (
     <Card>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <select aria-label={T("Action")} value={action} onChange={(e) => setAction(e.target.value)} className={sel}>
+          <option value="all">{T("All actions")}</option>
+          {actions.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <select aria-label={T("Type")} value={kind} onChange={(e) => setKind(e.target.value)} className={sel}>
+          <option value="all">{T("All types")}</option>
+          {kinds.map((k) => <option key={k} value={k}>{k}</option>)}
+        </select>
+        <select aria-label={T("Admin")} value={admin} onChange={(e) => setAdmin(e.target.value)} className={sel}>
+          <option value="all">{T("All admins")}</option>
+          {admins.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label={T("From")} className="h-9 w-40" />
+        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label={T("To")} className="h-9 w-40" />
+        {active ? (
+          <Button variant="ghost" size="sm" onClick={() => { setKind("all"); setAdmin("all"); setAction("all"); setFrom(""); setTo(""); }}>{T("Clear")}</Button>
+        ) : null}
+      </div>
       <ul className="divide-y divide-border text-sm">
-        <Paged rows={data} text={rowText}>{(__rows) => __rows.map((entry) => (
+        <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((entry) => (
           <li key={entry.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
             <span className="font-medium">{entry.action}</span>
             <span className="text-muted-foreground">
@@ -1115,6 +1157,17 @@ export function BookingsDeskPanel() {
   const [editForm, setEditForm] = useState({ checkIn: "", checkOut: "", totalUsd: "", reason: "" });
   const [savingEdit, setSavingEdit] = useState(false);
 
+  // Escape closes the booking details window, like every other admin pop-up.
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setSelected(null); setEditing(false); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected]);
+
+
   const startEdit = (booking: AdminBookingDto) => {
     setEditForm({
       checkIn: booking.checkIn,
@@ -1304,10 +1357,10 @@ export function BookingsDeskPanel() {
       )}
 
       {selected ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-4 backdrop-blur-sm sm:p-8">
+        <div role="dialog" aria-modal="true" aria-label={selected.reference} className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-4 backdrop-blur-sm sm:p-8">
         <div className="mx-auto max-w-3xl">
           <Button size="sm" variant="outline" className="mb-3" onClick={() => { setSelected(null); setEditing(false); }}>
-            ← Retour aux réservations
+            ← {T("Back to reservations")}
           </Button>
         <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
           {/* header: photo + reference + status */}

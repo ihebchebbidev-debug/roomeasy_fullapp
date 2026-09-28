@@ -23,52 +23,46 @@ export function useFavorites() {
   const session = useSession();
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  useEffect(() => {
-    const local = readLocal();
-    setFavorites(local);
+  const signedIn = Boolean(session && backendEnabled && getAccessToken());
 
-    if (!backendEnabled || !getAccessToken() || !session) return;
+  useEffect(() => {
+    // Signed out: the list saved on this device. Signed in: only the
+    // account's own list — never hearts left on this device by someone else.
+    if (!signedIn) {
+      setFavorites(readLocal());
+      return;
+    }
+    setFavorites([]);
     let cancelled = false;
     void (async () => {
       const serverIds = await remote.favoriteIds();
-      if (cancelled || !serverIds) return;
-      // First sign-in on this device: keep what the guest saved while signed out.
-      const merged = Array.from(new Set([...serverIds, ...local]));
-      if (merged.length !== serverIds.length) await remote.syncFavorites(merged);
-      setFavorites(merged);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      if (!cancelled && serverIds) setFavorites(serverIds);
     })();
     return () => {
       cancelled = true;
     };
-  }, [session]);
+  }, [signedIn, session?.id]);
 
   const toggle = useCallback(
     (id: string) => {
-      let added = false;
-      setFavorites((prev) => {
-        added = !prev.includes(id);
-        const next = added ? [...prev, id] : prev.filter((f) => f !== id);
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        return next;
-      });
-      if (backendEnabled && getAccessToken()) {
-        const wasAdded = added;
+      // Decide from the current list now: a state updater runs later, so
+      // reading its result here would always say "not added" and send a remove.
+      const added = !favorites.includes(id);
+      const next = added ? [...favorites, id] : favorites.filter((f) => f !== id);
+      setFavorites(next);
+      if (!signedIn) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      if (signedIn) {
         void (async () => {
-          const saved = await (wasAdded ? remote.addFavorite(id) : remote.removeFavorite(id));
+          const saved = await (added ? remote.addFavorite(id) : remote.removeFavorite(id));
           // The server refused: put the heart back the way it was, so the
           // device and the account never disagree.
           if (saved !== null) return;
-          setFavorites((prev) => {
-            const next = wasAdded ? prev.filter((f) => f !== id) : Array.from(new Set([...prev, id]));
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-            return next;
-          });
+          setFavorites((prev) => (added ? prev.filter((f) => f !== id) : Array.from(new Set([...prev, id]))));
         })();
       }
       return added;
     },
-    [],
+    [signedIn, favorites],
   );
 
   const isFavorite = useCallback((id: string) => favorites.includes(id), [favorites]);

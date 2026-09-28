@@ -736,13 +736,16 @@ function ListingDetail() {
                   {t.detail.entire} · {cityName(property, locale)}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {property.guests} {t.listings.guests} · {property.beds} {t.listings.beds} ·{" "}
+                  {property.guests} {t.listings.guests} ·{" "}
+                  {property.rooms != null ? `${property.rooms} ${lc.rooms.toLowerCase()} · ` : ""}
+                  {property.beds} {t.listings.beds} ·{" "}
                   {property.baths} {t.listings.baths} · {property.area} m²
                 </p>
               </header>
 
               {/* Rating card — only when the stay has real reviews */}
-              {displayedReviewCount > 0 ? (
+              {/* "Most loved" only once enough guests agree — never on a single review */}
+              {displayedReviewCount >= 5 && (property.rating ?? 0) >= 4.7 ? (
                 <div className="flex items-center gap-6 rounded-xl border border-border bg-surface px-6 py-4">
                   <Award className="size-8 shrink-0 text-primary" aria-hidden />
                   <div className="min-w-0 flex-1">

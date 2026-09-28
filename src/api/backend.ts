@@ -240,12 +240,19 @@ export function toHostReview(dto: ReviewDto): HostReview {
   };
 }
 
+// Older servers send a Postgres array literal ("{calendar,messaging}") instead of a list.
+function toScopeList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === "string") return value.replace(/^\{|\}$/g, "").split(",").map((s) => s.trim()).filter(Boolean);
+  return [];
+}
+
 export function toTeamMember(dto: TeamMemberDto): TeamMember {
   return {
     id: dto.id,
     name: dto.fullName,
     email: dto.email,
-    scopes: dto.scopes.filter((scope): scope is TeamMember["scopes"][number] =>
+    scopes: toScopeList(dto.scopes).filter((scope): scope is TeamMember["scopes"][number] =>
       scope === "calendar" || scope === "messaging",
     ),
   };
@@ -282,6 +289,7 @@ type ServerBooking = {
   price: { total: number; totalUsd?: number; currency?: string };
   currency?: string;
   payment?: unknown;
+  review?: { id: string; rating: number; body: string } | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -302,6 +310,7 @@ export function toBooking(dto: ServerBooking): Booking {
     ...(dto.guest?.email ? { guestEmail: dto.guest.email } : {}),
     ...(dto.guest?.phone ? { guestPhone: dto.guest.phone } : {}),
     ...(dto.message ? { message: dto.message } : {}),
+    ...(dto.review ? { review: { id: dto.review.id, rating: dto.review.rating, text: dto.review.body } } : {}),
     ...(dto.createdAt ? { createdAt: dto.createdAt } : {}),
     ...(dto.updatedAt ? { updatedAt: dto.updatedAt } : {}),
   };
@@ -353,6 +362,15 @@ export async function hydratePublic(): Promise<void> {
   if (stays) setPlatform({ customProperties: stays.map(toProperty) });
   if (settings?.rateRules) setPlatform({ rateRules: settings.rateRules });
   if (settings) setPlatform({ feeRates: { serviceFeeRate: settings.serviceFeeRate, taxRate: settings.taxRate } });
+}
+
+/** Re-reads conversations and their messages so new replies appear without a reload. */
+export async function refreshThreads(): Promise<void> {
+  if (!backendEnabled || !getAccessToken()) return;
+  const threads = await runQuiet(() => messagingApi.threads());
+  if (!threads) return;
+  const full = await Promise.all(threads.map((thread) => runQuiet(() => messagingApi.thread(thread.id, false))));
+  setPlatform({ threads: full.map((row, index) => toThread(row ?? (threads[index] as ThreadDto))) });
 }
 
 /** Everything that depends on who is signed in. */
@@ -598,6 +616,10 @@ export const remote = {
     ),
   /** Erases the account for good; the caller signs the person out afterwards. */
   deleteAccount: async (password: string, reason?: string) => {
+    if (!backendEnabled || offline) {
+      toast.error("The account service is unreachable right now. Please try again in a moment.");
+      return false;
+    }
     const result = await runRemote(
       () => accountsApi.deleteMe({ password, ...(reason ? { reason } : {}) }),
       "Your account could not be deleted.",

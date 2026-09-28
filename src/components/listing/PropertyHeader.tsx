@@ -1,4 +1,6 @@
+import { BackLink } from "@/components/layout/BackLink";
 import { Link } from "@tanstack/react-router";
+import { useSignInReturn } from "@/hooks/useSignInReturn";
 import {
   ArrowLeft,
   CalendarDays,
@@ -40,6 +42,7 @@ type PropertyHeaderProps = {
 };
 
 export function PropertyHeader({ favorite, onShare, onToggleFavorite }: PropertyHeaderProps) {
+  const signInReturn = useSignInReturn();
   const { locale, t } = useLanguage();
   const { session, threads } = usePlatform();
   const unread = threads.reduce((total, thread) => total + thread.unread, 0);
@@ -121,7 +124,7 @@ export function PropertyHeader({ favorite, onShare, onToggleFavorite }: Property
               </DropdownMenu>
             ) : (
               <Button asChild className="h-11 rounded-full bg-surface px-4 text-navy shadow-none hover:bg-secondary sm:px-5">
-                <Link to="/auth"><UserRound className="size-4" aria-hidden /><span>{t.app.auth.signIn}</span></Link>
+                <Link to="/auth" search={signInReturn()}><UserRound className="size-4" aria-hidden /><span>{t.app.auth.signIn}</span></Link>
               </Button>
             )}
           </div>
@@ -131,7 +134,7 @@ export function PropertyHeader({ favorite, onShare, onToggleFavorite }: Property
       <div className="border-b border-border bg-surface">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10">
           <Button variant="ghost" asChild className="-ml-3 rounded-lg px-3 text-sm font-semibold hover:bg-muted">
-            <Link to="/stays"><ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden /> <span className="hidden sm:inline">{t.detail.back}</span><span className="sm:hidden">{t.detail.back}</span></Link>
+            <BackLink to="/stays"><ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden /> <span className="hidden sm:inline">{t.detail.back}</span><span className="sm:hidden">{t.detail.back}</span></BackLink>
           </Button>
           <div className="flex items-center gap-1">
             <Button variant="ghost" onClick={onShare} className="rounded-lg px-3 text-sm font-semibold hover:bg-muted sm:px-4"><Share2 aria-hidden /><span className="hidden sm:inline">{t.detail.share}</span></Button>

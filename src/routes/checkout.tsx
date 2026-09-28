@@ -1,4 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useSignInReturn } from "@/hooks/useSignInReturn";
 import { AlertCircle, CalendarDays, CheckCircle2, CreditCard, Loader2, Lock, ShieldCheck, Users } from "lucide-react";
 import { longDate } from "@/lib/cardFormat";
 
@@ -105,6 +106,7 @@ function addDays(iso: string, days: number) {
 }
 
 function CheckoutPage() {
+  const signInReturn = useSignInReturn();
   const { t, locale } = useLanguage();
   const { format: formatDisplay, formatCharged: formatChargedIn } = useCurrency();
   const navigate = useNavigate();
@@ -257,7 +259,7 @@ function CheckoutPage() {
           <h2 className="font-display text-lg font-bold">{signedOutCopy.title}</h2>
           <p className="text-sm text-muted-foreground">{signedOutCopy.body}</p>
           <Button asChild size="lg" className="w-full">
-            <Link to="/auth">{t.app.auth.signIn}</Link>
+            <Link to="/auth" search={signInReturn()}>{t.app.auth.signIn}</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="w-full">
             <Link to="/stays/$propertyId" params={{ propertyId: property.id }}>

@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { cn } from "@/lib/utils";
 import { useAdminT, type AdminT } from "@/i18n/adminAutoCopy";
+import { toast } from "sonner";
 
 type Props = {
   overview: AdminOverviewDto | null;
@@ -168,7 +169,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
             <Button size="sm" variant="outline" onClick={() => setReload((n) => n + 1)} disabled={statsState === "loading"}>
               <RefreshCw className={cn("size-4", statsState === "loading" && "animate-spin")} /> {T("Refresh")}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => void adminOpsApi.downloadStatsCsv(months).catch(() => undefined)}>
+            <Button size="sm" variant="outline" onClick={() => void adminOpsApi.downloadStatsCsv(months).catch(() => toast.error(T("Export failed. Please try again.")))}>
               <Download className="size-4" /> {T("Export CSV")}
             </Button>
           </div>
@@ -195,7 +196,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                   )}
                 >
                   {change >= 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-                  {Math.abs(change)}%
+                  {Math.round(Math.abs(change) * 10) / 10}%
                 </span>
               ) : null}
               <span className="truncate">{hint}</span>

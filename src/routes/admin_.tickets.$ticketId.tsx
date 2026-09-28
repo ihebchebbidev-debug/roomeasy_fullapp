@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/layout/BackLink";
 import { translateAdmin } from "@/i18n/adminAutoCopy";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
@@ -81,10 +82,10 @@ function AdminTicketDetail() {
       <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto grid max-w-4xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Button asChild variant="ghost" size="sm" className="justify-self-start">
-            <Link to="/admin">
+            <BackLink to="/admin">
               <ArrowLeft className="size-4" aria-hidden />
               {t.app.admin.title}
-            </Link>
+            </BackLink>
           </Button>
           {ticket ? <Badge variant="secondary">{statusLabel(ticket.status)}</Badge> : null}
         </div>

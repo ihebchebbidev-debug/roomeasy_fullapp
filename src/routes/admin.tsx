@@ -1,4 +1,5 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { useRememberedState } from "@/hooks/useRememberedState";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { mediaUrl } from "@/lib/images";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { IdentityBadge } from "@/components/admin/IdentityBadge";
@@ -104,6 +105,9 @@ function SidebarBackdrop() {
 }
 
 export const Route = createFileRoute("/admin")({
+  // The open tab lives in the address, so Back returns to it.
+  validateSearch: (search: Record<string, unknown>): { section?: string } =>
+    typeof search["section"] === "string" && search["section"] ? { section: search["section"] } : {},
   head: () => ({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
@@ -124,9 +128,17 @@ function AdminPage() {
   const cc = useClientCopy();
   const { session, listings, users, payouts, commissionRate, reviews, adminOverview, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
-  const [query, setQuery] = useState("");
-  const [idFilter, setIdFilter] = useState<"all" | "pending" | "verified" | "rejected" | "none">("all");
-  const [section, setSection] = useState("dashboard");
+  const [query, setQuery] = useRememberedState("admin.users.query", "");
+  const [idFilter, setIdFilter] = useRememberedState<"all" | "pending" | "verified" | "rejected" | "none">("admin.users.id", "all");
+  const [roleFilter, setRoleFilter] = useRememberedState<"all" | "guest" | "host" | "admin">("admin.users.role", "all");
+  const [accountFilter, setAccountFilter] = useRememberedState<"all" | "active" | "suspended">("admin.users.account", "all");
+  const [payoutHost, setPayoutHost] = useRememberedState("admin.payouts.host", "");
+  const [payoutFrom, setPayoutFrom] = useRememberedState("admin.payouts.from", "");
+  const [payoutTo, setPayoutTo] = useRememberedState("admin.payouts.to", "");
+  const navigateAdmin = useNavigate({ from: "/admin" });
+  const section = Route.useSearch().section ?? "dashboard";
+  const setSection = (value: string) =>
+    void navigateAdmin({ search: value === "dashboard" ? {} : { section: value } });
   const [commission, setCommission] = useState(String(commissionRate));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const ac = useAdminCopy();
@@ -230,7 +242,11 @@ function AdminPage() {
     de: { pending: "Zu prüfen", verified: "Verifiziert", rejected: "Abgelehnt", none: "Kein Dokument", visible: "Sichtbar", hidden: "Ausgeblendet", low: "Bewertung ≤ 2" },
     pt: { pending: "Por verificar", verified: "Verificados", rejected: "Recusados", none: "Sem documento", visible: "Visíveis", hidden: "Ocultos", low: "Avaliação ≤ 2" },
   }[locale];
-  const userPage = useListControls(users, {
+  const roleUsers = users.filter((u) =>
+    (roleFilter === "all" || u.role === roleFilter) &&
+    (accountFilter === "all" || (accountFilter === "suspended") === Boolean(u.suspended)),
+  );
+  const userPage = useListControls(roleUsers, { remember: "admin.users",
     text: (u) => `${u.name} ${u.email} ${u.phone ?? ""}`,
     filters: [
       { value: "pending", label: filterLabels.pending, test: (u) => idStatus(u) === "pending" },
@@ -240,10 +256,10 @@ function AdminPage() {
     ],
   });
   void filteredUsers; void idCounts; void setIdFilter;
-  const pendingList = useListControls(pending, {
+  const pendingList = useListControls(pending, { remember: "admin.pending",
     text: (l) => { const p = pendingDetails[l.propertyId] ?? allProperties.find((x) => x.id === l.propertyId); return `${p?.name ?? ""} ${(p as { location?: { city?: string } } | undefined)?.location?.city ?? ""} ${l.propertyId}`; },
   });
-  const reviewList = useListControls(reviews, {
+  const reviewList = useListControls(reviews, { remember: "admin.reviews",
     text: (r) => `${r.author} ${r.text} ${allProperties.find((p) => p.id === r.propertyId)?.name ?? ""}`,
     filters: [
       { value: "visible", label: filterLabels.visible, test: (r) => !r.hidden },
@@ -251,13 +267,29 @@ function AdminPage() {
       { value: "low", label: filterLabels.low, test: (r) => r.rating <= 2 },
     ],
   });
-  const payoutList = useListControls(payouts, {
+  const payoutRows = payouts.filter((p) => {
+    if (payoutHost.trim() && !p.hostName.toLowerCase().includes(payoutHost.trim().toLowerCase())) return false;
+    const time = new Date(p.date).getTime();
+    if (Number.isNaN(time)) return true;
+    if (payoutFrom && time < new Date(payoutFrom).getTime()) return false;
+    if (payoutTo && time > new Date(payoutTo).getTime() + 86_399_999) return false;
+    return true;
+  });
+  const payoutList = useListControls(payoutRows, { remember: "admin.payouts",
     text: (p) => `${p.hostName} ${p.date} ${p.transferId ?? ""}`,
     filters: [
       { value: "scheduled", label: t.app.admin.scheduled, test: (p) => p.status !== "paid" },
       { value: "paid", label: t.app.admin.paid, test: (p) => p.status === "paid" },
     ],
   });
+  const fl = {
+    en: { role: "Role", all: "All", guest: "Guest", host: "Host", admin: "Admin", account: "Account", active: "Active", suspended: "Suspended", hostName: "Host", from: "From", to: "To", clear: "Clear" },
+    fr: { role: "Rôle", all: "Tous", guest: "Voyageur", host: "Hôte", admin: "Admin", account: "Compte", active: "Actifs", suspended: "Suspendus", hostName: "Hôte", from: "Du", to: "Au", clear: "Effacer" },
+    es: { role: "Rol", all: "Todos", guest: "Huésped", host: "Anfitrión", admin: "Admin", account: "Cuenta", active: "Activos", suspended: "Suspendidos", hostName: "Anfitrión", from: "Desde", to: "Hasta", clear: "Borrar" },
+    de: { role: "Rolle", all: "Alle", guest: "Gast", host: "Gastgeber", admin: "Admin", account: "Konto", active: "Aktiv", suspended: "Gesperrt", hostName: "Gastgeber", from: "Von", to: "Bis", clear: "Löschen" },
+    pt: { role: "Função", all: "Todos", guest: "Hóspede", host: "Anfitrião", admin: "Admin", account: "Conta", active: "Ativos", suspended: "Suspensos", hostName: "Anfitrião", from: "De", to: "Até", clear: "Limpar" },
+  }[locale];
+  const selectCls = "h-11 rounded-full border border-border bg-surface px-3 text-sm";
   const hostsCount = adminOverview?.users.hosts ?? users.filter((u) => u.role === "host").length;
   const payoutsTotal = adminOverview?.revenue.payoutsUsd ?? payouts.reduce((sum, p) => sum + p.amountUsd, 0);
   const metric = (value: number | string) => accountDataStatus === "ready" ? value : "—";
@@ -292,13 +324,11 @@ function AdminPage() {
     { value: "users", label: t.app.admin.users, icon: Users, group: "members" },
     ...(can("support.manage") ? [{ value: "support", label: ac.tabSupport, icon: LifeBuoy, group: "members" as const }] : []),
 
-    ...(can("bookings.read") ? [{ value: "bookings", label: ac.tabBookings, icon: CalendarDays, group: "finance" as const }] : []),
+    // Reservations list and reservation actions share one tab.
+    ...(can("bookings.read") || can("bookings.manage") || can("finance.manage") ? [{ value: "bookings", label: ac.tabBookings, icon: CalendarDays, group: "finance" as const }] : []),
     { value: "payouts", label: t.app.admin.payouts, icon: Wallet, group: "finance" },
     ...(can("finance.read") ? [{ value: "commissions", label: ac.tabCommissions, icon: Percent, group: "finance" as const }] : []),
     ...(can("finance.read") ? [{ value: "finance", label: ac.tabFinance, icon: Wallet, group: "finance" as const }] : []),
-    ...(can("bookings.manage") || can("finance.manage")
-      ? [{ value: "booking-actions", label: ac.tabBooking, icon: CalendarClock, group: "finance" as const }]
-      : []),
 
     { value: "reports", label: t.app.admin.reports, icon: BarChart3, group: "insights" },
     ...(can("stats.read") ? [{ value: "compare", label: ac.tabCompare, icon: TrendingUp, group: "insights" as const }] : []),
@@ -390,7 +420,7 @@ function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <main className="min-h-screen bg-background font-sans text-foreground">
       <Tabs value={section} onValueChange={setSection} className="min-w-0 gap-0">
         <div className="flex min-h-screen">
           <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
@@ -482,11 +512,13 @@ function AdminPage() {
         <TabsContent value="support" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
           {backendEnabled ? <SupportDeskPanel /> : <Empty text={ac.empty} />}
         </TabsContent>
-        <TabsContent value="booking-actions" className="mt-0 min-w-0 max-w-full">
-          {backendEnabled ? <BookingActionsPanel /> : <Empty text={ac.empty} />}
-        </TabsContent>
-        <TabsContent value="bookings" className="mt-0 min-w-0 max-w-full">
-          {backendEnabled ? <BookingsDeskPanel /> : <Empty text={ac.empty} />}
+        <TabsContent value="bookings" className="mt-0 min-w-0 max-w-full space-y-6">
+          {backendEnabled ? (
+            <>
+              {can("bookings.read") ? <BookingsDeskPanel /> : null}
+              {can("bookings.manage") || can("finance.manage") ? <BookingActionsPanel /> : null}
+            </>
+          ) : <Empty text={ac.empty} />}
         </TabsContent>
         <TabsContent value="compare" className="mt-0 min-w-0 max-w-full">
           {backendEnabled ? <StatsComparePanel /> : <Empty text={ac.empty} />}
@@ -600,7 +632,25 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="users" className="mt-0 rounded-2xl border border-border bg-surface p-5">
-          <ListToolbar controls={userPage} placeholder={t.app.admin.searchUsers} />
+          <ListToolbar
+            controls={userPage}
+            placeholder={t.app.admin.searchUsers}
+            extra={
+              <div className="flex flex-wrap items-center gap-2">
+                <select aria-label={fl.role} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)} className={selectCls}>
+                  <option value="all">{fl.role}: {fl.all}</option>
+                  <option value="guest">{fl.guest}</option>
+                  <option value="host">{fl.host}</option>
+                  <option value="admin">{fl.admin}</option>
+                </select>
+                <select aria-label={fl.account} value={accountFilter} onChange={(e) => setAccountFilter(e.target.value as typeof accountFilter)} className={selectCls}>
+                  <option value="all">{fl.account}: {fl.all}</option>
+                  <option value="active">{fl.active}</option>
+                  <option value="suspended">{fl.suspended}</option>
+                </select>
+              </div>
+            }
+          />
           {userPage.total === 0 ? <Empty text={t.app.admin.noUsers} /> : null}
           <ul className="divide-y divide-border border-y border-border">
             {userPage.visible.map((user) => (
@@ -788,7 +838,19 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="payouts" className="mt-0 min-w-0 max-w-full rounded-2xl border border-border bg-surface p-5">
-          <ListToolbar controls={payoutList} />
+          <ListToolbar
+            controls={payoutList}
+            extra={
+              <div className="flex flex-wrap items-center gap-2">
+                <Input value={payoutHost} onChange={(e) => setPayoutHost(e.target.value)} placeholder={fl.hostName} aria-label={fl.hostName} className="h-11 w-36 rounded-full bg-surface" />
+                <Input type="date" value={payoutFrom} onChange={(e) => setPayoutFrom(e.target.value)} aria-label={fl.from} className="h-11 w-40 rounded-full bg-surface" />
+                <Input type="date" value={payoutTo} onChange={(e) => setPayoutTo(e.target.value)} aria-label={fl.to} className="h-11 w-40 rounded-full bg-surface" />
+                {payoutHost || payoutFrom || payoutTo ? (
+                  <Button variant="ghost" size="sm" onClick={() => { setPayoutHost(""); setPayoutFrom(""); setPayoutTo(""); }}>{fl.clear}</Button>
+                ) : null}
+              </div>
+            }
+          />
           {payoutList.total === 0 ? <Empty text={t.app.admin.noPayouts} /> : null}
           <ul className="divide-y divide-border border-y border-border">
             {payoutList.visible.map((payout) => (
@@ -856,7 +918,7 @@ function AdminPage() {
           </div>
         </div>
       </Tabs>
-    </div>
+    </main>
   );
 }
 

@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DeleteIconButton, EditIconButton } from "@/components/ui/action-buttons";
 import { RichTextEditor } from "@/components/legal/RichText";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
 
 const LOCALES = ["en", "fr", "es", "de", "pt"] as const;
 const PAGE_SLUGS = ["terms", "privacy", "help"] as const;
@@ -125,26 +125,35 @@ export function AmenitiesPanel() {
           onSubmit={async (event) => {
             event.preventDefault();
             const { id, ...body } = draft;
+            // Only the English name is mandatory, as for accommodation types.
+            body.labelFr = body.labelFr.trim() || body.labelEn.trim();
             if (await save(id.trim().toLowerCase(), body)) { setDraft({ ...emptyAmenity, group: draft.group }); setOpen(false); }
           }}
         >
           <div className="space-y-1">
             <Label>{T("Code")}</Label>
-            <Input required disabled={editingAmenity} pattern="[a-z0-9_-]{2,80}" placeholder={T("e.g. sauna")} value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
+            <Input required disabled={editingAmenity} pattern="[a-z0-9_\-]{2,80}" placeholder={T("e.g. sauna")} value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
           </div>
           <div className="space-y-1">
             <Label>{T("Group")}</Label>
-            <Input required list="amenity-groups" value={draft.group} onChange={(e) => setDraft({ ...draft, group: e.target.value })} />
-            <datalist id="amenity-groups">
+            {/* The group is a fixed list on the server — free text would be rejected. */}
+            <select
+              required
+              aria-label={T("Group")}
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={draft.group}
+              onChange={(e) => setDraft({ ...draft, group: e.target.value })}
+            >
+              <option value="" disabled>{T("Choose a group…")}</option>
               {data.groups.map((g) => (
-                <option key={g} value={g} />
+                <option key={g} value={g}>{g}</option>
               ))}
-            </datalist>
+            </select>
           </div>
           {LOCALES.map((l) => (
             <div key={l} className="space-y-1">
-              <Label>{T("Name")} — {LOCALE_NAMES[l]}{l === "en" || l === "fr" ? " *" : ""}</Label>
-              <Input required={l === "en" || l === "fr"} value={draft[amenityKey[l]]} onChange={(e) => setDraft({ ...draft, [amenityKey[l]]: e.target.value })} />
+              <Label>{T("Name")} — {LOCALE_NAMES[l]}{l === "en" ? " *" : ""}</Label>
+              <Input required={l === "en"} value={draft[amenityKey[l]]} onChange={(e) => setDraft({ ...draft, [amenityKey[l]]: e.target.value })} />
             </div>
           ))}
           <label className="flex items-center gap-2 text-sm">
@@ -282,6 +291,14 @@ export function CitiesPanel() {
                 {city.name} <span className="font-normal text-muted-foreground">{city.country}</span>
               </span>
                <span className="text-xs text-muted-foreground">{T("{n} listings", { n: city.listings })}</span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${city.name}, ${city.country}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
+              >
+                <MapPin className="size-3.5" aria-hidden /> Google Maps
+              </a>
               {city.featured ? <Badge>{T("Featured")}</Badge> : null}
               {!city.active ? <Badge variant="outline">{T("Hidden")}</Badge> : null}
               <EditIconButton onConfirm={() => { setDraft({ id: city.id, name: city.name, country: city.country, active: city.active, featured: city.featured, sortOrder: city.sortOrder }); setOpen(true); }} />
@@ -477,7 +494,7 @@ export function PropertyTypesPanel() {
         >
           <div className="space-y-1">
             <Label>{T("Code")}</Label>
-            <Input required disabled={editing} pattern="[a-z0-9_-]{2,40}" placeholder={T("e.g. houseboat")} value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
+            <Input required disabled={editing} pattern="[a-z0-9_\-]{2,40}" placeholder={T("e.g. houseboat")} value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} />
           </div>
           {LOCALES.map((l) => (
             <div key={l} className="space-y-1">

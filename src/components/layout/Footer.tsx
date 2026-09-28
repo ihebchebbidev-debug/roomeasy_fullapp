@@ -159,7 +159,7 @@ export function Footer() {
               {t.footer.help}
             </Link>
             <span className="font-semibold text-primary">
-              Developed by BxBstudio
+              Developed by BxB Studio
             </span>
           </div>
         </div>

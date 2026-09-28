@@ -624,7 +624,9 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (typed.trim().toUpperCase() !== d.keyword) {
+    const word = typed.trim().toLocaleUpperCase();
+    // Accept the word in the current language or in English.
+    if (word !== d.keyword && word !== "DELETE") {
       toast.error(d.keywordError);
       return;
     }
@@ -675,7 +677,7 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {d.cancel}
             </Button>
-            <Button type="submit" variant="destructive" disabled={busy}>
+            <Button type="submit" variant="destructive" disabled={busy || !password || !typed.trim()}>
               {d.submit}
             </Button>
           </div>

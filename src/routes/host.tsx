@@ -207,6 +207,9 @@ function HostPage() {
                     <p className="text-xs text-muted-foreground">
                       {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd, { from: booking.currency })}
                     </p>
+                    {booking.message ? (
+                      <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm whitespace-pre-line break-words">“{booking.message}”</p>
+                    ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -270,7 +273,14 @@ function HostPage() {
         {isReady && section === "listings" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.listings}</h2>
           {listings.length === 0 ? <EmptyState icon={Building2} title={t.app.host.noListings} description={t.app.host.noListingsHint} action={<Button asChild><Link to="/list-your-place"><Plus className="size-4" aria-hidden />{t.app.host.newListing}</Link></Button>} /> : null}
-          <Paged rows={listings} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === (x as { propertyId?: string }).propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((listing) => (
+          <Paged
+            rows={listings}
+            text={(x) => `${rowText(x)} ${properties.find((p) => p.id === (x as { propertyId?: string }).propertyId)?.name ?? ""}`}
+            suggest={(l) => {
+              const p = properties.find((pp) => pp.id === l.propertyId) as { name?: string; location?: { city?: string } } | undefined;
+              return [p?.name ?? "", p?.location?.city ?? ""];
+            }}
+          >{(__rows) => __rows.map((listing) => (
             <ListingRow key={listing.id} listing={listing} />
           ))}</Paged>
         </section> : null}
@@ -503,8 +513,17 @@ function CalendarPanel() {
   const properties = useAllProperties();
   const [listingId, setListingId] = useState(listings[0]?.propertyId ?? "");
   const [month, setMonth] = useState(() => new Date());
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [anchor, setAnchor] = useState<string | null>(null);
   const [priceDraft, setPriceDraft] = useState("");
+  const [allListings, setAllListings] = useState(false);
+  const mc = {
+    en: { selected: "Selected nights", hint: "Tap several days, or hold Shift to select a range.", clearSel: "Clear selection", all: "Apply to all my listings", selectMonth: "Select whole month" },
+    fr: { selected: "Nuits sélectionnées", hint: "Touchez plusieurs jours, ou maintenez Maj pour une plage.", clearSel: "Effacer la sélection", all: "Appliquer à toutes mes annonces", selectMonth: "Sélectionner tout le mois" },
+    es: { selected: "Noches seleccionadas", hint: "Toca varios días o mantén Mayús para un rango.", clearSel: "Borrar selección", all: "Aplicar a todos mis anuncios", selectMonth: "Seleccionar todo el mes" },
+    de: { selected: "Ausgewählte Nächte", hint: "Mehrere Tage antippen oder Umschalt für einen Bereich.", clearSel: "Auswahl löschen", all: "Auf alle meine Anzeigen anwenden", selectMonth: "Ganzen Monat wählen" },
+    pt: { selected: "Noites selecionadas", hint: "Toque em vários dias ou mantenha Shift para um intervalo.", clearSel: "Limpar seleção", all: "Aplicar a todos os meus anúncios", selectMonth: "Selecionar o mês inteiro" },
+  }[locale] ?? { selected: "Selected nights", hint: "", clearSel: "Clear selection", all: "Apply to all my listings", selectMonth: "Select whole month" };
 
   const propertyId = listingId;
   const listing = listings.find((l) => l.propertyId === propertyId);
@@ -524,42 +543,69 @@ function CalendarPanel() {
     ];
   }, [month]);
 
-  function patchNight(date: string, patch: { blocked?: boolean; price?: number } | null) {
+  function patchNights(dates: string[], patch: { blocked?: boolean; price?: number } | null) {
+    const targets = allListings ? listings : listing ? [listing] : [];
     setPlatform((state) => {
-      const forProperty = { ...(state.calendar[propertyId] ?? {}) };
-      if (patch === null) delete forProperty[date];
-      else forProperty[date] = { ...forProperty[date], ...patch };
-      return { calendar: { ...state.calendar, [propertyId]: forProperty } };
+      const next = { ...state.calendar };
+      for (const l of targets) {
+        const forProperty = { ...(next[l.propertyId] ?? {}) };
+        for (const date of dates) {
+          if (patch === null) delete forProperty[date];
+          else forProperty[date] = { ...forProperty[date], ...patch };
+        }
+        next[l.propertyId] = forProperty;
+      }
+      return { calendar: next };
     });
-    if (listing) {
-      if (patch === null) void remote.clearCalendarNight(listing.id, date);
-      else
-        void remote.saveCalendarNight(listing.id, date, {
-          ...(patch.blocked === undefined ? {} : { blocked: patch.blocked }),
-          ...(patch.price === undefined ? {} : { priceUsd: patch.price }),
-        });
+    for (const l of targets) {
+      for (const date of dates) {
+        if (patch === null) void remote.clearCalendarNight(l.id, date);
+        else
+          void remote.saveCalendarNight(l.id, date, {
+            ...(patch.blocked === undefined ? {} : { blocked: patch.blocked }),
+            ...(patch.price === undefined ? {} : { priceUsd: patch.price }),
+          });
+      }
     }
   }
 
-  const selectedState = selected ? nights[selected] : undefined;
+  function toggleDay(day: string, shift: boolean) {
+    if (shift && anchor) {
+      const [a, b] = anchor < day ? [anchor, day] : [day, anchor];
+      const range = days.filter((d): d is string => !!d && d >= a && d <= b);
+      setSelected((s) => Array.from(new Set([...s, ...range])).sort());
+    } else {
+      setSelected((s) => (s.includes(day) ? s.filter((d) => d !== day) : [...s, day].sort()));
+      setAnchor(day);
+    }
+    if (selected.length === 0) setPriceDraft(String(Math.round(nights[day]?.price ?? basePrice)));
+  }
+
+  const allBlocked = selected.length > 0 && selected.every((d) => nights[d]?.blocked);
 
   return (
     <Panel>
       <h2 className="font-display text-lg font-bold">{x.calendarTitle}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{x.calendarHint}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{x.calendarHint} {mc.hint}</p>
 
       <div className="mt-4 space-y-2">
         <Label htmlFor="cal-listing" className="text-xs">{x.chooseListing}</Label>
         <select
           id="cal-listing"
           value={listingId}
-          onChange={(event) => { setListingId(event.target.value); setSelected(null); }}
+          onChange={(event) => { setListingId(event.target.value); setSelected([]); }}
           className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
         >
           {listings.map((l) => (
             <option key={l.id} value={l.propertyId}>{properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId}</option>
           ))}
         </select>
+        {listings.length > 1 ? (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={allListings} onChange={(e) => setAllListings(e.target.checked)} className="size-4 accent-primary" />
+            {mc.all} ({listings.length})
+          </label>
+        ) : null}
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
@@ -571,18 +617,24 @@ function CalendarPanel() {
           <ChevronRight className="size-4" aria-hidden />
         </Button>
       </div>
+      <div className="mt-2 flex justify-end">
+        <Button size="sm" variant="ghost" onClick={() => setSelected((s) => Array.from(new Set([...s, ...days.filter((d): d is string => !!d)])).sort())}>
+          {mc.selectMonth}
+        </Button>
+      </div>
 
-      <div className="mt-4 grid grid-cols-7 gap-1 sm:gap-1.5">
+      <div className="mt-2 grid grid-cols-7 gap-1 sm:gap-1.5">
         {days.map((day, index) => {
           if (!day) return <span key={`empty-${index}`} />;
           const state = nights[day] ?? {};
           const dayNumber = Number(day.slice(8, 10));
+          const isSel = selected.includes(day);
           return (
             <button
               key={day}
               type="button"
-              aria-pressed={selected === day}
-              onClick={() => { setSelected(day); setPriceDraft(String(Math.round(state.price ?? basePrice))); }}
+              aria-pressed={isSel}
+              onClick={(e) => toggleDay(day, e.shiftKey)}
               className={cn(
                 "flex aspect-square flex-col items-center justify-center rounded-lg border text-[11px] font-semibold transition-colors",
                 state.blocked
@@ -590,7 +642,7 @@ function CalendarPanel() {
                   : state.price
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-border hover:bg-secondary",
-                selected === day && "ring-2 ring-primary ring-offset-1",
+                isSel && "ring-2 ring-primary ring-offset-1",
               )}
             >
               {dayNumber}
@@ -605,26 +657,34 @@ function CalendarPanel() {
         <span className="flex items-center gap-1.5"><span className="size-3 rounded border border-primary/40 bg-primary/10" />{x.pricedLegend}</span>
       </div>
 
-      {selected ? (
+      {selected.length > 0 ? (
         <div className="mt-5 space-y-4 rounded-xl border border-border p-4">
-          <p className="text-sm font-semibold">{x.selectedNight}: {selected}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-semibold">
+              {mc.selected}: {selected.length}{" "}
+              <span className="font-normal text-muted-foreground">
+                ({selected.length === 1 ? selected[0] : `${selected[0]} → ${selected[selected.length - 1]}`})
+              </span>
+            </p>
+            <Button size="sm" variant="ghost" onClick={() => setSelected([])}>{mc.clearSel}</Button>
+          </div>
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <div className="space-y-1.5">
                <Label htmlFor="night-price" className="text-xs">{x.customPrice} ({listingCurrency})</Label>
               <Input id="night-price" type="number" min={0} value={priceDraft} onChange={(event) => setPriceDraft(event.target.value)} className="h-11" />
             </div>
-             <Button onClick={() => { patchNight(selected, { price: Number(priceDraft) || basePrice }); toast.success(x.changesSaved); }}>
+             <Button onClick={() => { patchNights(selected, { price: Number(priceDraft) || basePrice }); toast.success(x.changesSaved); }}>
               {x.applyPrice}
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
-              variant={selectedState?.blocked ? "outline" : "secondary"}
-              onClick={() => patchNight(selected, { blocked: !selectedState?.blocked })}
+              variant={allBlocked ? "outline" : "secondary"}
+              onClick={() => patchNights(selected, { blocked: !allBlocked })}
             >
-              {selectedState?.blocked ? x.unblockNight : x.blockNight}
+              {allBlocked ? x.unblockNight : x.blockNight}
             </Button>
-            <Button variant="ghost" onClick={() => patchNight(selected, null)}>{x.clearNight}</Button>
+            <Button variant="ghost" onClick={() => patchNights(selected, null)}>{x.clearNight}</Button>
           </div>
         </div>
       ) : null}

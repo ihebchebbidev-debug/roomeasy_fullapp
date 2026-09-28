@@ -62,8 +62,10 @@ export function AccountShell({ children, title, subtitle, actions }: { children:
     de: { workspace: "Kontobereich", overview: "Übersicht", listings: "Anzeigen", newListing: "Neue Anzeige", collapse: "Menü einklappen", expand: "Menü öffnen", open: "Kontomenü öffnen" },
     pt: { workspace: "Área da conta", overview: "Resumo", listings: "Anúncios", newListing: "Novo anúncio", collapse: "Recolher menu", expand: "Abrir menu", open: "Abrir menu da conta" },
   });
+  // Host-dashboard entries are only for hosts/admins; guests never see them.
+  const isHost = session?.role === "host" || session?.role === "admin";
   const accountItems: Item[] = [
-    { to: "/host", section: "overview", label: copy.overview, icon: LayoutDashboard },
+    ...(isHost ? [{ to: "/host" as const, section: "overview" as HostSection, label: copy.overview, icon: LayoutDashboard }] : []),
     { to: "/trips", label: t.app.nav.trips, icon: CalendarDays },
     { to: "/favourites", label: t.app.nav.favourites, icon: Heart },
     { to: "/messages", label: t.app.nav.messages, icon: MessageSquare },
@@ -110,8 +112,12 @@ export function AccountShell({ children, title, subtitle, actions }: { children:
   const navigation = (mobile = false) => (
     <nav aria-label={copy.workspace}>
       {navigationGroup(accountItems, mobile)}
-      <p className={cn("px-3 pt-7 pb-3 text-[10px] font-semibold uppercase text-muted-foreground", !mobile && collapsed && "sr-only")}>{t.app.host.title}</p>
-      {navigationGroup(hostItems, mobile)}
+      {isHost ? (
+        <>
+          <p className={cn("px-3 pt-7 pb-3 text-[10px] font-semibold uppercase text-muted-foreground", !mobile && collapsed && "sr-only")}>{t.app.host.title}</p>
+          {navigationGroup(hostItems, mobile)}
+        </>
+      ) : null}
     </nav>
   );
 
