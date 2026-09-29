@@ -71,6 +71,16 @@ import { useSupportCopy } from "@/i18n/supportCopy";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -151,6 +161,7 @@ function AdminPage() {
   const [pendingDetails, setPendingDetails] = useState<Record<string, Property>>({});
   // Which payout is currently being sent, so its button can't be clicked twice.
   const [sendingPayoutId, setSendingPayoutId] = useState<string | null>(null);
+  const [payoutToConfirm, setPayoutToConfirm] = useState<(typeof payouts)[number] | null>(null);
 
   // Which back-office modules this administrator's role unlocks.
   useEffect(() => {
@@ -184,7 +195,7 @@ function AdminPage() {
       const [support, reports, verifications] = await Promise.all([
         me.capabilities.includes("support.manage") ? count(adminOpsApi.tickets("open")) : 0,
         me.capabilities.includes("listings.moderate") ? count(adminOpsApi.listingReports("open")) : 0,
-        0,
+        me.capabilities.includes("users.read") ? count(adminOpsApi.verifications("pending")) : 0,
       ]);
       if (active) setTodo({ support, reports, verifications });
     };
@@ -320,6 +331,7 @@ function AdminPage() {
     { value: "approvals", label: t.app.admin.approvals, icon: ClipboardCheck, group: "moderation" },
     ...(can("listings.moderate") ? [{ value: "listing-reports", label: ac.tabReports, icon: Flag, group: "moderation" as const }] : []),
     { value: "moderation", label: cc.reviewModeration, icon: Star, group: "moderation" },
+    ...(can("users.read") ? [{ value: "verification", label: ac.tabVerification, icon: BadgeCheck, group: "moderation" as const }] : []),
 
     { value: "users", label: t.app.admin.users, icon: Users, group: "members" },
     ...(can("support.manage") ? [{ value: "support", label: ac.tabSupport, icon: LifeBuoy, group: "members" as const }] : []),
@@ -381,6 +393,7 @@ function AdminPage() {
             const counts: Record<string, number> = {
               approvals: pending.length,
               "listing-reports": todo.reports,
+              verification: todo.verifications,
               support: todo.support,
               payouts: payouts.filter((p) => p.status !== "paid").length,
             };
@@ -476,9 +489,9 @@ function AdminPage() {
                       "min-w-0 rounded-lg border border-border bg-surface px-3 py-3 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5 sm:py-4",
                     )}
                   >
-                     <span className="block truncate text-[10px] font-semibold uppercase text-muted-foreground">{label}</span>
+                      <span className="block break-words text-[10px] font-semibold uppercase text-muted-foreground">{label}</span>
                     <span className={cn(
-                       "mt-2 block truncate font-display text-xl font-bold tabular-nums sm:text-2xl",
+                       "mt-2 block [overflow-wrap:anywhere] font-display text-lg font-bold leading-tight tabular-nums sm:text-2xl",
                       tone === "amber" && Number(value) > 0 && "text-amber-700",
                       tone === "emerald" && "text-emerald-700",
                     )}>{value}</span>
@@ -494,7 +507,7 @@ function AdminPage() {
           <DashboardPanel overview={adminOverview} canStats={backendEnabled && can("stats.read")} onOpen={setSection} />
         </TabsContent>
         <TabsContent value="team" className="mt-0 min-w-0 max-w-full">
-          <TeamRolesPanel />
+          <TeamRolesPanel canGrantAdmin={can("admins.manage")} />
         </TabsContent>
 
         <TabsContent value="listing-reports" className="mt-0 min-w-0 max-w-full">
@@ -865,7 +878,7 @@ function AdminPage() {
                     <p className="truncate font-mono text-xs text-muted-foreground">{payout.transferId}</p>
                   ) : null}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
                   <Badge
                     className={cn(
                       "border-0",
@@ -874,22 +887,12 @@ function AdminPage() {
                   >
                     {payout.status === "paid" ? t.app.admin.paid : t.app.admin.scheduled}
                   </Badge>
-                  <span className="font-sans text-base font-semibold tabular-nums">{formatCharged(payout.amountUsd, payout.currency ?? "EUR")}</span>
+                  <span className="break-words font-sans text-base font-semibold tabular-nums">{formatCharged(payout.amountUsd, payout.currency ?? "EUR")}</span>
                   {payout.status === "paid" ? null : (
                     <Button
                       size="sm"
                       disabled={sendingPayoutId === payout.id}
-                      onClick={async () => {
-                        setSendingPayoutId(payout.id);
-                        const updated = await remote.markPayoutPaid(payout.id);
-                        setSendingPayoutId(null);
-                        if (!updated) return;
-                        const mapped = toPayout(updated);
-                        setPlatform((s) => ({
-                          payouts: s.payouts.map((p) => (p.id === payout.id ? mapped : p)),
-                        }));
-                        toast.success(ac.payoutSent);
-                      }}
+                      onClick={() => setPayoutToConfirm(payout)}
                     >
                       <Wallet className="size-4" aria-hidden />
                       {sendingPayoutId === payout.id ? ac.payoutSending : ac.payoutSend}
@@ -900,6 +903,38 @@ function AdminPage() {
             ))}
           </ul>
           <ShowMore controls={payoutList} />
+          <AlertDialog open={payoutToConfirm !== null} onOpenChange={(open) => { if (!open) setPayoutToConfirm(null); }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{T("Send this payout?")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {T("This action marks the payout as paid and cannot be undone here.")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{T("Cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    if (!payoutToConfirm) return;
+                    const payout = payoutToConfirm;
+                    setPayoutToConfirm(null);
+                    setSendingPayoutId(payout.id);
+                    try {
+                      const updated = await remote.markPayoutPaid(payout.id);
+                      if (!updated) return;
+                      const mapped = toPayout(updated);
+                      setPlatform((s) => ({ payouts: s.payouts.map((p) => (p.id === payout.id ? mapped : p)) }));
+                      toast.success(ac.payoutSent);
+                    } finally {
+                      setSendingPayoutId(null);
+                    }
+                  }}
+                >
+                  {T("Confirm payout")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
 
         <TabsContent value="reports" className="mt-0 min-w-0 max-w-full">
@@ -995,7 +1030,7 @@ function ReportsPanel() {
             const image = property?.image ? mediaUrl(property.image) : null;
             return (
               <li key={row.propertyId}>
-                <Link to="/stays/$propertyId" params={{ propertyId: row.propertyId }} className="-mx-2 flex min-w-0 items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-muted/60">
+                 <Link to="/stays/$propertyId" params={{ propertyId: row.propertyId }} className="grid min-w-0 grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 rounded-md py-2.5 transition-colors hover:bg-muted/60 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:px-2">
                   {rank(i)}
                   <span className="size-11 shrink-0 overflow-hidden rounded-md bg-muted">
                     {image ? <img src={image} alt="" className="size-full object-cover" loading="lazy" /> : <Home className="m-3 size-5 text-muted-foreground" aria-hidden />}
@@ -1007,7 +1042,7 @@ function ReportsPanel() {
                       {row.rating > 0 ? <span className="inline-flex items-center gap-0.5"><Star className="size-3 fill-current" aria-hidden />{row.rating.toFixed(1)}</span> : null}
                     </span>
                   </span>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums">{format(row.revenueUsd)}</span>
+                   <span className="col-span-3 max-w-full break-words text-right text-sm font-semibold tabular-nums sm:col-span-1 sm:max-w-48">{format(row.revenueUsd)}</span>
                 </Link>
               </li>
             );
@@ -1020,14 +1055,14 @@ function ReportsPanel() {
         <ul className="mt-4 divide-y divide-border">
           {topHosts.map((row, i) => (
             <li key={row.hostId}>
-              <Link to="/admin/hosts/$userId" params={{ userId: row.hostId }} className="-mx-2 flex min-w-0 items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-muted/60">
+               <Link to="/admin/hosts/$userId" params={{ userId: row.hostId }} className="grid min-w-0 grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 rounded-md py-2.5 transition-colors hover:bg-muted/60 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:px-2">
                 {rank(i)}
                  <UserAvatar name={row.hostName} src={null} className="size-11 text-base" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{row.hostName}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{row.listings} {t.app.admin.reportListings}</span>
                 </span>
-                <span className="shrink-0 text-sm font-semibold tabular-nums">{format(row.revenueUsd)}</span>
+                <span className="col-span-3 max-w-full break-words text-right text-sm font-semibold tabular-nums sm:col-span-1 sm:max-w-48">{format(row.revenueUsd)}</span>
               </Link>
             </li>
           ))}

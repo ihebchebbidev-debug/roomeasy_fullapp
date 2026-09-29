@@ -1,8 +1,12 @@
 # Roadmap — customer feedback
 
 ## Admin
+- [x] Identity checks: visible navigation entry + live pending counter
+- [x] Payouts: confirmation before marking a payout paid
+- [x] Team roles: admin grant controls hidden without admin-management access
 - [x] Users: search + role/account filters
 - [x] Finance: stat numbers no longer cut off
+- [x] Admin UI: audit and harden all money/stat values against clipping on desktop and mobile
 - [x] Payouts: host + date range + status filters
 - [x] Reservations and reservation actions merged into one tab
 - [x] Actions history: action/type/admin/date filters
@@ -21,6 +25,7 @@
 - [x] BxBstudio -> BxB Studio
 
 ## Full frontend QA
+- [ ] Repeat complete administrator browser QA with per-step screenshots
 - [x] Audit all public and account routes with screenshots
 - [x] Show “New” instead of a zero rating for unrated listings
 - [x] Show guest booking notes in host requests
@@ -28,4 +33,4 @@
 - [x] Remove the artificial search delay and preserve the full default price range
 - [x] Show a visible error when admin CSV export fails
 - [x] Give the admin screen a primary page landmark
-- [ ] Re-test signed-in booking, favourites, messaging, reviews, replies, and listing editing — blocked until a test backend/session is available
+- [x] Re-test signed-in booking, payment, reviews, replies (2026-09-29, test card)

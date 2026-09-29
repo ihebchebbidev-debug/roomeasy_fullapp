@@ -9,7 +9,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { useSupportCopy } from "@/i18n/supportCopy";
 
 /** Hands out and removes back-office access levels (multi-level admin roles). */
-export function TeamRolesPanel() {
+export function TeamRolesPanel({ canGrantAdmin }: { canGrantAdmin: boolean }) {
   const c = useSupportCopy();
   const [rows, setRows] = useState<AdminMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +114,7 @@ export function TeamRolesPanel() {
 
             <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{c.roles}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {roleOptions.map((option) => {
+              {roleOptions.filter((option) => option.role !== "admin" || canGrantAdmin).map((option) => {
                 const has = row.roles.includes(option.role);
                 return (
                   <Button

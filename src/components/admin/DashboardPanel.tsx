@@ -38,6 +38,8 @@ type Props = {
 };
 
 const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0);
+const compactNumber = (value: number) =>
+  new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value);
 const monthLabel = (m: string) => {
   const [y, mo] = m.split("-").map(Number);
   if (!y || !mo) return m;
@@ -186,7 +188,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                 <Icon className="size-4" aria-hidden />
               </span>
             </div>
-            <p className="mt-2 truncate font-display text-2xl font-bold tabular-nums">{value}</p>
+            <p className="mt-2 min-w-0 [overflow-wrap:anywhere] font-display text-xl font-bold leading-tight tabular-nums sm:text-2xl" title={value}>{value}</p>
             <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
               {typeof change === "number" ? (
                 <span
@@ -199,7 +201,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                   {Math.round(Math.abs(change) * 10) / 10}%
                 </span>
               ) : null}
-              <span className="truncate">{hint}</span>
+                   <span className="min-w-0 break-words">{hint}</span>
               <ChevronRight className="ml-auto size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
             </div>
           </button>
@@ -225,7 +227,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                 <Icon className={cn("size-5 shrink-0", hot ? "text-primary" : "text-muted-foreground")} aria-hidden />
                 <span className="min-w-0">
                   <span className="block truncate text-xs text-muted-foreground">{label}</span>
-                  <span className="block truncate font-display text-lg font-bold tabular-nums">{value}</span>
+                   <span className="block [overflow-wrap:anywhere] font-display text-lg font-bold leading-tight tabular-nums">{value}</span>
                 </span>
               </button>
             );
@@ -267,7 +269,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
       </section>
 
       {/* Small stat strip */}
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
         <MiniStat icon={Star} label={T("Average rating")} value={reviews.total ? reviews.averageRating.toFixed(2) : "—"} hint={T("{a} reviews · {b} hidden", { a: reviews.total, b: reviews.hidden })} />
         <MiniStat icon={BadgeCheck} label={T("Payouts sent")} value={format(revenue.payoutsUsd)} hint={T("Paid to hosts")} />
         <MiniStat icon={CalendarX} label={T("Cancellation rate")} value={`${cancelRate}%`} hint={T("{n} cancelled", { n: bookings.cancelled })} warn={cancelRate > 30} />
@@ -288,7 +290,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     <BarChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={48} />
+                      <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={compactNumber} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="revenueUsd" fill="var(--color-revenueUsd)" radius={4} maxBarSize={48} />
                       <Bar dataKey="commissionUsd" fill="var(--color-commissionUsd)" radius={4} maxBarSize={48} />
@@ -297,7 +299,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     <AreaChart data={series} margin={{ left: 4, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={48} />
+                      <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={compactNumber} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Area dataKey="revenueUsd" type="monotone" fill="var(--color-revenueUsd)" fillOpacity={0.2} stroke="var(--color-revenueUsd)" strokeWidth={2} />
                       <Area dataKey="commissionUsd" type="monotone" fill="var(--color-commissionUsd)" fillOpacity={0.2} stroke="var(--color-commissionUsd)" strokeWidth={2} />
@@ -312,7 +314,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     <BarChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
+                      <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} tickFormatter={compactNumber} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="bookings" fill="var(--color-bookings)" radius={4} />
                     </BarChart>
@@ -346,7 +348,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                             <span className="truncate font-medium">{d.city}</span>
                             <span className="hidden truncate text-xs text-muted-foreground sm:inline">{d.country}</span>
                           </span>
-                          <span className="shrink-0 tabular-nums">
+                           <span className="max-w-[55%] shrink-0 break-words text-right tabular-nums">
                             {format(d.revenueUsd)} <span className="text-xs text-muted-foreground">· {d.bookings} {T("bk")}</span>
                           </span>
                         </div>
@@ -386,7 +388,7 @@ function RateCard({
           <li key={row.label}>
             <div className="flex min-w-0 items-center justify-between gap-3 text-sm">
               <span className="truncate text-muted-foreground">{row.label}</span>
-              <span className={cn("shrink-0 font-semibold tabular-nums", row.warn && "text-destructive")}>
+               <span className={cn("max-w-[52%] shrink-0 break-words text-right font-semibold tabular-nums", row.warn && "text-destructive")}>
                 {row.value}% <span className="text-xs font-normal text-muted-foreground">({row.detail})</span>
               </span>
             </div>
@@ -406,8 +408,8 @@ function MiniStat({ icon: Icon, label, value, hint, warn }: { icon: typeof Users
         <Icon className="size-3.5 shrink-0" aria-hidden />
         <span className="truncate">{label}</span>
       </span>
-      <p className={cn("mt-1.5 truncate font-display text-xl font-bold tabular-nums", warn && "text-destructive")}>{value}</p>
-      <p className="truncate text-xs text-muted-foreground">{hint}</p>
+      <p className={cn("mt-1.5 [overflow-wrap:anywhere] font-display text-xl font-bold leading-tight tabular-nums", warn && "text-destructive")} title={value}>{value}</p>
+      <p className="mt-1 break-words text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }

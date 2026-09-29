@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 export const CHART_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
 const compact = (value: number) =>
-  Math.abs(value) >= 1000 ? `${Math.round(value / 100) / 10}k` : String(Math.round(value));
+  new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value);
 
 export function ChartPanel({ title, subtitle, children, className, action }: { title: string; subtitle?: string; children: ReactNode; className?: string; action?: ReactNode }) {
   return (
@@ -29,7 +29,7 @@ export function StatTile({ label, value, hint, tone = "default" }: { label: stri
     <div className="min-w-0 rounded-lg border border-border bg-surface p-3 shadow-sm sm:p-4">
       <p className="break-words text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={cn(
-        "mt-1 break-all font-display text-base font-bold leading-tight tabular-nums sm:text-xl xl:text-2xl",
+        "mt-1 min-w-0 [overflow-wrap:anywhere] font-display text-base font-bold leading-tight tabular-nums sm:text-xl xl:text-2xl",
         tone === "primary" && "text-primary",
         tone === "success" && "text-emerald-600 dark:text-emerald-400",
         tone === "danger" && "text-destructive",
@@ -98,7 +98,7 @@ export function Donut({ data, centerLabel }: { data: { name: string; value: numb
         {centerLabel ? (
           <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
             <div>
-              <p className="font-display text-2xl font-bold tabular-nums">{total}</p>
+              <p className="max-w-24 [overflow-wrap:anywhere] font-display text-xl font-bold leading-tight tabular-nums sm:text-2xl">{compact(total)}</p>
               <p className="text-[11px] text-muted-foreground">{centerLabel}</p>
             </div>
           </div>
@@ -109,7 +109,7 @@ export function Donut({ data, centerLabel }: { data: { name: string; value: numb
           <li key={d.name} className="flex min-w-0 items-center gap-2 text-sm">
             <span className="size-2.5 shrink-0 rounded-sm" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
             <span className="min-w-0 flex-1 truncate">{d.name}</span>
-            <span className="shrink-0 tabular-nums text-muted-foreground">{d.value} · {Math.round((d.value / total) * 100)}%</span>
+            <span className="max-w-[45%] shrink-0 break-words text-right tabular-nums text-muted-foreground">{d.value} · {Math.round((d.value / total) * 100)}%</span>
           </li>
         ))}
       </ul>

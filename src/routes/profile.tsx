@@ -543,9 +543,9 @@ function useDeleteCopy() {
       confirmTitle: "Delete your account?",
       password: "Your password",
       reason: "Why are you leaving? (optional)",
-      typed: "Type DELETE to confirm",
-      keyword: "DELETE",
-      keywordError: "Type DELETE to confirm.",
+      typed: "Type \"delete my account\" to confirm",
+      keyword: "delete my account",
+      keywordError: "Type \"delete my account\" exactly to confirm.",
       cancel: "Cancel",
       submit: "Delete for good",
       done: "Your account has been deleted.",
@@ -558,9 +558,9 @@ function useDeleteCopy() {
       confirmTitle: "Supprimer votre compte ?",
       password: "Votre mot de passe",
       reason: "Pourquoi partez-vous ? (facultatif)",
-      typed: "Tapez SUPPRIMER pour confirmer",
-      keyword: "SUPPRIMER",
-      keywordError: "Tapez SUPPRIMER pour confirmer.",
+      typed: "Tapez « supprimer mon compte » pour confirmer",
+      keyword: "supprimer mon compte",
+      keywordError: "Tapez exactement « supprimer mon compte » pour confirmer.",
       cancel: "Annuler",
       submit: "Supprimer définitivement",
       done: "Votre compte a été supprimé.",
@@ -573,9 +573,9 @@ function useDeleteCopy() {
       confirmTitle: "¿Eliminar tu cuenta?",
       password: "Tu contraseña",
       reason: "¿Por qué te vas? (opcional)",
-      typed: "Escribe ELIMINAR para confirmar",
-      keyword: "ELIMINAR",
-      keywordError: "Escribe ELIMINAR para confirmar.",
+      typed: "Escribe «eliminar mi cuenta» para confirmar",
+      keyword: "eliminar mi cuenta",
+      keywordError: "Escribe exactamente «eliminar mi cuenta» para confirmar.",
       cancel: "Cancelar",
       submit: "Eliminar definitivamente",
       done: "Tu cuenta ha sido eliminada.",
@@ -588,9 +588,9 @@ function useDeleteCopy() {
       confirmTitle: "Konto wirklich löschen?",
       password: "Ihr Passwort",
       reason: "Warum gehen Sie? (optional)",
-      typed: "Tippen Sie LÖSCHEN zur Bestätigung",
-      keyword: "LÖSCHEN",
-      keywordError: "Tippen Sie LÖSCHEN zur Bestätigung.",
+      typed: "Tippen Sie „mein Konto löschen“ zur Bestätigung",
+      keyword: "mein Konto löschen",
+      keywordError: "Tippen Sie genau „mein Konto löschen“ zur Bestätigung.",
       cancel: "Abbrechen",
       submit: "Endgültig löschen",
       done: "Ihr Konto wurde gelöscht.",
@@ -603,9 +603,9 @@ function useDeleteCopy() {
       confirmTitle: "Eliminar a sua conta?",
       password: "A sua palavra-passe",
       reason: "Porque está a sair? (opcional)",
-      typed: "Escreva ELIMINAR para confirmar",
-      keyword: "ELIMINAR",
-      keywordError: "Escreva ELIMINAR para confirmar.",
+      typed: "Escreva «eliminar a minha conta» para confirmar",
+      keyword: "eliminar a minha conta",
+      keywordError: "Escreva exatamente «eliminar a minha conta» para confirmar.",
       cancel: "Cancelar",
       submit: "Eliminar definitivamente",
       done: "A sua conta foi eliminada.",
@@ -621,12 +621,17 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const [reason, setReason] = useState("");
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
+  const norm = (v: string) => v.normalize("NFC").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  // The phrase in the current language, or the English one.
+  const phraseOk = norm(typed) === norm(d.keyword) || norm(typed) === "delete my account";
+
+  useEffect(() => {
+    if (!open) { setPassword(""); setReason(""); setTyped(""); }
+  }, [open]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    const word = typed.trim().toLocaleUpperCase();
-    // Accept the word in the current language or in English.
-    if (word !== d.keyword && word !== "DELETE") {
+    if (!phraseOk) {
       toast.error(d.keywordError);
       return;
     }
@@ -637,6 +642,7 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     toast.success(d.done);
     onOpenChange(false);
     remote.signOut();
+    setPlatform({ session: null });
     void navigate({ to: "/", replace: true });
   }
 
@@ -670,6 +676,8 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               placeholder={d.keyword}
+              autoComplete="off"
+              aria-invalid={typed.trim() !== "" && !phraseOk}
               required
             />
           </div>
@@ -677,7 +685,7 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {d.cancel}
             </Button>
-            <Button type="submit" variant="destructive" disabled={busy || !password || !typed.trim()}>
+            <Button type="submit" variant="destructive" disabled={busy || !password || !phraseOk}>
               {d.submit}
             </Button>
           </div>

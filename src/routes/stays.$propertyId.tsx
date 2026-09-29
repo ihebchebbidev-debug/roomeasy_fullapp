@@ -698,8 +698,16 @@ function ListingDetail() {
               className={cn(
                 "group relative h-auto overflow-hidden rounded-none bg-muted p-0 hover:bg-muted",
                 index === 0
-                  ? "h-[17rem] w-full sm:col-span-2 sm:row-span-2 sm:h-full"
-                  : "hidden sm:block sm:h-full",
+                  ? cn(
+                      "h-[17rem] w-full sm:row-span-2 sm:h-full",
+                      gallery.length === 1 ? "sm:col-span-4" : gallery.length === 2 ? "sm:col-span-2" : "sm:col-span-2",
+                    )
+                  : cn(
+                      "hidden sm:block sm:h-full",
+                      gallery.length === 2 && "sm:col-span-2 sm:row-span-2",
+                      gallery.length === 3 && "sm:col-span-2",
+                      gallery.length === 4 && index === 1 && "sm:col-span-2",
+                    ),
               )}
             >
               <img
@@ -1097,7 +1105,9 @@ function ListingDetail() {
             </p>
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
               <Star className="size-3 fill-primary text-primary" aria-hidden />
-              {displayedRating.toFixed(1)} · {displayedReviewCount} {t.detail.reviews}
+              {displayedReviewCount > 0 && displayedRating > 0
+                ? `${displayedRating.toFixed(1)} · ${displayedReviewCount} ${t.detail.reviews}`
+                : (({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New")}
             </p>
           </div>
           <Popover>
@@ -1199,7 +1209,7 @@ function BookingPanel({
               <span className="text-muted-foreground">({reviewCount})</span>
             </>
           ) : (
-            <span className="font-semibold">★</span>
+            <span className="font-semibold">{({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New"}</span>
           )}
         </p>
       </div>

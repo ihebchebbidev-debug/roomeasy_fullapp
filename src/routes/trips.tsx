@@ -68,8 +68,13 @@ function TripsPage() {
   const { bookings, accountDataStatus } = usePlatform();
   // Loads any booked stay the browser does not hold yet.
   useEnsureStays(bookings.map((booking) => booking.propertyId));
-  const upcoming = bookings.filter((b) => ["pending", "confirmed"].includes(b.status));
-  const past = bookings.filter((b) => !["pending", "confirmed"].includes(b.status));
+  // A confirmed stay whose check-out day has come is over: it belongs in "Past"
+  // and can be reviewed, exactly as the server allows.
+  const today = new Date().toISOString().slice(0, 10);
+  const isUpcoming = (b: (typeof bookings)[number]) =>
+    b.status === "pending" || (b.status === "confirmed" && String(b.to).slice(0, 10) > today);
+  const upcoming = bookings.filter(isUpcoming);
+  const past = bookings.filter((b) => !isUpcoming(b));
 
   return (
     <AccountShell title={t.app.trips.title} subtitle={t.app.trips.subtitle}>
@@ -225,7 +230,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
               ) : null}
             </div>
           </div>
-          {booking.status === "completed" ? <ReviewForm booking={booking} /> : null}
+          {booking.status === "completed" || (booking.status === "confirmed" && String(booking.to).slice(0, 10) <= new Date().toISOString().slice(0, 10)) ? <ReviewForm booking={booking} /> : null}
         </div>
       </div>
     </li>

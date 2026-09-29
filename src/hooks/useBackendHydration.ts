@@ -21,8 +21,8 @@ export function useBackendHydration(): void {
         return;
       }
       try {
-        await hydratePublic();
-        await hydrateAccount();
+        // Catalogue and account data are independent: load them side by side.
+        await Promise.all([hydratePublic(), hydrateAccount()]);
         setPlatform({ accountDataStatus: "ready" });
       } catch {
         setPlatform({ accountDataStatus: "error" });

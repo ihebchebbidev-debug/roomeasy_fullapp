@@ -164,7 +164,7 @@ function HostPage() {
         <Stat icon={Wallet} label={t.app.host.revenue} value={metric(format(revenue))} />
         <Stat icon={CalendarRange} label={t.app.host.requests} value={metric(String(hostDashboard?.bookings.pending ?? requests.length))} />
         <Stat icon={TrendingUp} label={t.app.host.occupancy} value={metric(`${hostDashboard?.occupancy.ratePercent ?? 0}%`)} />
-        <Stat icon={BadgeCheck} label={t.app.host.avgRating} value={metric(avgRating.toFixed(1))} />
+        <Stat icon={BadgeCheck} label={t.app.host.avgRating} value={metric(avgRating > 0 ? avgRating.toFixed(1) : (({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New"))} />
       </div>
 
       <div className="mt-10">
@@ -197,7 +197,7 @@ function HostPage() {
         {isReady && section === "requests" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.requests}</h2>
           {requests.length === 0 ? <EmptyState icon={Inbox} title={t.app.host.noRequests} size="compact" /> : null}
-          <Paged rows={requests} filters={[{ value: "pending", label: t.app.status.pending, test: (b) => b.status === "pending" }, { value: "confirmed", label: t.app.status.confirmed, test: (b) => b.status === "confirmed" }, { value: "cancelled", label: t.app.status.cancelled, test: (b) => String(b.status).includes("cancel") || b.status === "declined" }]} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === x.propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((booking) => {
+          <Paged rows={bookings} filters={[{ value: "pending", label: t.app.status.pending, test: (b) => b.status === "pending" }, { value: "confirmed", label: t.app.status.confirmed, test: (b) => b.status === "confirmed" }, { value: "cancelled", label: t.app.status.cancelled, test: (b) => String(b.status).includes("cancel") || b.status === "declined" }]} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === x.propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((booking) => {
             const property = properties.find((p) => p.id === booking.propertyId);
             return (
               <Panel key={booking.id}>
@@ -781,9 +781,12 @@ function ReplyBox({ reviewId }: { reviewId: string }) {
         size="sm"
         variant="outline"
         disabled={!value.trim()}
-        onClick={() => {
-          setPlatform((state) => ({ reviews: state.reviews.map((r) => (r.id === reviewId ? { ...r, reply: value.trim() } : r)) }));
-          void remote.replyToReview(reviewId, value.trim());
+        onClick={async () => {
+          const reply = value.trim();
+          const saved = await remote.replyToReview(reviewId, reply);
+          // The error toast comes from the save call; keep the text so nothing is lost.
+          if (backendEnabled && saved === null) return;
+          setPlatform((state) => ({ reviews: state.reviews.map((r) => (r.id === reviewId ? { ...r, reply } : r)) }));
           setValue("");
           toast.success(x.replySent);
         }}

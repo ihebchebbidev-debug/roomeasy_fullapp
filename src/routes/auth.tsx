@@ -189,8 +189,12 @@ function AuthPage() {
       // A traveller always lands on their trips: a saved host/admin address
       // must never open a back office the account has no access to.
       const home = session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips";
+      // A brand-new account always starts on its own home screen, never
+      // straight into the listing wizard or another saved page.
       const allowed =
+        !created &&
         returnTo &&
+        !returnTo.startsWith("/list-your-place") &&
         !(returnTo.startsWith("/admin") && session.role !== "admin") &&
         !(returnTo.startsWith("/host") && session.role === "guest");
       const destination = ((allowed ? returnTo : home) ?? home) as "/admin" | "/host" | "/trips";

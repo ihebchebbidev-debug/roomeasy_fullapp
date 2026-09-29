@@ -69,7 +69,7 @@ export type TicketDto = {
   id: string;
   reference: string;
   subject: string;
-  category: "booking" | "payment" | "listing" | "account" | "dispute" | "other";
+  category: "booking" | "payment" | "listing" | "account" | "dispute" | "review" | "other";
   priority: "low" | "normal" | "high" | "urgent";
   status: "open" | "pending" | "awaiting_reply" | "escalated" | "resolved" | "closed";
   openedById: string | null;

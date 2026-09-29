@@ -1020,8 +1020,8 @@ export function StatsComparePanel() {
         {rows.map((row) => (
           <Card key={row.label}>
             <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{row.label}</p>
-            <p className="mt-2 font-display text-2xl font-semibold tabular-nums">{row.now}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-2 [overflow-wrap:anywhere] font-display text-xl font-semibold leading-tight tabular-nums sm:text-2xl" title={row.now}>{row.now}</p>
+            <p className="break-words text-xs text-muted-foreground">
               {copy.previousPeriod}: {row.before}
             </p>
             <p
@@ -1044,8 +1044,8 @@ export function StatsComparePanel() {
               <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 {copy.occupancy}
               </p>
-              <p className="mt-2 font-display text-2xl font-semibold tabular-nums">{insights.occupancy.rate}%</p>
-              <p className="text-xs text-muted-foreground">
+               <p className="mt-2 [overflow-wrap:anywhere] font-display text-xl font-semibold leading-tight tabular-nums sm:text-2xl">{insights.occupancy.rate}%</p>
+               <p className="break-words text-xs text-muted-foreground">
                 {copy.occupancyHint}: {insights.occupancy.nightsBooked} / {insights.occupancy.nightsAvailable}
               </p>
             </Card>
@@ -1053,7 +1053,7 @@ export function StatsComparePanel() {
               <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 {copy.averageBasket}
               </p>
-              <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
+               <p className="mt-2 [overflow-wrap:anywhere] font-display text-xl font-semibold leading-tight tabular-nums sm:text-2xl">
                 {format(insights.averageBasketUsd)}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -1108,7 +1108,7 @@ export function StatsComparePanel() {
                     <span>
                       {row.city}, {row.country}
                     </span>
-                    <span className="tabular-nums text-muted-foreground">
+                   <span className="break-words text-right tabular-nums text-muted-foreground">
                       {row.bookings} · {row.nights} {copy.nights} · {format(row.revenueUsd)}
                     </span>
                   </li>
@@ -1342,9 +1342,9 @@ export function BookingsDeskPanel() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
                     <Badge variant="outline">{T(row.status)}</Badge>
-                    <span className="text-sm font-semibold tabular-nums">{format(row.price.totalUsd)}</span>
+                    <span className="break-words text-sm font-semibold tabular-nums">{format(row.price.totalUsd)}</span>
                     <Button size="sm" variant="outline" onClick={() => void open(row)}>
                       {copy.bkDetails}
                     </Button>
@@ -1631,7 +1631,7 @@ export function FinancePanel() {
 
         return (
           <>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
               <StatTile label={copy.finRevenue} value={perCurrency("revenueUsd")} hint={`${sum("bookings")} ${copy.finBookings.toLowerCase()}`} />
               <StatTile label={copy.finCommission} value={perCurrency("commissionUsd")} hint={single && rev > 0 ? `${Math.round((com / rev) * 100)}%` : undefined} tone="primary" />
               <StatTile label={copy.finHostNet} value={perCurrency("hostNetUsd")} />
@@ -1663,7 +1663,7 @@ export function FinancePanel() {
           <p className="text-sm text-muted-foreground">{copy.empty}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="min-w-max w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground">
                 <tr>
                   <th className="py-1 pr-3">{copy.finPeriod}</th>
@@ -1708,11 +1708,11 @@ export function FinancePanel() {
                     {row.bookings} {copy.finBookings.toLowerCase()} · {row.commissionRate}% · {row.currency ?? "EUR"}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-4 text-xs tabular-nums">
-                  <span>{copy.finRevenue}: {money(row.revenueUsd, row.currency)}</span>
-                  <span>{copy.finCommission}: {money(row.commissionUsd, row.currency)}</span>
-                  <span>{copy.finHostNet}: {money(row.hostNetUsd, row.currency)}</span>
-                  <span>{copy.finUnpaid}: {money(row.unpaidUsd, row.currency)}</span>
+                 <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1 text-xs tabular-nums sm:w-auto sm:grid-cols-2 sm:text-right">
+                   <span className="break-words">{copy.finRevenue}: {money(row.revenueUsd, row.currency)}</span>
+                   <span className="break-words">{copy.finCommission}: {money(row.commissionUsd, row.currency)}</span>
+                   <span className="break-words">{copy.finHostNet}: {money(row.hostNetUsd, row.currency)}</span>
+                   <span className="break-words">{copy.finUnpaid}: {money(row.unpaidUsd, row.currency)}</span>
                 </div>
               </div>
             ))}</Paged>
@@ -1756,12 +1756,12 @@ export function FinancePanel() {
                     {row.guestName} → {row.hostName} · {row.checkIn} – {row.checkOut}
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 text-xs tabular-nums">
+                 <div className="flex min-w-0 flex-wrap items-center gap-3 text-xs tabular-nums">
                   <Badge variant={row.paymentStatus === "paid" ? "default" : "outline"}>
                     {copy.finPaymentStatus}: {row.paymentStatus === "none" ? copy.finPaymentNone : T(row.paymentStatus)}
                   </Badge>
-                  <span>{money(row.totalUsd, row.currency)}</span>
-                  <span>
+                   <span className="break-words">{money(row.totalUsd, row.currency)}</span>
+                   <span className="break-words">
                     {copy.finCommission} {money(row.commissionUsd, row.currency)}
                   </span>
                   <Button size="sm" variant="outline" onClick={() => void openInvoice(row.bookingId)}>
@@ -1776,11 +1776,11 @@ export function FinancePanel() {
 
       {invoice ? (
         <Card id="admin-invoice" className="scroll-mt-24">
-          <div className="mb-3 flex items-center justify-between gap-2">
+           <div className="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <p className="text-sm font-semibold">
               {copy.finInvoiceFor} {invoice.booking.reference}
             </p>
-            <div className="flex gap-2">
+             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => window.print()}>
                 {copy.finPrint}
               </Button>
@@ -1810,37 +1810,37 @@ export function FinancePanel() {
               {invoice.hostEmail ? ` · ${invoice.hostEmail}` : ""}
             </p>
             <div className="mt-2 grid gap-1 text-sm">
-              <div className="flex justify-between">
+               <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
                 <span>
                   {money(invoice.nightlyUsd, invoice.booking.currency)} × {invoice.nights} {copy.finNights}
                 </span>
-                <span className="tabular-nums">{money(invoice.baseSubtotalUsd, invoice.booking.currency)}</span>
+                 <span className="max-w-40 break-words text-right tabular-nums">{money(invoice.baseSubtotalUsd, invoice.booking.currency)}</span>
               </div>
               {invoice.discounts.map((discount) => (
-                <div key={discount.kind} className="flex justify-between text-muted-foreground">
+                 <div key={discount.kind} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 text-muted-foreground">
                   <span>
                     {discount.kind} −{discount.percent}%
                   </span>
-                  <span className="tabular-nums">−{money(discount.amountUsd, invoice.booking.currency)}</span>
+                   <span className="max-w-40 break-words text-right tabular-nums">−{money(discount.amountUsd, invoice.booking.currency)}</span>
                 </div>
               ))}
               {invoice.cleaningFeeUsd > 0 ? (
-                <div className="flex justify-between">
+                 <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
                   <span>{copy.finCleaningFee}</span>
-                  <span className="tabular-nums">{money(invoice.cleaningFeeUsd, invoice.booking.currency)}</span>
+                   <span className="max-w-40 break-words text-right tabular-nums">{money(invoice.cleaningFeeUsd, invoice.booking.currency)}</span>
                 </div>
               ) : null}
-              <div className="flex justify-between">
+               <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
                 <span>{copy.finCommission}</span>
-                <span className="tabular-nums">{money(invoice.booking.commissionUsd, invoice.booking.currency)}</span>
+                 <span className="max-w-40 break-words text-right tabular-nums">{money(invoice.booking.commissionUsd, invoice.booking.currency)}</span>
               </div>
-              <div className="flex justify-between">
+               <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
                 <span>{copy.finHostNet}</span>
-                <span className="tabular-nums">{money(invoice.booking.hostNetUsd, invoice.booking.currency)}</span>
+                 <span className="max-w-40 break-words text-right tabular-nums">{money(invoice.booking.hostNetUsd, invoice.booking.currency)}</span>
               </div>
-              <div className="flex justify-between border-t border-border pt-1 font-semibold">
+               <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-t border-border pt-1 font-semibold">
                 <span>{copy.finRevenue}</span>
-                <span className="tabular-nums">{money(invoice.booking.totalUsd, invoice.booking.currency)}</span>
+                 <span className="max-w-40 break-words text-right tabular-nums">{money(invoice.booking.totalUsd, invoice.booking.currency)}</span>
               </div>
             </div>
           </div>
