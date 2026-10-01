@@ -509,7 +509,13 @@ export function ListingWizard({
           {missing.length === 0
             ? c.allSet
             : `${fill(c.progressDone, {
-                n: Math.round(((listingSteps.length - 1 - missing.length) / (listingSteps.length - 1)) * 100),
+                // Only count steps the host has already gone past, so an empty
+                // form starts at 0% instead of crediting pre-filled defaults.
+                n: Math.round(
+                  (listingSteps.slice(0, stepIndex).filter((key) => !missing.includes(key as ListingStep)).length /
+                    (listingSteps.length - 1)) *
+                    100,
+                ),
               })} · ${fill(c.stepsLeft, { n: missing.length })}`}
         </p>
 
@@ -629,13 +635,23 @@ export function ListingWizard({
                         key={id}
                         type="button"
                         variant="outline"
-                        onClick={() =>
+                        onClick={() => {
+                          // Keep the matching equipment item in step with the highlight.
+                          const linked = AMENITY_EQUIPMENT[id];
+                          const equipment = linked
+                            ? active
+                              ? draft.equipment.filter((item) => item !== linked)
+                              : draft.equipment.includes(linked)
+                                ? draft.equipment
+                                : [...draft.equipment, linked]
+                            : draft.equipment;
                           patch({
                             amenities: (active
                               ? draft.amenities.filter((item) => item !== id)
                               : [...draft.amenities, id]) as AmenityId[],
-                          })
-                        }
+                            equipment,
+                          });
+                        }}
                         className={cn(
                           "h-10 rounded-lg px-4 text-sm",
                           active ? "border-primary bg-accent text-accent-foreground" : "border-border bg-surface hover:border-primary/50",
@@ -1142,3 +1158,11 @@ function withHighlights(description: string, highlights: string[], locale: Param
   if (!block || description.includes(block)) return description;
   return `${description.trim()}\n\n${block}`.slice(0, 4000);
 }
+
+/** Highlights that have a direct twin in the equipment list. */
+const AMENITY_EQUIPMENT: Partial<Record<AmenityId, string>> = {
+  pool: "swimming-pool",
+  parking: "parking",
+  airConditioning: "air-conditioning",
+  breakfast: "breakfast",
+};

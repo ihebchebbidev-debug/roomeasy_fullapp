@@ -399,7 +399,7 @@ function HostPage() {
 }
 
 function ListingRow({ listing }: { listing: HostListing }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const x = useExtra();
   const cc = useClientCopy();
   const lc = useListingCopy();
@@ -471,14 +471,18 @@ function ListingRow({ listing }: { listing: HostListing }) {
           <Badge
             className={cn(
               "border-0 rounded-full text-[0.65rem] font-semibold tracking-[0.14em] uppercase",
-              listing.status === "published"
+              listing.status === "published" && !listing.approved
+                ? "bg-amber-500/15 text-amber-700"
+                : listing.status === "published"
                 ? "bg-emerald-500/15 text-emerald-700"
                 : listing.status === "draft"
                   ? "bg-muted text-muted-foreground"
                   : "bg-destructive/10 text-destructive",
             )}
           >
-            {t.app.host[listing.status]}
+            {listing.status === "published" && !listing.approved
+              ? (AWAITING_REVIEW[locale as keyof typeof AWAITING_REVIEW] ?? AWAITING_REVIEW.en)
+              : t.app.host[listing.status]}
           </Badge>
           <Switch
             checked={listing.status === "published"}
@@ -821,3 +825,12 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Wallet; label: string
     </div>
   );
 }
+
+/** Shown instead of "Published" while an administrator still has to approve the listing. */
+const AWAITING_REVIEW = {
+  en: "Awaiting review",
+  fr: "En attente de validation",
+  es: "En revisión",
+  de: "Wird geprüft",
+  pt: "Em revisão",
+} as const;

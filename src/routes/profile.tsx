@@ -415,6 +415,7 @@ function ProfilePage() {
           {/* Right column */}
           <div className="space-y-6">
             {/* Account status */}
+            {session?.verified ? (
              <section className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <span className="grid size-10 place-items-center rounded-full bg-emerald-500/20 text-emerald-700">
@@ -429,6 +430,21 @@ function ProfilePage() {
               </div>
               <p className="mt-3 text-sm text-emerald-800/80">{p.accountStatusDesc}</p>
             </section>
+            ) : (
+              <section className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 sm:p-6">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-10 place-items-center rounded-full bg-amber-500/20 text-amber-700">
+                    <Mail className="size-5" aria-hidden />
+                  </span>
+                  <div>
+                    <h2 className="text-[0.68rem] font-semibold tracking-[0.16em] text-amber-700 uppercase">
+                      {p.accountStatus}
+                    </h2>
+                    <p className="font-display text-lg font-semibold text-amber-800">{t.app.auth.verifyEmail}</p>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* Quick actions */}
              <section className="rounded-xl border border-border bg-card p-5 sm:p-6">

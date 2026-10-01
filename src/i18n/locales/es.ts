@@ -244,7 +244,7 @@ export const es: DeepPartial<Dictionary> = {
     rights: "Todos los derechos reservados.",
     followUs: "Síguenos",
     contactTitle: "Habla con nosotros",
-    email: "hello@roomeasy.com",
+    email: "support@roomeasy.fr",
     privacy: "Privacidad",
     terms: "Términos",
   },

@@ -3,9 +3,9 @@ import type { ListingCopy } from "@/i18n/listingCopy";
 /** Portuguese copy for the listing wizard and listing details. */
 export const listingPt: ListingCopy = {
   createTitle: "Anuncie o seu espaço",
-  createSubtitle: "Sete passos curtos e o seu espaço fica online na RoomEasy.",
+  createSubtitle: "Alguns passos curtos e o seu espaço fica online na RoomEasy.",
   editTitle: "Editar o seu anúncio",
-  editSubtitle: "Altere o que quiser e guarde — os hóspedes veem logo a atualização.",
+  editSubtitle: "Altere o que quiser e guarde — as alterações a um anúncio publicado são revistas antes de aparecerem.",
   stepOf: "Passo {a} de {b}",
   steps: {
     basics: "Dados gerais",

@@ -393,7 +393,7 @@ function CheckoutPage() {
                 ) : (
                   <>
                     <AlertCircle className="size-3.5 text-destructive" aria-hidden />
-                    <span className="text-destructive">{c.unavailable}</span>
+                    <span className="text-destructive">{availability.data?.unavailableDates?.length || !availability.data?.reasons?.length ? c.unavailable : availability.data.reasons[0]}</span>
                   </>
                 )}
               </p>

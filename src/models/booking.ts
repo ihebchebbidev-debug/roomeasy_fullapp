@@ -99,6 +99,8 @@ export type AvailabilityResult = {
   /** ISO dates inside the range that cannot be booked. */
   unavailableDates: string[];
   maxGuests: number;
+  /** Plain-language reasons the nights cannot be booked (from the server). */
+  reasons?: string[];
 };
 
 export function isUpcoming(booking: Booking): boolean {

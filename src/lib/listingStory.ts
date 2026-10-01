@@ -61,7 +61,7 @@ export function composeListingStory(facts: StoryFacts): ListingStory {
 
   const lines = fr
     ? [
-        `${facts.title} est ${facts.category.toLowerCase()} situé${place ? ` à ${place}` : ""}. L'espace fait ${facts.area} m² et peut recevoir jusqu'à ${facts.guests} voyageur(s).`,
+        `${facts.title} est un logement de type ${facts.category.toLowerCase()} situé${place ? ` à ${place}` : ""}. L'espace fait ${facts.area} m² et peut recevoir jusqu'à ${facts.guests} voyageur(s).`,
         `Vous y trouverez ${facts.rooms} chambre(s), ${facts.beds} lit(s) et ${facts.baths} salle(s) de bain.`,
         perks.length ? `Équipements sur place : ${join(perks, and)}.` : "",
         `Arrivée à partir de ${facts.checkIn}, départ avant ${facts.checkOut}. Séjour minimum : ${facts.minNights} nuit(s). Tarif : ${facts.nightly} la nuit.`,
@@ -70,7 +70,7 @@ export function composeListingStory(facts: StoryFacts): ListingStory {
         facts.notes,
       ]
     : [
-        `${facts.title} is ${facts.category.toLowerCase()}${place ? ` in ${place}` : ""}. The space covers ${facts.area} m² and sleeps up to ${facts.guests} guests.`,
+        `${facts.title} is ${withArticle(facts.category.toLowerCase())}${place ? ` in ${place}` : ""}. The space covers ${facts.area} m² and sleeps up to ${facts.guests} guests.`,
         `Inside you'll find ${facts.rooms} bedroom(s), ${facts.beds} bed(s) and ${facts.baths} bathroom(s).`,
         perks.length ? `On site: ${join(perks, and)}.` : "",
         `Check-in from ${facts.checkIn}, check-out by ${facts.checkOut}. Minimum stay ${facts.minNights} night(s). ${facts.nightly} per night.`,
@@ -105,4 +105,10 @@ export function highlightsBlock(highlights: string[], locale: string) {
   if (clean.length === 0) return "";
   const heading = locale === "fr" ? "Les points forts" : "Highlights";
   return `${heading}\n${clean.map((item) => `• ${item}`).join("\n")}`;
+}
+
+/** "riad" -> "a riad", "apartment" -> "an apartment". */
+function withArticle(word: string): string {
+  if (!word) return word;
+  return `${/^[aeiou]/i.test(word) ? "an" : "a"} ${word}`;
 }

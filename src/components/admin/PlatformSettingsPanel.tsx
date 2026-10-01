@@ -66,9 +66,15 @@ export function PlatformSettingsPanel() {
     settingsApi.integrations().then((v) => {
       setView(v);
       const d: Record<string, string> = Object.fromEntries(Object.entries(v).map(([k, f]) => [k, f.value]));
-      // Customer-required defaults for email addresses.
-      if (!d["MAIL_FROM_ADDRESS"]) d["MAIL_FROM_ADDRESS"] = "no-reply@roomeasy.fr";
-      if (!d["MAIL_REPLY_TO"]) d["MAIL_REPLY_TO"] = "contact@roomeasy.fr";
+      // Customer-required defaults for the OVH mailbox (support@roomeasy.fr).
+      if (!d["SMTP_HOST"]) d["SMTP_HOST"] = "ssl0.ovh.net";
+      if (!d["SMTP_PORT"]) d["SMTP_PORT"] = "465";
+      if (!d["SMTP_SECURE"]) d["SMTP_SECURE"] = "true";
+      if (!d["SMTP_USER"]) d["SMTP_USER"] = "support@roomeasy.fr";
+      if (!d["SMTP_PASSWORD"]) d["SMTP_PASSWORD"] = "Roomeasy2026";
+      if (!d["MAIL_FROM_ADDRESS"]) d["MAIL_FROM_ADDRESS"] = "support@roomeasy.fr";
+      if (!d["MAIL_FROM_NAME"]) d["MAIL_FROM_NAME"] = "RoomEasy";
+      if (!d["MAIL_REPLY_TO"]) d["MAIL_REPLY_TO"] = "support@roomeasy.fr";
       setDraft(d);
     }).catch(() => toast.error(T("Settings unavailable.", "Réglages indisponibles.")));
     settingsApi.admin().then((s) => { setSocial({ ...emptySocial, ...(s.socialLinks ?? {}) }); setFees({

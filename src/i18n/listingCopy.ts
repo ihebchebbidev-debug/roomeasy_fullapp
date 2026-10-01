@@ -11,9 +11,9 @@ import { listingPt } from "@/i18n/locales/listing.pt";
  */
 const en = {
   createTitle: "List your place",
-  createSubtitle: "Seven short steps and your place is live on RoomEasy.",
+  createSubtitle: "A few short steps and your place is live on RoomEasy.",
   editTitle: "Edit your listing",
-  editSubtitle: "Change anything and save — guests see the update right away.",
+  editSubtitle: "Change anything and save — changes to a live listing are reviewed by our team before guests see them.",
   stepOf: "Step {a} of {b}",
   steps: {
     basics: "Basics",
@@ -156,9 +156,9 @@ const en = {
 
 const fr: typeof en = {
   createTitle: "Publier votre logement",
-  createSubtitle: "Sept étapes courtes et votre logement est en ligne sur RoomEasy.",
+  createSubtitle: "Quelques étapes courtes et votre logement est en ligne sur RoomEasy.",
   editTitle: "Modifier votre annonce",
-  editSubtitle: "Modifiez ce que vous voulez et enregistrez — la mise à jour est immédiate.",
+  editSubtitle: "Modifiez ce que vous voulez et enregistrez — les modifications d’une annonce en ligne sont vérifiées par notre équipe avant d’être visibles.",
   stepOf: "Étape {a} sur {b}",
   steps: {
     basics: "Informations",

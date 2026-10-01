@@ -148,7 +148,7 @@ function HelpPage() {
             <p className="mt-1 text-sm text-muted-foreground">{c.contactText}</p>
             <div className="mt-4 grid gap-2">
               <Button asChild className="rounded-full">
-                <a href="mailto:hello@roomeasy.com">
+                <a href="mailto:support@roomeasy.fr">
                   <Mail className="size-4" aria-hidden />
                   {c.email}
                 </a>
