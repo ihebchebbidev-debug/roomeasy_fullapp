@@ -557,7 +557,13 @@ export function BookingActionsPanel() {
                     const value = guardedReason();
                     if (!value) return;
                     void run(
-                      () => adminOpsApi.cancelBooking(reference.trim(), value, Number(refundPercent) || 0),
+                      () => {
+                        const pct = refundPercent.toString().trim() === "" ? NaN : Number(refundPercent);
+                        if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+                          return Promise.reject(new Error("Refund percent must be between 0 and 100"));
+                        }
+                        return adminOpsApi.cancelBooking(reference.trim(), value, pct);
+                      },
                       () => void loadBooking(),
                       copy.saved,
                       copy.failed,

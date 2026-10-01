@@ -134,7 +134,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const { t, locale } = useLanguage();
-  const { format, formatCharged } = useCurrency();
+  const { format, formatCharged, convert } = useCurrency();
   const cc = useClientCopy();
   const { session, listings, users, payouts, commissionRate, reviews, adminOverview, accountDataStatus } = usePlatform();
   const allProperties = useAllProperties();
@@ -302,7 +302,13 @@ function AdminPage() {
   }[locale];
   const selectCls = "h-11 rounded-full border border-border bg-surface px-3 text-sm";
   const hostsCount = adminOverview?.users.hosts ?? users.filter((u) => u.role === "host").length;
-  const payoutsTotal = adminOverview?.revenue.payoutsUsd ?? payouts.reduce((sum, p) => sum + p.amountUsd, 0);
+  // The server total is already normalised to EUR. The local fallback must
+  // convert each payout from its own currency before adding them up.
+  const payoutsTotal =
+    adminOverview?.revenue.payoutsUsd ??
+    payouts
+      .filter((p) => p.status === "paid")
+      .reduce((sum, p) => sum + (convert(p.amountUsd, p.currency ?? "EUR", "EUR") ?? (p.currency && p.currency !== "EUR" ? 0 : p.amountUsd)), 0);
   const metric = (value: number | string) => accountDataStatus === "ready" ? value : "—";
 
   const overview = [

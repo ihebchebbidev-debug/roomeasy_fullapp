@@ -33,7 +33,8 @@ export function stayNights(from?: string | Date | undefined, to?: string | Date 
   const start = new Date(toISODate(from));
   const end = new Date(toISODate(to));
   const out: string[] = [];
-  for (let d = start; d < end; d = new Date(d.getTime() + 86400000)) out.push(toISODate(d));
+  // start/end are UTC midnights: format in UTC, never re-apply the local offset.
+  for (let d = start; d < end; d = new Date(d.getTime() + 86400000)) out.push(d.toISOString().slice(0, 10));
   return out;
 }
 

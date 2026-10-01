@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Compass, TriangleAlert } from "lucide-react";
 import { StatusScreen } from "@/components/layout/StatusScreen";
 import { catalogApi } from "@/api/http/catalog.http";
@@ -57,7 +58,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   const c = statusCopy(useRouterState({ select: (st) => st.location.pathname }));

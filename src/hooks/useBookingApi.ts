@@ -35,6 +35,12 @@ export function useBooking(id: string) {
     // still sees their confirmation instead of an unauthorised refetch.
     staleTime: 60_000,
     retry: false,
+    // While payment is still being confirmed (e.g. after 3-D Secure), re-check
+    // every few seconds so the page updates without a manual reload.
+    refetchInterval: (query) => {
+      const data = query.state.data as { status?: string } | undefined;
+      return data?.status === "pending" && query.state.dataUpdateCount < 40 ? 3000 : false;
+    },
   });
 }
 
