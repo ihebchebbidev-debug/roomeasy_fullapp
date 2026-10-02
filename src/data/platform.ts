@@ -96,6 +96,7 @@ export type PlatformUser = {
   /** ISO date/time the suspension lifts itself; null means no end date. */
   suspendedUntil?: string | null;
   joined: string;
+  avatarUrl?: string | null;
   verificationStatus?: "none" | "pending" | "verified" | "rejected" | undefined;
 };
 

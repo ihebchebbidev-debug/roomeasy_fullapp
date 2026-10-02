@@ -1,3 +1,4 @@
+import { usePlatform } from "@/hooks/usePlatform";
 import { useRememberedState } from "@/hooks/useRememberedState";
 /**
  * Back-office panels for the client's admin specification: reported listings,
@@ -26,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { adminOpsApi } from "@/api/http/adminOps.http";
+import { confirmAction } from "@/components/admin/ConfirmDialogHost";
 import { ChartPanel, GroupedBars, RankingBars, StatTile } from "@/components/admin/AdminCharts";
 import type {
   AccountingRowDto,
@@ -169,9 +171,10 @@ export function ListingReportsPanel() {
               <Button
                 size="sm"
                 variant="destructive"
-                onClick={() => {
+                onClick={async () => {
                   const reason = (reasons[report.id] ?? "").trim();
                   if (reason.length < 5) return void toast.error(copy.reasonRequired);
+                  if (!(await confirmAction("Take this listing offline?", "The listing will no longer be visible to guests."))) return;
                   void run(
                     () => adminOpsApi.unpublishListing(report.listingId, reason, report.id),
                     reload,
@@ -185,8 +188,8 @@ export function ListingReportsPanel() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() =>
-                  void run(
+                onClick={async () =>
+                  (await confirmAction("Mark this report as resolved?")) && void run(
                     () => adminOpsApi.setReportStatus(report.id, "resolved", reasons[report.id]?.trim() || undefined),
                     reload,
                     copy.saved,
@@ -199,8 +202,8 @@ export function ListingReportsPanel() {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() =>
-                  void run(() => adminOpsApi.setReportStatus(report.id, "dismissed"), reload, copy.saved, copy.failed)
+                onClick={async () =>
+                  (await confirmAction("Dismiss this report?")) && void run(() => adminOpsApi.setReportStatus(report.id, "dismissed"), reload, copy.saved, copy.failed)
                 }
               >
                 {copy.dismiss}
@@ -221,6 +224,9 @@ export function VerificationPanel() {
   const load = useCallback(() => adminOpsApi.verifications(), []);
   const { data, loading, reload } = useRemoteList<VerificationDto[]>(load, []);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const { users: platformUsers } = usePlatform();
+  const avatarOf = (row: VerificationDto) =>
+    row.avatarUrl ?? platformUsers.find((u) => u.id === row.userId)?.avatarUrl ?? null;
 
   if (loading) return <Note text={copy.loading} />;
   if (data.length === 0) return <Note text={copy.empty} />;
@@ -232,12 +238,25 @@ export function VerificationPanel() {
     <Shell>
       <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
       <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
-        <div key={row.userId} className="p-4 sm:px-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate font-semibold">{row.fullName}</p>
-              <p className="truncate text-sm text-muted-foreground">{row.email}</p>
-            </div>
+        <div
+          key={row.userId}
+          className={cn(
+            "p-4 transition-colors hover:bg-muted/30 sm:px-5",
+            row.status === "pending" && "border-l-4 border-l-amber-500 bg-amber-500/5",
+          )}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              to="/admin/hosts/$userId"
+              params={{ userId: row.userId }}
+              className="flex min-w-0 items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <UserAvatar name={row.fullName} src={avatarOf(row)} className="size-11 shrink-0 text-base" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold hover:underline">{row.fullName}</p>
+                <p className="truncate text-sm text-muted-foreground">{row.email}</p>
+              </div>
+            </Link>
             <Badge
               className={cn(
                 "border-0",
@@ -261,8 +280,8 @@ export function VerificationPanel() {
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
-                onClick={() =>
-                  void run(
+                onClick={async () =>
+                  (await confirmAction("Approve this identity?", "The member will be marked as verified.")) && void run(
                     () => adminOpsApi.setVerification(row.userId, "verified", notes[row.userId]?.trim() || undefined),
                     reload,
                     copy.saved,
@@ -275,8 +294,8 @@ export function VerificationPanel() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() =>
-                  void run(
+                onClick={async () =>
+                  (await confirmAction("Refuse this identity?", "The member will have to send a new document.")) && void run(
                     () => adminOpsApi.setVerification(row.userId, "rejected", notes[row.userId]?.trim() || undefined),
                     reload,
                     copy.saved,
@@ -293,7 +312,7 @@ export function VerificationPanel() {
                 onClick={() => {
                   const reason = (notes[row.userId] ?? "").trim();
                   if (reason.length < 5) return void toast.error(copy.reasonRequired);
-                  void run(() => adminOpsApi.banUser(row.userId, reason), reload, copy.saved, copy.failed);
+                  void confirmAction("Ban this member?", "They will no longer be able to use their account.").then((ok) => { if (ok) void run(() => adminOpsApi.banUser(row.userId, reason), reload, copy.saved, copy.failed); });
                 }}
               >
                 {copy.ban}
@@ -1162,6 +1181,8 @@ export function BookingsDeskPanel() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ checkIn: "", checkOut: "", totalUsd: "", reason: "" });
   const [savingEdit, setSavingEdit] = useState(false);
+  const { users: platformUsers } = usePlatform();
+  const bookingHost = selected?.hostId ? platformUsers.find((u) => u.id === selected.hostId) : undefined;
 
   // Escape closes the booking details window, like every other admin pop-up.
   useEffect(() => {
@@ -1226,7 +1247,7 @@ export function BookingsDeskPanel() {
     let active = true;
     setLoading(true);
     void adminOpsApi
-      .bookings(applied)
+      .bookings({ limit: 100, ...applied }) // server maximum page size
       .then((data) => {
         if (active) setRows(data);
       })
@@ -1310,7 +1331,7 @@ export function BookingsDeskPanel() {
             {copy.bkClear}
           </Button>
           <span className="self-center text-sm text-muted-foreground">
-            {rows.length} {copy.bkResults}
+            {rows.length} {copy.bkResults}{rows.length >= 100 ? ` · ${T("showing the latest 100 — use the filters to narrow down")}` : ""}
           </span>
         </div>
       </Card>
@@ -1432,7 +1453,7 @@ export function BookingsDeskPanel() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="bk-edit-amount">{copy.refundAmount} (USD)</Label>
+                  <Label htmlFor="bk-edit-amount">{copy.refundAmount} ({selected.currency ?? "EUR"})</Label>
                   <Input
                     id="bk-edit-amount"
                     type="number"
@@ -1473,7 +1494,8 @@ export function BookingsDeskPanel() {
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkHost ?? "Hôte"}</p>
-              <p className="mt-1 truncate text-sm font-semibold">{conversation?.hostName ?? "—"}</p>
+              <p className="mt-1 truncate text-sm font-semibold">{conversation?.hostName ?? bookingHost?.name ?? "—"}</p>
+              {bookingHost?.email ? <p className="truncate text-xs text-muted-foreground">{bookingHost.email}</p> : null}
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkFrom} → {copy.bkTo}</p>
@@ -1495,7 +1517,12 @@ export function BookingsDeskPanel() {
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkPayment}</p>
               <p className="mt-1 text-sm font-semibold">
                 {selected.payment
-                  ? `${T(selected.payment.method)} ${selected.payment.brand} ···· ${selected.payment.last4} · ${T(selected.payment.status)}`
+                  ? [
+                      T(selected.payment.method),
+                      // Skip the brand when it only repeats the method ("card card").
+                      selected.payment.brand && selected.payment.brand.toLowerCase() !== selected.payment.method.toLowerCase() ? selected.payment.brand : null,
+                      selected.payment.last4 ? `···· ${selected.payment.last4}` : null,
+                    ].filter(Boolean).join(" ") + ` · ${T(selected.payment.status)}`
                   : copy.bkNoPayment}
               </p>
               {selected.payment && selected.payment.refundedUsd > 0 ? (

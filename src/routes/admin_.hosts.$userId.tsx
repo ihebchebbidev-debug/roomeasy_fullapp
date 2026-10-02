@@ -63,6 +63,7 @@ function AdminHostProfile() {
       toast.error(T("Write the reason for refusing — the member receives it by email."));
       return;
     }
+    if (status === "rejected" && !window.confirm(T("Refuse this identity? The member will be notified by email."))) return;
     setDeciding(true);
     try {
       await adminOpsApi.setVerification(userId, status, notes.trim() || undefined);

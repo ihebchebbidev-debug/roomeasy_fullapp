@@ -215,6 +215,7 @@ export function toPlatformUser(dto: AdminUserDto): PlatformUser {
     suspended: dto.suspended,
     suspendedUntil: dto.suspendedUntil,
     joined: dto.joinedOn,
+    avatarUrl: dto.avatarUrl ?? null,
     verificationStatus: dto.verificationStatus,
   };
 }

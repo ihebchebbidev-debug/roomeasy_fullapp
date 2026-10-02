@@ -105,6 +105,7 @@ import { useCurrency } from "@/i18n/CurrencyProvider";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { DataState, EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
+import { ConfirmDialogHost, confirmAction } from "@/components/admin/ConfirmDialogHost";
 
 import authWallpaper from "@/assets/auth-wallpaper.jpg";
 
@@ -393,7 +394,7 @@ function AdminPage() {
             const Icon = item.icon;
             const active = item.value === section;
             const counts: Record<string, number> = {
-              approvals: pending.length,
+              approvals: Number(adminOverview?.listings.awaitingApproval ?? pending.length),
               "listing-reports": todo.reports,
               verification: todo.verifications,
               support: todo.support,
@@ -477,7 +478,6 @@ function AdminPage() {
                 <div className="min-w-0">
                   <p className="mb-1 font-sans text-[10px] font-semibold uppercase text-muted-foreground">{t.app.admin.title}</p>
                    <h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{current.label}</h1>
-                  <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t.app.admin.subtitle}</p>
                 </div>
               </header>
 
@@ -683,7 +683,7 @@ function AdminPage() {
                 >
                   <UserAvatar
                     name={user.name}
-                    src={null}
+                    src={user.avatarUrl ?? null}
                     className="size-11 shrink-0 text-base"
                   />
                   <div className="min-w-0">
@@ -745,6 +745,7 @@ function AdminPage() {
                           <DropdownMenuItem
                             key={option.label}
                             onSelect={async () => {
+                              if (!(await confirmAction("Suspend this member?", option.label))) return;
                               const until =
                                 option.days === null
                                   ? undefined
@@ -821,6 +822,7 @@ function AdminPage() {
                         size="sm"
                         variant="outline"
                         onClick={async () => {
+                          if (!review.hidden && !(await confirmAction("Hide this review?", "Guests will no longer see it."))) return;
                           if (!(await remote.setReviewHidden(review.id, !review.hidden))) return;
                           setPlatform((s) => ({
                             reviews: s.reviews.map((r) =>
@@ -905,6 +907,7 @@ function AdminPage() {
             ))}
           </ul>
           <ShowMore controls={payoutList} />
+          <ConfirmDialogHost />
           <AlertDialog open={payoutToConfirm !== null} onOpenChange={(open) => { if (!open) setPayoutToConfirm(null); }}>
             <AlertDialogContent>
               <AlertDialogHeader>

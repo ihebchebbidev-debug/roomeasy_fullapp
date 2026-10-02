@@ -340,6 +340,8 @@ export type AdminUserDto = {
   email: string;
   phone: string | null;
   roles: ("guest" | "host" | "admin")[];
+  /** Profile picture; missing on older servers. */
+  avatarUrl?: string | null;
   verified: boolean;
   suspended: boolean;
   suspendedReason: string | null;

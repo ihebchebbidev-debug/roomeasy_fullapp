@@ -36,6 +36,8 @@ export type VerificationDto = {
   userId: string;
   fullName: string;
   email: string;
+  /** Profile picture; missing on older servers. */
+  avatarUrl?: string | null;
   status: "pending" | "verified" | "rejected";
   documentKind: string | null;
   notes: string | null;
@@ -165,6 +167,8 @@ export type AdminBookingDto = {
   guests: number;
   status: "pending" | "confirmed" | "declined" | "cancelled" | "completed";
   price: { total: number; totalUsd: number };
+  /** Booking charge currency when the server sends it; EUR otherwise. */
+  currency?: string;
   payment: { method: string; brand: string; last4: string; status: string; reference: string; refundedUsd: number } | null;
   createdAt: string;
 };

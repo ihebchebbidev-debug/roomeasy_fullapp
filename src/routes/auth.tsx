@@ -176,18 +176,16 @@ function AuthPage() {
       toast.success(
         created ? t.app.auth.created : interpolate(t.app.auth.signedIn, { name: session.name || safeName }),
       );
-      // A traveller always lands on their trips: a saved host/admin address
-      // must never open a back office the account has no access to.
-      const home = session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips";
-      // A brand-new account always starts on the landing page, signed in —
-      // never straight into the dashboard, the listing wizard or a saved page.
+      // Administrators go straight to the back office; everyone else lands on
+      // the landing page (or the public page they were on before signing in).
+      const isAdmin = session.role === "admin";
       const allowed =
         !created &&
+        !isAdmin &&
         returnTo &&
         !returnTo.startsWith("/list-your-place") &&
-        !(returnTo.startsWith("/admin") && session.role !== "admin") &&
-        !(returnTo.startsWith("/host") && session.role === "guest");
-      const destination = (created ? "/" : ((allowed ? returnTo : home) ?? home)) as "/" | "/admin" | "/host" | "/trips";
+        !returnTo.startsWith("/admin");
+      const destination = (isAdmin ? "/admin" : created ? "/" : ((allowed ? returnTo : "/") ?? "/")) as "/" | "/admin" | "/host" | "/trips";
       if (created) setNewAccount({ name: session.name || safeName, to: destination });
       else enterApp(session.name || safeName, destination);
       return;

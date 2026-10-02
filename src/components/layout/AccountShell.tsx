@@ -28,7 +28,7 @@ import { LanguageSelector } from "@/components/layout/LanguageSelector";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { usePlatform } from "@/hooks/usePlatform";
+import { getPlatform, usePlatform } from "@/hooks/usePlatform";
 import { pickCopy } from "@/i18n/copy";
 import { useExtra } from "@/i18n/extra";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -58,7 +58,7 @@ export function AccountShell({ children, title, subtitle, actions }: { children:
   const unread = threads.reduce((total, thread) => total + thread.unread, 0);
 
   useEffect(() => {
-    if (!session) void navigate({ to: "/", replace: true });
+    if (!session && !getPlatform().session) void navigate({ to: "/", replace: true });
   }, [navigate, session]);
 
   // Never paint account navigation or private content while signed out.
