@@ -1,4 +1,5 @@
 import { ReportReviewButton } from "@/components/support/ReportReviewButton";
+import { countLabel } from "@/i18n/countLabel";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { differenceInCalendarDays, format } from "date-fns";
 import {
@@ -731,8 +732,8 @@ function ListingDetail() {
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {property.guests} {t.listings.guests} ·{" "}
-                  {property.rooms != null ? `${property.rooms} ${lc.rooms.toLowerCase()} · ` : ""}
-                  {property.beds} {t.listings.beds} ·{" "}
+                  {property.rooms != null ? `${countLabel(property.rooms, lc.rooms)} · ` : ""}
+                  {countLabel(property.beds, t.listings.beds)} ·{" "}
                   {property.baths} {t.listings.baths} · {property.area} m²
                 </p>
               </header>

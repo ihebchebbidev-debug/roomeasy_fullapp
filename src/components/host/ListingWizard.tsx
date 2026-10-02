@@ -1,4 +1,5 @@
 import { usePropertyTypesVersion } from "@/hooks/useTaxonomy";
+import { countLabel } from "@/i18n/countLabel";
 import { EuropePlacePicker } from "./EuropePlacePicker";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -516,7 +517,10 @@ export function ListingWizard({
                     (listingSteps.length - 1)) *
                     100,
                 ),
-              })} · ${fill(c.stepsLeft, { n: missing.length })}`}
+              })} · ${fill(c.stepsLeft, {
+                // Steps still ahead plus any earlier step left incomplete.
+                n: listingSteps.slice(0, -1).filter((key, i) => i >= stepIndex || missing.includes(key as ListingStep)).length,
+              })}`}
         </p>
 
         <div key={step} className="mt-6 animate-fade-in rounded-lg border border-border bg-card p-5 shadow-lift sm:p-8">
@@ -962,8 +966,8 @@ export function ListingWizard({
                       {draft.location.postal ? ` · ${draft.location.postal}` : ""} · {categoryLabel(draft.category, locale)}
                     </p>
                     <p className="text-muted-foreground">
-                      {draft.capacity.guests} {c.guests} · {draft.capacity.rooms} {c.rooms} · {draft.capacity.beds} {c.beds} ·{" "}
-                      {draft.capacity.baths} {c.baths} · {draft.capacity.area} m²
+                      {countLabel(draft.capacity.guests, c.guests)} · {countLabel(draft.capacity.rooms, c.rooms)} · {countLabel(draft.capacity.beds, c.beds)} ·{" "}
+                      {countLabel(draft.capacity.baths, c.baths)} · {draft.capacity.area} m²
                     </p>
                     <p className="text-muted-foreground">
                       {format(draft.pricing.nightlyUsd)} · {fill(c.minNightsValue, { n: draft.pricing.minNights })} ·{" "}

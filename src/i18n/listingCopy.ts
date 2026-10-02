@@ -108,7 +108,7 @@ const en = {
   photoCount: "{n} of 10 photos",
   saving: "Saving…",
   goodToKnow: "Good to know",
-  minNightsValue: "Minimum {n} night(s)",
+  minNightsValue: "Minimum {n} {n|night|nights}",
   instantBookOn: "Instant booking available",
   discountLong: "{d}% off from {n} nights",
   discountMobile: "{d}% off in the mobile app",
@@ -133,7 +133,7 @@ const en = {
   listAnother: "List another place",
   keepEditing: "Keep editing",
   progressDone: "{n}% complete",
-  stepsLeft: "{n} step(s) left",
+  stepsLeft: "{n} {n|step|steps} left",
   allSet: "Everything is ready",
   idTitle: "Confirm your identity",
   idIntro: "Before your first stay goes online we need an identity document. Our team checks it, and it is never shown to travellers.",
@@ -146,7 +146,7 @@ const en = {
   idNumberPlaceholder: "Number shown on the document",
   idFiles: "Upload document photos",
   idFilesHint: "Upload clear photos or scans of your document (JPEG, PNG, or WebP).",
-  idFilesAdded: "{n} file(s) attached",
+  idFilesAdded: "{n} {n|file|files} attached",
   idSubmit: "Send and continue",
   idMissing: "Choose a document type and enter its number.",
   currencyLabel: "Listing currency",
@@ -253,7 +253,7 @@ const fr: typeof en = {
   photoCount: "{n} photos sur 10",
   saving: "Enregistrement…",
   goodToKnow: "Bon à savoir",
-  minNightsValue: "{n} nuit(s) minimum",
+  minNightsValue: "{n} {n|nuit|nuits} minimum",
   instantBookOn: "Réservation instantanée disponible",
   discountLong: "{d} % dès {n} nuits",
   discountMobile: "{d} % sur l'application mobile",
@@ -278,7 +278,7 @@ const fr: typeof en = {
   listAnother: "Publier un autre logement",
   keepEditing: "Continuer les modifications",
   progressDone: "{n} % complété",
-  stepsLeft: "{n} étape(s) restante(s)",
+  stepsLeft: "{n} {n|étape restante|étapes restantes}",
   allSet: "Tout est prêt",
   idTitle: "Confirmez votre identité",
   idIntro: "Avant la mise en ligne de votre premier logement, une pièce d'identité est nécessaire. Notre équipe la vérifie et elle n'est jamais montrée aux voyageurs.",
@@ -291,7 +291,7 @@ const fr: typeof en = {
   idNumberPlaceholder: "Numéro figurant sur le document",
   idFiles: "Télécharger des photos du document",
   idFilesHint: "Envoyez des photos nettes ou des scans de votre document (JPEG, PNG ou WebP).",
-  idFilesAdded: "{n} fichier(s) joint(s)",
+  idFilesAdded: "{n} {n|fichier joint|fichiers joints}",
   idSubmit: "Envoyer et continuer",
   idMissing: "Choisissez un type de document et saisissez son numéro.",
   currencyLabel: "Devise de l'annonce",
@@ -306,9 +306,16 @@ export function useListingCopy(): ListingCopy {
   return pickCopy(locale, { en, fr, es: listingEs, de: listingDe, pt: listingPt }) as ListingCopy;
 }
 
+/**
+ * Replaces `{key}` with its value and `{key|one|other}` with the singular or
+ * plural word for that number, so labels never fall back to "nuit(s)".
+ */
 export function fill(template: string, values: Record<string, string | number>) {
-  return Object.entries(values).reduce(
-    (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
-    template,
-  );
+  return Object.entries(values).reduce((text, [key, value]) => {
+    const plural = text.replace(
+      new RegExp(`\\{${key}\\|([^|}]*)\\|([^}]*)\\}`, "g"),
+      (_m, one: string, other: string) => (Math.abs(Number(value)) === 1 ? one : other),
+    );
+    return plural.replaceAll(`{${key}}`, String(value));
+  }, template);
 }

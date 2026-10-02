@@ -1,4 +1,6 @@
 import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { shortDate } from "@/lib/cardFormat";
+import { countLabel } from "@/i18n/countLabel";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Paged, rowText } from "@/components/admin/ListControls";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -178,7 +180,7 @@ function HostPage() {
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{property?.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd, { from: booking.currency })}
+                      {booking.guestName} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)} · {format(booking.totalUsd, { from: booking.currency })}
                     </p>
                     {booking.message ? (
                       <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm whitespace-pre-line break-words">“{booking.message}”</p>
@@ -221,7 +223,7 @@ function HostPage() {
                     <div className="min-w-0">
                       <p className="truncate font-semibold">{property?.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {booking.guestName} · {booking.from} → {booking.to} · {format(booking.totalUsd, { from: booking.currency })}
+                        {booking.guestName} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)} · {format(booking.totalUsd, { from: booking.currency })}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {cancellationLabel(policy, cc)} · {cc.refundDue}: {format(refund)}
@@ -419,9 +421,9 @@ function ListingRow({ listing }: { listing: HostListing }) {
   }
 
   const facts = [
-    `${property.guests} ${lc.guests}`,
-    `${property.rooms ?? property.beds} ${lc.rooms}`,
-    `${property.baths} ${lc.baths}`,
+    countLabel(property.guests, lc.guests),
+    countLabel(property.rooms ?? property.beds, lc.rooms),
+    countLabel(property.baths, lc.baths),
     `${property.area} m²`,
     fill(lc.minNightsValue, { n: property.minNights ?? 1 }),
     `${lc.checkIn} ${property.checkIn ?? "15:00"}`,

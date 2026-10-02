@@ -105,6 +105,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const { path } = splitLocale(current.pathname);
     const target = `${withLocale(path, next)}${current.search}${current.hash}`;
     if (urlLocaleRef) urlLocaleRef.current = next;
+    // Signed-in members also receive their emails in the chosen language.
+    void import("@/api/backend").then((m) => m.syncAccountLocale(null, next)).catch(() => {});
     if (target !== `${current.pathname}${current.search}${current.hash}`) router.history.replace(target);
   }, [router, urlLocaleRef]);
 

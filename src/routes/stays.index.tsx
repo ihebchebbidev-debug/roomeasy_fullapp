@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { countLabel } from "@/i18n/countLabel";
 import { format, parseISO } from "date-fns";
 import {
   ArrowUpDown,
@@ -491,7 +492,7 @@ function GuestPicker({
         <Button variant="ghost" className="h-12 justify-start rounded-xl px-4 sm:rounded-full">
           <Users className="text-primary" />
           <span className="truncate">
-            {guests} {t.listings.guests} · {rooms} {cc.rooms.toLowerCase()}
+            {countLabel(guests, t.listings.guests)} · {countLabel(rooms, cc.rooms)}
           </span>
         </Button>
       </PopoverTrigger>

@@ -37,7 +37,7 @@ export type AccountDto = {
 export type SessionDto = { account: AccountDto; token: string };
 
 export const accountsApi = {
-  signup: (body: { fullName: string; email: string; password: string; phone?: string; asHost?: boolean }) =>
+  signup: (body: { fullName: string; email: string; password: string; phone?: string; asHost?: boolean; locale?: string }) =>
     request<SessionDto>("/accounts/signup", { method: "POST", body }),
   login: (body: { email: string; password: string; otp?: string }) =>
     request<SessionDto>("/accounts/login", { method: "POST", body }),

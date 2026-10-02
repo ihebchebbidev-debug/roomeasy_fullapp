@@ -53,3 +53,11 @@
 - [x] Messaging: no auto-send on Message host; checkout note in thread; attachments; host avatar
 - [ ] Content: remove QA/test listings & reviews from public lists (data — needs backend DB access)
 - [ ] Stripe live keys (needs the owner's live keys)
+
+## QA open issues (2026-10-02, round 3)
+- [x] Emails in the member's site language (sign-up sends language; language changes saved on account; French default)
+- [x] City list: proper capitals, no regions/departments
+- [x] "1 chambre · 1 lit" singular/plural everywhere
+- [x] Wizard "steps left" counts steps still ahead
+- [x] Trip/host dates shown in the site language
+- [x] Wi-Fi no longer pre-selected in new listings

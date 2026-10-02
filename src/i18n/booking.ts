@@ -64,6 +64,7 @@ const en = {
   totalPaid: "Total paid",
   paid: "Paid",
   notPaid: "Not paid",
+  refunded: "Refunded",
   receiptFooter: "RoomEasy acts as an agent for the host. Keep this receipt for your records.",
   status: "Status",
   errors: {
@@ -140,6 +141,7 @@ const fr: Booking = {
   totalPaid: "Total payé",
   paid: "Payé",
   notPaid: "Non payé",
+  refunded: "Remboursé",
   receiptFooter: "RoomEasy agit en tant qu'agent de l'hôte. Conservez ce reçu.",
   status: "Statut",
   errors: {
@@ -214,6 +216,7 @@ const es: Booking = {
   totalPaid: "Total pagado",
   paid: "Pagado",
   notPaid: "No pagado",
+  refunded: "Reembolsado",
   receiptFooter: "RoomEasy actúa como agente del anfitrión. Guarda este recibo.",
   status: "Estado",
   errors: {
@@ -288,6 +291,7 @@ const de: Booking = {
   totalPaid: "Gezahlter Betrag",
   paid: "Bezahlt",
   notPaid: "Nicht bezahlt",
+  refunded: "Erstattet",
   receiptFooter: "RoomEasy handelt als Vermittler des Gastgebers. Bitte bewahre diesen Beleg auf.",
   status: "Status",
   errors: {
@@ -362,6 +366,7 @@ const pt: Booking = {
   totalPaid: "Total pago",
   paid: "Pago",
   notPaid: "Não pago",
+  refunded: "Reembolsado",
   receiptFooter: "A RoomEasy actua como agente do anfitrião. Guarde este recibo.",
   status: "Estado",
   errors: {

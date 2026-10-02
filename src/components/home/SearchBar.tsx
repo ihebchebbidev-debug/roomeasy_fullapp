@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { countLabel } from "@/i18n/countLabel";
 import { CalendarDays, Check, MapPin, Minus, Navigation, Plus, Search, Users, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -176,7 +177,7 @@ export function SearchBar() {
           <Button type="button" variant="ghost" className="h-auto justify-start p-0 text-left font-normal">
             <Field icon={<Users className="size-4" aria-hidden />} label={t.search.who}>
               <span className="block truncate text-sm font-semibold">
-                {`${adults + children} ${t.listings.guests.toLowerCase()} · ${rooms} ${cc.rooms.toLowerCase()}`}
+                {`${countLabel(adults + children, t.listings.guests)} · ${countLabel(rooms, cc.rooms)}`}
               </span>
             </Field>
           </Button>

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { countLabel } from "@/i18n/countLabel";
 import { Bath, BedDouble, Heart, Ruler, Star, Users } from "lucide-react";
 
 import awardHotel from "@/assets/award-hotel.jpg";
@@ -65,7 +66,7 @@ export function AwardSection() {
               </li>
               <li className="flex items-center gap-1.5">
                 <BedDouble className="size-3.5" aria-hidden />
-                {featured.beds} {t.listings.beds}
+                {countLabel(featured.beds, t.listings.beds)}
               </li>
               <li className="flex items-center gap-1.5">
                 <Bath className="size-3.5" aria-hidden />

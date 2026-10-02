@@ -1,4 +1,5 @@
 import { Heart, Star } from "lucide-react";
+import { countLabel } from "@/i18n/countLabel";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -102,7 +103,7 @@ export function PropertyCard({ property, isFavorite, onToggleFavorite, priority 
           </p>
         ) : null}
         <p className="text-[14px] text-muted-foreground">
-          {property.guests} {t.listings.guests} · {property.beds} {t.listings.beds}
+          {countLabel(property.guests, t.listings.guests)} · {countLabel(property.beds, t.listings.beds)}
         </p>
 
         <p className="mt-1.5 text-[15px] font-semibold text-foreground">

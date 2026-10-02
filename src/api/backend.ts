@@ -417,6 +417,26 @@ export async function refreshThreads(): Promise<void> {
 }
 
 /** Everything that depends on who is signed in. */
+const SITE_LOCALES = ["en", "fr", "es", "de", "pt"] as const;
+type SiteLocale = (typeof SITE_LOCALES)[number];
+
+/** Language the visitor is currently reading the site in. */
+export function currentSiteLocale(): SiteLocale {
+  if (typeof document === "undefined") return "fr";
+  const lang = (document.documentElement.lang || "").slice(0, 2).toLowerCase();
+  return (SITE_LOCALES as readonly string[]).includes(lang) ? (lang as SiteLocale) : "fr";
+}
+
+/** Saves the site language on the signed-in account so emails use it too. */
+export async function syncAccountLocale(saved?: string | null, next: SiteLocale = currentSiteLocale()): Promise<void> {
+  if (!backendEnabled || !getAccessToken() || saved === next) return;
+  try {
+    await accountsApi.updateMe({ locale: next });
+  } catch {
+    /* not critical: the next visit retries */
+  }
+}
+
 export async function hydrateAccount(): Promise<void> {
   if (!backendEnabled || !getAccessToken()) return;
 
@@ -428,6 +448,8 @@ export async function hydrateAccount(): Promise<void> {
   }
   const session = toSessionUser(account);
   setPlatform({ session, stripeOnboarded: session.payoutsOnboarded ?? false });
+  // Emails go out in the language saved on the account: keep it equal to the site language.
+  void syncAccountLocale((account as { locale?: string }).locale);
 
   const [threads, guestBookings, hostBookings] = await Promise.all([
     runRemote(() => messagingApi.threads(), "Messages could not be loaded."),
@@ -590,7 +612,7 @@ export const remote = {
 
   async signUp(fullName: string, email: string, password: string, asHost = false): Promise<SessionUser | null> {
     const result = await runRemote(
-      () => accountsApi.signup({ fullName, email, password, asHost }),
+      () => accountsApi.signup({ fullName, email, password, asHost, locale: currentSiteLocale() }),
       "The account could not be created.",
     );
     if (!result) return null;

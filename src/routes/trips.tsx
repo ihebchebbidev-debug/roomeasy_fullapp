@@ -1,4 +1,5 @@
 import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { shortDate } from "@/lib/cardFormat";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Paged, rowText } from "@/components/admin/ListControls";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -146,7 +147,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
             <h2 className="mt-3 font-display text-lg font-bold leading-snug">{property.name}</h2>
             <p className="text-sm text-muted-foreground">{cityName(property, locale as never)}</p>
             <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-              <li className="flex items-center gap-1.5"><CalendarDays className="size-3.5" aria-hidden />{booking.from} → {booking.to}</li>
+              <li className="flex items-center gap-1.5"><CalendarDays className="size-3.5" aria-hidden />{shortDate(booking.from, locale)} → {shortDate(booking.to, locale)}</li>
               <li className="flex items-center gap-1.5"><Users className="size-3.5" aria-hidden />{booking.guests} {t.listings.guests}</li>
               <li>{booking.nights} {t.app.trips.nights}</li>
             </ul>
@@ -158,7 +159,11 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
             </p>
           </div>
           <div className="flex flex-col gap-4 border-t border-border pt-4 lg:items-end lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
-            <p className="font-display text-xl font-bold tabular-nums">{booking.payment?.status === "paid" ? format(booking.totalUsd, { from: booking.currency }) : c.notPaid}</p>
+            <p className="font-display text-xl font-bold tabular-nums">{booking.payment?.status === "paid"
+              ? format(booking.totalUsd, { from: booking.currency })
+              : booking.payment?.status === "refunded"
+                ? `${c.refunded} · ${format(booking.totalUsd, { from: booking.currency })}`
+                : c.notPaid}</p>
             <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap lg:justify-end">
                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link to="/stays/$propertyId" params={{ propertyId: property.id }}>{t.app.trips.view}</Link>
@@ -205,7 +210,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>{fr ? "Annuler cette réservation ?" : "Cancel this booking?"}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {property.name} · {booking.from} → {booking.to}. {booking.payment?.status === "paid" && (<>{cc.refundDue}:{" "}{format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}.{" "}</>)}
+                        {property.name} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)}. {booking.payment?.status === "paid" && (<>{cc.refundDue}:{" "}{format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}.{" "}</>)}
                         {fr ? "Cette action est définitive." : "This cannot be undone."}
                       </AlertDialogDescription>
                     </AlertDialogHeader>

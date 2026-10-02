@@ -39,17 +39,31 @@ export const EUROPE_CODES = [
 const englishNames = new Intl.DisplayNames(["en"], { type: "region" });
 const englishName = (code: string) => (code === "XK" ? "Kosovo" : englishNames.of(code) ?? code);
 
+const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const ADMIN_AREA = /^(d[ée]partement|arrondissement|canton|r[ée]gion|province|provincia|landkreis|kreis|regierungsbezirk|distrito|comarca|county|m[ée]tropole|communaut[ée])\b/i;
+/** "marmande" → "Marmande", "saint-jean-de-luz" → "Saint-Jean-de-Luz". */
+const SMALL = new Set(["de", "du", "des", "la", "le", "les", "sur", "en", "et", "lès", "aux", "di", "del", "da", "do", "am", "im", "an", "der"]);
+export const cityName = (raw: string) =>
+  raw.trim().replace(/\s+/g, " ").split(/([\s-])/).map((part, i) => {
+    if (part === " " || part === "-") return part;
+    const lower = part.toLowerCase();
+    if (i > 0 && SMALL.has(lower)) return lower;
+    return part === lower || part === part.toUpperCase() ? lower.charAt(0).toUpperCase() + lower.slice(1) : part;
+  }).join("");
+
 type CityRow = { name: string; lat: number; lng: number };
 const cityCache = new Map<string, CityRow[]>();
 
 async function loadCities(code: string): Promise<CityRow[]> {
   const hit = cityCache.get(code);
   if (hit) return hit;
-  const { City } = await import("country-state-city");
+  const { City, State } = await import("country-state-city");
   const seen = new Set<string>();
+  // The dataset mixes regions/departments in with towns: hide them.
+  const regions = new Set((State.getStatesOfCountry(code) ?? []).map((st) => norm(st.name)));
   const rows: CityRow[] = [];
   for (const c of City.getCitiesOfCountry(code) ?? []) {
-    if (seen.has(c.name)) continue;
+    if (seen.has(c.name) || regions.has(norm(c.name)) || ADMIN_AREA.test(c.name)) continue;
     seen.add(c.name);
     rows.push({ name: c.name, lat: Number(c.latitude), lng: Number(c.longitude) });
   }
@@ -66,7 +80,6 @@ const T = {
   pt: { search: "Pesquisar…", pick: "Selecionar", countryFirst: "Escolha primeiro um país", none: "Sem resultados", loading: "A carregar…" },
 };
 
-const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 function Combo({
   value, options, onPick, disabled, placeholder, t, invalid, loading,
@@ -193,7 +206,7 @@ export function EuropePlacePicker({
       .sort((a, b) => Number(b.featured) - Number(a.featured) || a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
     const top = new Set(mine.map((c) => norm(c.name)));
     return [
-      ...mine.map((c) => ({ key: c.name, label: c.featured ? `★ ${c.name}` : c.name })),
+      ...mine.map((c) => ({ key: cityName(c.name), label: c.featured ? `★ ${cityName(c.name)}` : cityName(c.name) })),
       ...cities.filter((c) => !top.has(norm(c.name))).map((c) => ({ key: c.name, label: c.name })),
     ];
   }, [cities, managed, country, code, countries]);
