@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Compass, Home } from "lucide-react";
 
@@ -7,16 +9,8 @@ import { pickCopy } from "@/i18n/copy";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/$")({
-  head: () => ({
-    meta: [
-      { title: "Page not found — RoomEasy" },
-      { name: "description", content: "This RoomEasy page does not exist. Head back home or browse available stays." },
-      { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Page not found — RoomEasy" },
-      { property: "og:description", content: "This page does not exist. Browse available stays instead." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["$"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: NotFoundPage,
 });

@@ -51,7 +51,7 @@ export const Route = createFileRoute("/")({
     const DESCRIPTION = m.description;
     return {
     meta: publicPageMeta({
-      locale: localeOf(match), title: TITLE, description: DESCRIPTION, path: "/", keywords: KEYWORDS.home }),
+      locale: localeOf(match), title: TITLE, description: DESCRIPTION, path: "/", keywords: KEYWORDS[loaderData?.locale ?? "en"].home }),
     links: canonical("/", localeOf(match)),
     scripts: [
       {

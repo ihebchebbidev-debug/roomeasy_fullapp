@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Paged, rowText } from "@/components/admin/ListControls";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { DeleteIconButton, EditIconButton } from "@/components/ui/action-buttons";
@@ -21,6 +23,7 @@ import { toast } from "sonner";
 
 import { AccountShell } from "@/components/layout/AccountShell";
 import { PayoutsOnboarding } from "@/components/host/PayoutsOnboarding";
+import { HostOverview } from "@/components/host/overview/HostOverview";
 import { SmartPricingPanel } from "@/components/host/SmartPricingPanel";
 import { Badge } from "@/components/ui/badge";
 import { DataState, EmptyState } from "@/components/ui/empty-state";
@@ -54,16 +57,8 @@ export const Route = createFileRoute("/host")({
       ? { stripe: search["stripe"] as "done" | "refresh" }
       : {}),
   }),
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Host dashboard — RoomEasy" },
-      { name: "description", content: "Manage RoomEasy listings, availability, rates, booking requests and payouts in one dashboard." },
-      { property: "og:title", content: "Host dashboard — RoomEasy" },
-      { property: "og:description", content: "Manage listings, availability, rates, requests and payouts." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["host"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: HostPage,
 });
@@ -74,7 +69,7 @@ function HostPage() {
   const cc = useClientCopy();
   const { format } = useCurrency();
   const properties = useAllProperties();
-  const { bookings: allBookings, listings, payouts, reviews, team, rateRules, hostDashboard, accountDataStatus } = usePlatform();
+  const { bookings: allBookings, listings, payouts, reviews, threads, team, rateRules, hostDashboard, accountDataStatus, stripeOnboarded } = usePlatform();
   const { session } = usePlatform();
   const { section, stripe: stripeReturn } = Route.useSearch();
 
@@ -160,39 +155,17 @@ function HostPage() {
         </Button>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {section !== "overview" ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat icon={Wallet} label={t.app.host.revenue} value={metric(format(revenue))} />
         <Stat icon={CalendarRange} label={t.app.host.requests} value={metric(String(hostDashboard?.bookings.pending ?? requests.length))} />
         <Stat icon={TrendingUp} label={t.app.host.occupancy} value={metric(`${hostDashboard?.occupancy.ratePercent ?? 0}%`)} />
         <Stat icon={BadgeCheck} label={t.app.host.avgRating} value={metric(avgRating > 0 ? avgRating.toFixed(1) : (({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New"))} />
-      </div>
+      </div> : null}
 
       <div className="mt-10">
         {!isReady ? <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} /> : null}
 
-        {isReady && section === "overview" ? <section className="space-y-5">
-          {listings.length === 0 ? (
-            <EmptyState
-              icon={Building2}
-              title={t.app.host.noListings}
-              description={t.app.host.noListingsHint}
-              action={<Button asChild><Link to="/list-your-place"><Plus className="size-4" aria-hidden />{t.app.host.newListing}</Link></Button>}
-            />
-          ) : (
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Panel>
-                <h2 className="font-display text-lg font-bold">{t.app.host.listings}</h2>
-                <p className="mt-2 text-3xl font-bold tabular-nums">{hostDashboard?.listings.total ?? listings.length}</p>
-                <Button asChild variant="outline" className="mt-5"><Link to="/host" search={{ section: "listings" }}>{t.app.host.listings}</Link></Button>
-              </Panel>
-              <Panel>
-                <h2 className="font-display text-lg font-bold">{t.app.host.pendingPayout}</h2>
-                <p className="mt-2 text-3xl font-bold tabular-nums">{format(hostDashboard?.earnings.pendingPayoutUsd ?? payouts.filter((p) => p.status === "scheduled").reduce((sum, p) => sum + p.amountUsd, 0))}</p>
-                <Button asChild variant="outline" className="mt-5"><Link to="/host" search={{ section: "payouts" }}>{t.app.host.payouts}</Link></Button>
-              </Panel>
-            </div>
-          )}
-        </section> : null}
+        {isReady && section === "overview" ? <HostOverview bookings={bookings} listings={listings} properties={properties} payouts={payouts} reviews={reviews} threads={threads} session={session} stripeOnboarded={stripeOnboarded} onDecide={(booking, decision) => { void decide(booking, decision); }} /> : null}
 
         {isReady && section === "requests" ? <section className="space-y-5">
           <h2 className="font-display text-xl font-bold">{t.app.host.requests}</h2>
@@ -821,7 +794,7 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Wallet; label: string
         <p className="text-xs font-semibold text-muted-foreground">{label}</p>
         <span className="grid size-8 place-items-center rounded-md bg-primary/8 text-primary"><Icon className="size-4" aria-hidden /></span>
       </div>
-      <p className="mt-3 truncate font-display text-2xl font-bold tabular-nums">{value}</p>
+      <p className="mt-3 min-w-0 break-words font-display text-2xl font-bold leading-tight tabular-nums [overflow-wrap:anywhere]">{value}</p>
     </div>
   );
 }

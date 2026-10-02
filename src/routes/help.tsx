@@ -14,16 +14,15 @@ import { Button } from "@/components/ui/button";
 import { pickCopy } from "@/i18n/copy";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSupportCopy } from "@/i18n/supportCopy";
+import { pageMeta } from "@/i18n/pageMeta";
 
 export const Route = createFileRoute("/help")({
   head: ({ match }) => ({
     meta: publicPageMeta({
       locale: localeOf(match),
-      title: "Centre d'aide RoomEasy — réservations, annulations et remboursements",
-      description:
-        "Toutes les réponses sur les réservations, annulations, remboursements, versements aux hôtes et la mise en ligne d'un logement, plus comment joindre notre support.",
+      ...pageMeta.help[localeOf(match) ?? "en"],
       path: "/help",
-      keywords: KEYWORDS.help,
+      keywords: KEYWORDS[localeOf(match) ?? "en"].help,
     }),
     links: canonical("/help", localeOf(match)),
   }),

@@ -414,8 +414,8 @@ export function TranslationsPanel() {
   return (
     <Card title={T("Translations")}>
       <p className="text-xs text-muted-foreground">
-        Replace any text in the app for one language. Use the dotted key of the text, e.g. <code>app.admin.title</code> or{" "}
-        <code>auth.login</code>. Changes appear for visitors within about a minute.
+        {T("Replace any text in the app for one language. Use the dotted key of the text, e.g.")} <code>app.admin.title</code> {T("or")}{" "}
+        <code>auth.login</code>. {T("Changes appear for visitors within about a minute.")}
       </p>
       <div className="flex flex-wrap gap-2">
         {LOCALES.map((l) => (

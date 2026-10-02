@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   CalendarCheck,
@@ -35,27 +37,13 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { remote } from "@/api/backend";
 import { setPlatform, usePlatform } from "@/hooks/usePlatform";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { accountFlowCopy } from "@/i18n/accountFlowCopy";
 import { pickCopy } from "@/i18n/copy";
 import { prepareAvatar } from "@/lib/images";
 
 export const Route = createFileRoute("/profile")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Your profile — RoomEasy" },
-      {
-        name: "description",
-        content:
-          "Update your RoomEasy name, contact details, language, currency and security preferences.",
-      },
-      { property: "og:title", content: "Your profile — RoomEasy" },
-      {
-        property: "og:description",
-        content: "Name, contact details, language, currency and security preferences.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["profile"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: ProfilePage,
 });
@@ -118,7 +106,7 @@ function ProfilePage() {
       setPlatform({ session: { ...session, ...(account.avatarUrl ? { avatarUrl: account.avatarUrl } : {}) } });
       toast.success(pc.photoSaved);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "The profile photo could not be saved.");
+      toast.error(accountFlowCopy[locale].photoFailed);
     } finally {
       setPhotoBusy(false);
       if (photoInput.current) photoInput.current.value = "";

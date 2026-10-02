@@ -8,6 +8,7 @@ import { AccountShell } from "@/components/layout/AccountShell";
 import { useAllProperties } from "@/hooks/useAllProperties";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useListingCopy } from "@/i18n/listingCopy";
+import { pageMeta } from "@/i18n/pageMeta";
 import {
   draftFromProperty,
   emptyListingDraft,
@@ -21,11 +22,9 @@ export const Route = createFileRoute("/list-your-place")({
   head: ({ match }) => ({
     meta: publicPageMeta({
       locale: localeOf(match),
-      title: "Mettre son logement en location — devenir hôte RoomEasy",
-      description:
-        "Publiez votre appartement, villa, chalet ou maison d'hôtes en sept étapes guidées : informations, adresse, espaces, équipements, photos, tarifs et mise en ligne.",
+      ...pageMeta.host[localeOf(match) ?? "en"],
       path: "/list-your-place",
-      keywords: KEYWORDS.host,
+      keywords: KEYWORDS[localeOf(match) ?? "en"].host,
     }),
     links: canonical("/list-your-place", localeOf(match)),
   }),

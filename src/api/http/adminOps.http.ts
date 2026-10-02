@@ -5,6 +5,7 @@
  * period-over-period statistics (with CSV export).
  */
 import { API_BASE_URL, getAccessToken, request } from "@/api/http/client";
+import { serviceError } from "@/i18n/serviceErrors";
 
 export type AdminMeDto = {
   userId: string;
@@ -410,7 +411,7 @@ export const adminOpsApi = {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: "include",
     });
-    if (!response.ok) throw new Error("export failed");
+    if (!response.ok) throw new Error(serviceError("export failed"));
     const blob = await response.blob();
     const href = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -436,7 +437,7 @@ export const adminOpsApi = {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: "include",
     });
-    if (!response.ok) throw new Error("export failed");
+    if (!response.ok) throw new Error(serviceError("export failed"));
     const blob = await response.blob();
     const href = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -470,7 +471,7 @@ export async function downloadApiFile(path: string, params: Record<string, strin
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     credentials: "include",
   });
-  if (!response.ok) throw new Error("download failed");
+  if (!response.ok) throw new Error(serviceError("download failed"));
   const blob = await response.blob();
   const href = URL.createObjectURL(blob);
   const link = document.createElement("a");

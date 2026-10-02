@@ -1,4 +1,5 @@
 import { useRememberedState } from "@/hooks/useRememberedState";
+import { useRequireSession } from "@/hooks/useRequireSession";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { mediaUrl } from "@/lib/images";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -66,6 +67,8 @@ import { AmenitiesPanel, CitiesPanel, ContentPagesPanel, CountriesPanel, Propert
 import { adminOpsApi, type AdminMeDto } from "@/api/http/adminOps.http";
 import { useAdminCopy } from "@/i18n/adminCopy";
 import { useAdminT } from "@/i18n/adminAutoCopy";
+import { adminPageMeta } from "@/i18n/adminPageMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { RejectListingDialog } from "@/components/admin/RejectListingDialog";
 import { useSupportCopy } from "@/i18n/supportCopy";
 import { Badge } from "@/components/ui/badge";
@@ -118,21 +121,14 @@ export const Route = createFileRoute("/admin")({
   // The open tab lives in the address, so Back returns to it.
   validateSearch: (search: Record<string, unknown>): { section?: string } =>
     typeof search["section"] === "string" && search["section"] ? { section: search["section"] } : {},
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Admin back office — RoomEasy" },
-      { name: "description", content: "Moderate listings, manage RoomEasy members, review payouts and tune platform settings." },
-      { property: "og:title", content: "Admin back office — RoomEasy" },
-      { property: "og:description", content: "Moderate listings, manage members, review payouts and platform settings." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(adminPageMeta.overview[localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: AdminPage,
 });
 
 function AdminPage() {
+  useRequireSession();
   const { t, locale } = useLanguage();
   const { format, formatCharged, convert } = useCurrency();
   const cc = useClientCopy();
@@ -324,7 +320,7 @@ function AdminPage() {
     return (
       <AppShell title={t.app.admin.title} subtitle={t.app.admin.subtitle}>
         <p className="rounded-xl border border-border bg-surface p-6 text-muted-foreground">
-          {session ? "You do not have access to the back office." : t.auth.login}
+          {session ? T("You do not have access to the back office.") : t.auth.login}
         </p>
       </AppShell>
     );

@@ -69,6 +69,7 @@ import { interpolate, useLanguage } from "@/i18n/LanguageProvider";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { cn } from "@/lib/utils";
 import { canonical, localeOf, KEYWORDS, publicPageMeta } from "@/lib/seo";
+import { pageMeta } from "@/i18n/pageMeta";
 
 export const Route = createFileRoute("/stays/")({
   validateSearch: (input: Partial<StaySearch>): Partial<StaySearch> =>
@@ -77,11 +78,9 @@ export const Route = createFileRoute("/stays/")({
   head: ({ match }) => ({
     meta: publicPageMeta({
       locale: localeOf(match),
-      title: "Locations de vacances en France — RoomEasy",
-      description:
-        "Comparez appartements, villas, chalets et maisons d'hôtes en France : filtres par ville, dates, budget et équipements, avis vérifiés et prix tout compris.",
+      ...pageMeta.stays[localeOf(match) ?? "en"],
       path: "/stays",
-      keywords: KEYWORDS.search,
+      keywords: KEYWORDS[localeOf(match) ?? "en"].search,
     }),
     links: canonical("/stays", localeOf(match)),
   }),

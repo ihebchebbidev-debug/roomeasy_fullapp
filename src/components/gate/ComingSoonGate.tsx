@@ -6,12 +6,17 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import backdrop from "@/assets/coming-soon-backdrop.jpg";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { unlockSite } from "@/lib/gate.functions";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { accountFlowCopy } from "@/i18n/accountFlowCopy";
+import { Button } from "@/components/ui/button";
 
 /**
  * Pre-launch curtain shown on the public domain.
  * The backdrop is a blurred capture of the real site; the password is verified server-side.
  */
 export function ComingSoonGate() {
+  const { locale } = useLanguage();
+  const copy = accountFlowCopy[locale];
   const router = useRouter();
   const unlock = useServerFn(unlockSite);
   const [value, setValue] = useState("");
@@ -59,23 +64,22 @@ export function ComingSoonGate() {
         <header className="flex items-center justify-between">
           <BrandLogo inverted className="h-11" />
           <span className="hidden font-mono text-[0.65rem] uppercase tracking-[0.28em] text-navy-foreground/55 sm:block">
-            Lancement 2026
+            {copy.gateLaunch}
           </span>
         </header>
 
         <div className="flex flex-1 items-center py-16">
           <div className="w-full max-w-2xl">
             <p className="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-navy-foreground/60">
-              Accès anticipé
+              {copy.gateEarly}
             </p>
 
             <h1 className="mt-6 font-display text-[2.75rem] leading-[1.04] tracking-tight sm:text-6xl lg:text-[4.25rem]">
-              Quelque chose se prépare.
+              {copy.gateTitle}
             </h1>
 
             <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed text-navy-foreground/72">
-              Une nouvelle façon de réserver des séjours choisis un par un&nbsp;: prix clairs,
-              hôtes vérifiés, accompagnement à chaque étape. Ouverture très bientôt.
+              {copy.gateBody}
             </p>
 
             <form onSubmit={onSubmit} className="mt-10 max-w-md">
@@ -83,7 +87,7 @@ export function ComingSoonGate() {
                 htmlFor="gate-password"
                 className="font-mono text-[0.65rem] uppercase tracking-[0.24em] text-navy-foreground/55"
               >
-                Vous avez un code d&apos;accès
+                {copy.gateCode}
               </label>
 
               <div className="mt-3 flex items-center gap-2 rounded-full border border-navy-foreground/18 bg-navy/55 p-1.5 pl-5 transition focus-within:border-navy-foreground/40">
@@ -92,16 +96,16 @@ export function ComingSoonGate() {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  placeholder="Mot de passe"
+                  placeholder={copy.gatePassword}
                   value={value}
                   onChange={(event) => setValue(event.target.value)}
                   aria-invalid={error}
                   className="h-11 flex-1 bg-transparent text-base text-navy-foreground outline-none placeholder:text-navy-foreground/40"
                 />
-                <button
+                <Button
                   type="submit"
                   disabled={busy}
-                  aria-label="Déverrouiller le site"
+                  aria-label={copy.gateUnlock}
                   className="inline-flex h-11 items-center gap-2 rounded-full bg-navy-foreground px-5 text-sm font-semibold text-navy transition hover:bg-navy-foreground/90 disabled:opacity-60"
                 >
                   {busy ? (
@@ -109,15 +113,15 @@ export function ComingSoonGate() {
                   ) : (
                     <ArrowRight aria-hidden className="h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">Entrer</span>
-                </button>
+                  <span className="hidden sm:inline">{copy.gateEnter}</span>
+                </Button>
               </div>
 
               <p
                 role="status"
                 className={`mt-3 text-sm text-destructive transition-opacity ${error ? "opacity-100" : "opacity-0"}`}
               >
-                Ce mot de passe n&apos;est pas valide.
+                {copy.gateInvalid}
               </p>
             </form>
           </div>
@@ -129,7 +133,7 @@ export function ComingSoonGate() {
             <a href="mailto:contact@roomeasy.fr" className="transition hover:text-navy-foreground">
               contact@roomeasy.fr
             </a>
-            <span>Séjours &amp; hôtels sélectionnés</span>
+            <span>{copy.gateTagline}</span>
           </span>
         </footer>
       </div>

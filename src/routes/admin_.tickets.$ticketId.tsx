@@ -3,6 +3,7 @@ import { translateAdmin } from "@/i18n/adminAutoCopy";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useRequireSession } from "@/hooks/useRequireSession";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -14,15 +15,13 @@ import { adminOpsApi } from "@/api/http/adminOps.http";
 import type { TicketDto } from "@/api/http/adminOps.http";
 import { useAdminCopy } from "@/i18n/adminCopy";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { privatePageMeta } from "@/lib/seo";
+import { privatePageMeta, localeOf } from "@/lib/seo";
+import { adminPageMeta } from "@/i18n/adminPageMeta";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin_/tickets/$ticketId")({
-  head: () => ({
-    meta: privatePageMeta(
-      "Support ticket — RoomEasy back office",
-      "Full support ticket thread with moderation and dispute actions.",
-    ),
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(adminPageMeta.ticket[localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: AdminTicketDetail,
 });
@@ -31,7 +30,8 @@ function AdminTicketDetail() {
   const { ticketId } = Route.useParams();
   const copy = useAdminCopy();
   const { t, locale } = useLanguage();
-  const adminId = null;
+  const session = useRequireSession();
+  const adminId = session?.id ?? null;
 
   const [ticket, setTicket] = useState<TicketDto | null>(null);
   const [loading, setLoading] = useState(true);

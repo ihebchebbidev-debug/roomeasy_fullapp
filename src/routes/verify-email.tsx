@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -19,16 +21,8 @@ export const Route = createFileRoute("/verify-email")({
   validateSearch: (search: Record<string, unknown>) => ({
     token: typeof search["token"] === "string" ? search["token"] : "",
   }),
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Confirm your email — RoomEasy" },
-      { name: "description", content: "Confirm the email address of your RoomEasy account." },
-      { property: "og:title", content: "Confirm your email — RoomEasy" },
-      { property: "og:description", content: "Confirm the email address of your RoomEasy account." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["verify-email"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: VerifyEmailPage,
 });

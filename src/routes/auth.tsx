@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Eye, EyeOff, Loader2, Lock, Mail, Phone, UserRound } from "lucide-react";
 import { useRef, useState } from "react";
@@ -15,6 +17,7 @@ import { backendEnabled, remote } from "@/api/backend";
 import { setPlatform } from "@/hooks/usePlatform";
 import { pickCopy } from "@/i18n/copy";
 import { interpolate, useLanguage } from "@/i18n/LanguageProvider";
+import { accountFlowCopy } from "@/i18n/accountFlowCopy";
 import { verifyTurnstileToken } from "@/lib/turnstile.functions";
 import type { Role } from "@/data/platform";
 import { cn } from "@/lib/utils";
@@ -33,22 +36,8 @@ export const Route = createFileRoute("/auth")({
     const redirect = safeRedirect(search['redirect']);
     return redirect ? { redirect } : {};
   },
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Sign in or create an account — RoomEasy" },
-      {
-        name: "description",
-        content: "Access your RoomEasy trips, messages and host dashboard with one account.",
-      },
-      { property: "og:title", content: "Sign in or create an account — RoomEasy" },
-      {
-        property: "og:description",
-        content: "One RoomEasy account to book stays and to publish your own place.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["auth"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: AuthPage,
 });
@@ -69,6 +58,7 @@ const DIAL_CODES = [
 
 function AuthPage() {
   const { t, locale } = useLanguage();
+  const flow = accountFlowCopy[locale];
   const navigate = useNavigate();
   const { redirect: returnTo } = Route.useSearch();
   const [name, setName] = useState("");
@@ -83,7 +73,7 @@ function AuthPage() {
   const [otp, setOtp] = useState("");
   const [welcome, setWelcome] = useState<string | null>(null);
   const [signUpToken, setSignUpToken] = useState<string | null>(null);
-  const [newAccount, setNewAccount] = useState<{ name: string; to: "/admin" | "/host" | "/trips" } | null>(null);
+  const [newAccount, setNewAccount] = useState<{ name: string; to: "/" | "/admin" | "/host" | "/trips" } | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>();
   const [photoPending, setPhotoPending] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
@@ -144,7 +134,7 @@ function AuthPage() {
     const token = created ? signUpToken : signInToken;
     const skipCheck = !created && otpStep;
     if (!token && !skipCheck) {
-      toast.error("Please complete the security check first.");
+      toast.error(flow.securityCheck);
       return;
     }
     const digits = phone.replace(/\D/g, "");
@@ -157,7 +147,7 @@ function AuthPage() {
       if (!skipCheck && token) await verifyTurnstileToken({ data: { token } });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Security check failed. Please try again.",
+        flow.securityFailed,
       );
       if (created) setSignUpToken(null);
       else setSignInToken(null);
@@ -173,7 +163,7 @@ function AuthPage() {
       setPending(null);
       if (session === "otp_required") {
         setOtpStep(true);
-        toast.message("Enter the 6-digit code from your authenticator app.");
+        toast.message(flow.otpPrompt);
         return;
       }
       if (!session) return;
@@ -189,21 +179,21 @@ function AuthPage() {
       // A traveller always lands on their trips: a saved host/admin address
       // must never open a back office the account has no access to.
       const home = session.role === "admin" ? "/admin" : session.role === "host" ? "/host" : "/trips";
-      // A brand-new account always starts on its own home screen, never
-      // straight into the listing wizard or another saved page.
+      // A brand-new account always starts on the landing page, signed in —
+      // never straight into the dashboard, the listing wizard or a saved page.
       const allowed =
         !created &&
         returnTo &&
         !returnTo.startsWith("/list-your-place") &&
         !(returnTo.startsWith("/admin") && session.role !== "admin") &&
         !(returnTo.startsWith("/host") && session.role === "guest");
-      const destination = ((allowed ? returnTo : home) ?? home) as "/admin" | "/host" | "/trips";
+      const destination = (created ? "/" : ((allowed ? returnTo : home) ?? home)) as "/" | "/admin" | "/host" | "/trips";
       if (created) setNewAccount({ name: session.name || safeName, to: destination });
       else enterApp(session.name || safeName, destination);
       return;
     }
     setPending(null);
-    toast.error("The account service is unavailable. Please try again later.");
+    toast.error(flow.accountUnavailable);
   }
 
   async function chooseSignupPhoto(file?: File) {
@@ -211,7 +201,7 @@ function AuthPage() {
     try {
       setPhotoPreview(await prepareAvatar(file));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "The image could not be prepared.");
+      toast.error(flow.imageFailed);
     } finally {
       if (photoInput.current) photoInput.current.value = "";
     }
@@ -346,7 +336,7 @@ function AuthPage() {
 
                 {otpStep ? (
                   <div className="space-y-1.5">
-                    <Label htmlFor="signin-otp">Two-step code</Label>
+                    <Label htmlFor="signin-otp">{flow.otpLabel}</Label>
                     <Input
                       id="signin-otp"
                       inputMode="numeric"
@@ -357,7 +347,7 @@ function AuthPage() {
                       placeholder="123456"
                       required
                     />
-                    <p className="text-xs text-muted-foreground">Open your authenticator app and type the current code.</p>
+                    <p className="text-xs text-muted-foreground">{flow.otpHint}</p>
                   </div>
                 ) : null}
 

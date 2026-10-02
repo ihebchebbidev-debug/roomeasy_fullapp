@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Paged, rowText } from "@/components/admin/ListControls";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CalendarDays, MessageSquare, Receipt, Star, Users } from "lucide-react";
@@ -39,16 +41,8 @@ import { openConversation } from "@/lib/conversation";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/trips")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "My trips — RoomEasy" },
-      { name: "description", content: "Track every RoomEasy stay you have requested, confirmed or completed." },
-      { property: "og:title", content: "My trips — RoomEasy" },
-      { property: "og:description", content: "Track every RoomEasy stay you have requested, confirmed or completed." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["trips"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: TripsPage,
 });

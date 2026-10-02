@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CalendarDays, CheckCircle2, Clock, LifeBuoy, MapPin, MessageSquare, Users } from "lucide-react";
@@ -19,16 +21,8 @@ import { downloadApiFile } from "@/api/http/adminOps.http";
 import { FileDown } from "lucide-react";
 
 export const Route = createFileRoute("/booking/$bookingId")({
-  head: () => ({
-    meta: [
-      { title: "Booking confirmed — RoomEasy" },
-      { name: "description", content: "Your RoomEasy booking reference, stay dates and payment receipt." },
-      { property: "og:title", content: "Booking confirmed — RoomEasy" },
-      { property: "og:description", content: "Your booking reference, stay dates and payment receipt." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "robots", content: "noindex" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["booking.$bookingId"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: BookingConfirmation,
 });

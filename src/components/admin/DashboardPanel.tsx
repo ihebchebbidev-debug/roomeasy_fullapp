@@ -27,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/i18n/CurrencyProvider";
+import { useLanguage } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { useAdminT, type AdminT } from "@/i18n/adminAutoCopy";
 import { toast } from "sonner";
@@ -38,15 +39,17 @@ type Props = {
 };
 
 const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0);
-const compactNumber = (value: number) =>
-  new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value);
-const monthLabel = (m: string) => {
+const compactNumber = (value: number, locale: string) =>
+  new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).format(value);
+const monthLabel = (m: string, locale: string) => {
   const [y, mo] = m.split("-").map(Number);
   if (!y || !mo) return m;
-  return new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+  return new Date(y, mo - 1, 1).toLocaleDateString(locale, { month: "short", year: "2-digit" });
 };
 
 export function DashboardPanel({ overview, canStats, onOpen }: Props) {
+  const { locale } = useLanguage();
+  const formatCompact = (value: number) => compactNumber(value, locale);
   const { format } = useCurrency();
   const T = useAdminT();
   const revenueConfig = {
@@ -124,7 +127,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
       label: T("Occupancy ({n} mo)", { n: months }),
       value: insights ? `${insights.occupancy.rate}%` : "—",
       hint: insights
-        ? T("{a} of {b} nights sold (past and current stays)", { a: insights.occupancy.nightsBooked.toLocaleString(), b: insights.occupancy.nightsAvailable.toLocaleString() })
+        ? T("{a} of {b} nights sold (past and current stays)", { a: insights.occupancy.nightsBooked.toLocaleString(locale), b: insights.occupancy.nightsAvailable.toLocaleString(locale) })
         : T("Booked vs available nights"),
       icon: TrendingUp,
       section: "reports",
@@ -139,8 +142,8 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
     { label: T("Suspended members"), value: users.suspended, section: "users", icon: AlertTriangle },
   ];
 
-  const series = (compare?.series ?? []).map((row) => ({ ...row, label: monthLabel(row.month) }));
-  const occupancy = (insights?.monthlyOccupancy ?? []).map((row) => ({ ...row, label: monthLabel(row.month) }));
+  const series = (compare?.series ?? []).map((row) => ({ ...row, label: monthLabel(row.month, locale) }));
+  const occupancy = (insights?.monthlyOccupancy ?? []).map((row) => ({ ...row, label: monthLabel(row.month, locale) }));
   const topDestinations = (insights?.topDestinations ?? []).slice(0, 6);
   const maxDest = Math.max(1, ...topDestinations.map((d) => d.revenueUsd));
 
@@ -290,7 +293,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     <BarChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={compactNumber} />
+                      <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={formatCompact} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="revenueUsd" fill="var(--color-revenueUsd)" radius={4} maxBarSize={48} />
                       <Bar dataKey="commissionUsd" fill="var(--color-commissionUsd)" radius={4} maxBarSize={48} />
@@ -299,7 +302,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     <AreaChart data={series} margin={{ left: 4, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={compactNumber} />
+                      <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={formatCompact} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Area dataKey="revenueUsd" type="monotone" fill="var(--color-revenueUsd)" fillOpacity={0.2} stroke="var(--color-revenueUsd)" strokeWidth={2} />
                       <Area dataKey="commissionUsd" type="monotone" fill="var(--color-commissionUsd)" fillOpacity={0.2} stroke="var(--color-commissionUsd)" strokeWidth={2} />
@@ -314,7 +317,7 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
                     <BarChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} tickFormatter={compactNumber} />
+                      <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} tickFormatter={formatCompact} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="bookings" fill="var(--color-bookings)" radius={4} />
                     </BarChart>

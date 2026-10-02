@@ -3,6 +3,7 @@ import { Paged, rowText } from "@/components/admin/ListControls";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRequireSession } from "@/hooks/useRequireSession";
 import { toast } from "sonner";
 import { catalogApi } from "@/api/http/catalog.http";
 
@@ -16,16 +17,14 @@ import { IdentityBadge } from "@/components/admin/IdentityBadge";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X } from "lucide-react";
 import { backendEnabled } from "@/api/backend";
-import { privatePageMeta } from "@/lib/seo";
+import { privatePageMeta, localeOf } from "@/lib/seo";
+import { adminPageMeta } from "@/i18n/adminPageMeta";
 import { useAdminT } from "@/i18n/adminAutoCopy";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 
 export const Route = createFileRoute("/admin_/hosts/$userId")({
-  head: () => ({
-    meta: privatePageMeta(
-      "Member details — RoomEasy back office",
-      "Everything about one member: identity proof, listings, bookings, trips and reviews.",
-    ),
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(adminPageMeta.member[localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: AdminHostProfile,
 });
@@ -49,6 +48,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function AdminHostProfile() {
+  useRequireSession();
   const { userId } = Route.useParams();
   const T = useAdminT();
   const { format: money } = useCurrency();

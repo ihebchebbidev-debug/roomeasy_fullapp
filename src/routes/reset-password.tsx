@@ -11,23 +11,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { accountFlowCopy } from "@/i18n/accountFlowCopy";
+import { localeOf } from "@/lib/seo";
 
 export const Route = createFileRoute("/reset-password")({
   validateSearch: (search: Record<string, unknown>) => ({
     token: typeof search["token"] === "string" ? search["token"] : "",
   }),
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
-      { title: "Set a new password — RoomEasy" },
+      { title: `${accountFlowCopy[localeOf(match) ?? "en"].resetTitle} — RoomEasy` },
       {
         name: "description",
-        content: "Choose a new password for your RoomEasy account.",
+        content: accountFlowCopy[localeOf(match) ?? "en"].resetDescription,
       },
-      { property: "og:title", content: "Set a new password — RoomEasy" },
+      { property: "og:title", content: `${accountFlowCopy[localeOf(match) ?? "en"].resetTitle} — RoomEasy` },
       {
         property: "og:description",
-        content: "Choose a new password for your RoomEasy account.",
+        content: accountFlowCopy[localeOf(match) ?? "en"].resetDescription,
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -37,7 +39,8 @@ export const Route = createFileRoute("/reset-password")({
 });
 
 function ResetPasswordPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const copy = accountFlowCopy[locale];
   const navigate = useNavigate();
   const { token } = Route.useSearch();
   const [password, setPassword] = useState("");
@@ -47,22 +50,22 @@ function ResetPasswordPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!token) {
-      toast.error("This reset link is invalid or has expired.");
+      toast.error(copy.resetInvalid);
       return;
     }
     if (password.length < 8) {
-      toast.error("Use at least 8 characters.");
+      toast.error(copy.resetShort);
       return;
     }
     if (password !== confirm) {
-      toast.error("The two passwords do not match.");
+      toast.error(copy.resetMismatch);
       return;
     }
     setPending(true);
     try {
       const answer = await remote.resetPassword(token, password);
       if (!answer) return;
-      toast.success(answer.message || "Your password has been changed.");
+      toast.success(copy.resetSuccess);
       navigate({ to: "/auth" });
     } finally {
       setPending(false);
@@ -99,12 +102,12 @@ function ResetPasswordPage() {
         <div className="mt-7 rounded-[1.75rem] border border-white/60 bg-surface/95 p-6 shadow-[0_2px_6px_rgb(0_0_0/0.08),0_48px_96px_-40px_rgb(0_0_0/0.7)] ring-1 ring-black/5 backdrop-blur-xl sm:p-9">
           <div className="text-center">
             <h1 className="font-display text-[1.65rem] leading-snug font-extrabold tracking-tight">
-              Set a new password
+              {copy.resetTitle}
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {token
-                ? "Choose a new password for your account."
-                : "This reset link is invalid or has expired. Request a new one."}
+                ? copy.resetDescription
+                : copy.resetInvalidHint}
             </p>
           </div>
 
@@ -133,7 +136,7 @@ function ResetPasswordPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="confirm-password" className="text-[13px] font-semibold">
-                  Confirm password
+                  {copy.confirmPassword}
                 </Label>
                 <div className="group relative">
                   <Lock
@@ -159,7 +162,7 @@ function ResetPasswordPage() {
                 disabled={pending}
               >
                 {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                Change password
+                {copy.changePassword}
               </Button>
             </form>
           ) : (

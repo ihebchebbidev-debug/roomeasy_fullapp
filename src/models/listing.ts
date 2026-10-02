@@ -208,7 +208,7 @@ export function propertyFromDraft(draft: ListingDraft, previous?: Property): Pro
     ...previous,
     id: draft.propertyId,
     name: draft.title.trim(),
-    location: { en: place, fr: place },
+    location: { en: place, fr: place, es: place, de: place, pt: place },
     image: cover ?? "",
     // The wizard sends the complete photo set. An empty gallery therefore
     // means all previous secondary photos were removed, not “keep them”.

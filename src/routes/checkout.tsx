@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSignInReturn } from "@/hooks/useSignInReturn";
 import { AlertCircle, CalendarDays, CheckCircle2, CreditCard, Loader2, Lock, ShieldCheck, Users } from "lucide-react";
@@ -54,16 +56,8 @@ export const Route = createFileRoute("/checkout")({
     nights: Number(search["nights"]) > 0 ? Number(search["nights"]) : undefined,
     guests: Number(search["guests"]) > 0 ? Number(search["guests"]) : undefined,
   }),
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Confirm and pay — RoomEasy" },
-      { name: "description", content: "Review your RoomEasy stay, price breakdown and cancellation policy, then confirm your booking." },
-      { property: "og:title", content: "Confirm and pay — RoomEasy" },
-      { property: "og:description", content: "Review your stay, price breakdown and cancellation policy." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["checkout"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: CheckoutPage,
 });

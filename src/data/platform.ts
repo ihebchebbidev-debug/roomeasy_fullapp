@@ -18,6 +18,10 @@ export type SessionUser = {
   /** True when one of those roles can open the back office. */
   backOffice?: boolean;
   verified: boolean;
+  /** Host identity review, distinct from email verification. */
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  /** Whether the host's payout account is ready to receive transfers. */
+  payoutsOnboarded?: boolean;
   twoFactorEnabled?: boolean;
   avatarUrl?: string;
 };
@@ -62,6 +66,7 @@ export type HostListing = {
   /** Listing currency (EUR, USD, GBP, CHF, BRL). */
   currency?: string;
   approved: boolean;
+  rejectedReason?: string;
   longStay: DerivedLongStay;
   mobile: DerivedMobile;
 };

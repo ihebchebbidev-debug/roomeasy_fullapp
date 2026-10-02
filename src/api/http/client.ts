@@ -116,6 +116,8 @@ export async function requestWithMeta<T>(
     // the background: drop it so the app shows the signed-out state instead.
     if (response.status === 401 && token && !path.startsWith("/accounts/login") && !path.startsWith("/accounts/signup")) {
       setAccessToken(null);
+      // Let the app wipe the signed-in account and its private data at once.
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("nestara:session-expired"));
     }
     throw toApiError(response.status, payload);
   }

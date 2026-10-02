@@ -1,0 +1,81 @@
+import type { Locale } from "@/i18n/translations";
+
+export const privateRouteMeta: Record<"auth" | "host" | "messages" | "support" | "trips" | "booking.$bookingId" | "profile" | "favourites" | "checkout" | "verify-email" | "$", Record<Locale, { title: string; description: string }>> = {
+  "auth": {
+    en: { title: "Sign in or create an account — RoomEasy", description: "Access your RoomEasy trips, messages and host dashboard with one account." },
+    fr: { title: "Se connecter ou créer un compte — RoomEasy", description: "Accédez à vos voyages, messages et espace hôte avec un seul compte." },
+    es: { title: "Inicia sesión o crea una cuenta — RoomEasy", description: "Accede a tus viajes, mensajes y panel de anfitrión con una sola cuenta." },
+    de: { title: "Anmelden oder Konto erstellen — RoomEasy", description: "Greifen Sie mit einem Konto auf Reisen, Nachrichten und den Gastgeberbereich zu." },
+    pt: { title: "Iniciar sessão ou criar uma conta — RoomEasy", description: "Aceda às suas viagens, mensagens e área de anfitrião com uma só conta." },
+  },
+  "host": {
+    en: { title: "Host dashboard — RoomEasy", description: "Manage listings, availability, rates, booking requests and payouts." },
+    fr: { title: "Tableau de bord hôte — RoomEasy", description: "Gérez les annonces, disponibilités, tarifs, demandes de réservation et versements." },
+    es: { title: "Panel de anfitrión — RoomEasy", description: "Gestiona anuncios, disponibilidad, tarifas, solicitudes de reserva y pagos." },
+    de: { title: "Gastgeberübersicht — RoomEasy", description: "Verwalten Sie Inserate, Verfügbarkeiten, Preise, Buchungsanfragen und Auszahlungen." },
+    pt: { title: "Painel de anfitrião — RoomEasy", description: "Gira anúncios, disponibilidade, preços, pedidos de reserva e pagamentos." },
+  },
+  "messages": {
+    en: { title: "Guest messages — RoomEasy", description: "Listing-linked guest conversations and reservation details." },
+    fr: { title: "Messages des voyageurs — RoomEasy", description: "Conversations avec les voyageurs et détails des réservations." },
+    es: { title: "Mensajes de huéspedes — RoomEasy", description: "Conversaciones con huéspedes y detalles de las reservas." },
+    de: { title: "Nachrichten von Gästen — RoomEasy", description: "Gespräche mit Gästen und Buchungsdetails." },
+    pt: { title: "Mensagens dos hóspedes — RoomEasy", description: "Conversas com hóspedes e detalhes das reservas." },
+  },
+  "support": {
+    en: { title: "My support requests — RoomEasy", description: "Ask the RoomEasy team about a booking, a payment or a listing and follow the answer." },
+    fr: { title: "Mes demandes d’assistance — RoomEasy", description: "Contactez RoomEasy à propos d’une réservation, d’un paiement ou d’une annonce et suivez la réponse." },
+    es: { title: "Mis solicitudes de ayuda — RoomEasy", description: "Consulta al equipo de RoomEasy sobre reservas, pagos o anuncios y sigue la respuesta." },
+    de: { title: "Meine Supportanfragen — RoomEasy", description: "Fragen Sie RoomEasy zu Buchungen, Zahlungen oder Inseraten und verfolgen Sie die Antwort." },
+    pt: { title: "Os meus pedidos de apoio — RoomEasy", description: "Contacte a equipa RoomEasy sobre reservas, pagamentos ou anúncios e acompanhe a resposta." },
+  },
+  "trips": {
+    en: { title: "My trips — RoomEasy", description: "Track every RoomEasy stay you have requested, confirmed or completed." },
+    fr: { title: "Mes voyages — RoomEasy", description: "Suivez tous vos séjours RoomEasy demandés, confirmés ou terminés." },
+    es: { title: "Mis viajes — RoomEasy", description: "Sigue todos tus alojamientos RoomEasy solicitados, confirmados o completados." },
+    de: { title: "Meine Reisen — RoomEasy", description: "Verfolgen Sie Ihre angefragten, bestätigten und abgeschlossenen RoomEasy-Aufenthalte." },
+    pt: { title: "As minhas viagens — RoomEasy", description: "Acompanhe todas as estadias RoomEasy pedidas, confirmadas ou concluídas." },
+  },
+  "booking.$bookingId": {
+    en: { title: "Booking confirmed — RoomEasy", description: "Your booking reference, stay dates and payment receipt." },
+    fr: { title: "Réservation confirmée — RoomEasy", description: "Votre référence de réservation, vos dates de séjour et votre reçu de paiement." },
+    es: { title: "Reserva confirmada — RoomEasy", description: "Tu referencia de reserva, fechas de estancia y recibo de pago." },
+    de: { title: "Buchung bestätigt — RoomEasy", description: "Ihre Buchungsnummer, Aufenthaltsdaten und Zahlungsbeleg." },
+    pt: { title: "Reserva confirmada — RoomEasy", description: "A sua referência de reserva, datas de estadia e recibo de pagamento." },
+  },
+  "profile": {
+    en: { title: "Your profile — RoomEasy", description: "Name, contact details, language, currency and security preferences." },
+    fr: { title: "Votre profil — RoomEasy", description: "Nom, coordonnées, langue, devise et paramètres de sécurité." },
+    es: { title: "Tu perfil — RoomEasy", description: "Nombre, datos de contacto, idioma, moneda y preferencias de seguridad." },
+    de: { title: "Ihr Profil — RoomEasy", description: "Name, Kontaktdaten, Sprache, Währung und Sicherheitseinstellungen." },
+    pt: { title: "O seu perfil — RoomEasy", description: "Nome, contactos, idioma, moeda e preferências de segurança." },
+  },
+  "favourites": {
+    en: { title: "Saved stays — RoomEasy", description: "Every RoomEasy stay you saved, ready to compare and book." },
+    fr: { title: "Séjours enregistrés — RoomEasy", description: "Tous vos séjours RoomEasy enregistrés, prêts à comparer et à réserver." },
+    es: { title: "Alojamientos guardados — RoomEasy", description: "Todos tus alojamientos RoomEasy guardados para comparar y reservar." },
+    de: { title: "Gespeicherte Unterkünfte — RoomEasy", description: "Ihre gespeicherten RoomEasy-Unterkünfte zum Vergleichen und Buchen." },
+    pt: { title: "Estadias guardadas — RoomEasy", description: "Todas as suas estadias RoomEasy guardadas, prontas para comparar e reservar." },
+  },
+  "checkout": {
+    en: { title: "Confirm and pay — RoomEasy", description: "Review your stay, price breakdown and cancellation policy." },
+    fr: { title: "Confirmer et payer — RoomEasy", description: "Vérifiez votre séjour, le détail du prix et les conditions d’annulation." },
+    es: { title: "Confirmar y pagar — RoomEasy", description: "Revisa tu estancia, el desglose del precio y la política de cancelación." },
+    de: { title: "Bestätigen und bezahlen — RoomEasy", description: "Prüfen Sie Ihren Aufenthalt, die Preisübersicht und die Stornierungsbedingungen." },
+    pt: { title: "Confirmar e pagar — RoomEasy", description: "Reveja a sua estadia, a discriminação do preço e a política de cancelamento." },
+  },
+  "verify-email": {
+    en: { title: "Confirm your email — RoomEasy", description: "Confirm the email address of your RoomEasy account." },
+    fr: { title: "Confirmez votre e-mail — RoomEasy", description: "Confirmez l’adresse e-mail de votre compte RoomEasy." },
+    es: { title: "Confirma tu correo — RoomEasy", description: "Confirma el correo electrónico de tu cuenta RoomEasy." },
+    de: { title: "E-Mail bestätigen — RoomEasy", description: "Bestätigen Sie die E-Mail-Adresse Ihres RoomEasy-Kontos." },
+    pt: { title: "Confirme o seu e-mail — RoomEasy", description: "Confirme o endereço de e-mail da sua conta RoomEasy." },
+  },
+  "$": {
+    en: { title: "Page not found — RoomEasy", description: "This RoomEasy page does not exist. Head back home or browse available stays." },
+    fr: { title: "Page introuvable — RoomEasy", description: "Cette page RoomEasy n’existe pas. Retournez à l’accueil ou explorez les séjours disponibles." },
+    es: { title: "Página no encontrada — RoomEasy", description: "Esta página de RoomEasy no existe. Vuelve al inicio o explora los alojamientos disponibles." },
+    de: { title: "Seite nicht gefunden — RoomEasy", description: "Diese RoomEasy-Seite existiert nicht. Zurück zur Startseite oder verfügbare Unterkünfte entdecken." },
+    pt: { title: "Página não encontrada — RoomEasy", description: "Esta página RoomEasy não existe. Volte ao início ou explore as estadias disponíveis." },
+  },
+};

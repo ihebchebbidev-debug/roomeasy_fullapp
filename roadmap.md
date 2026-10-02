@@ -1,5 +1,10 @@
 # Roadmap — customer feedback
 
+## Localization audit
+- [ ] Audit every page and shared interface for untranslated text in English, French, Spanish, German, and Portuguese
+- [ ] Fill missing translations and replace static interface text where found
+- [ ] Verify translation parity and representative public/account screens
+
 ## Admin
 - [x] Identity checks: visible navigation entry + live pending counter
 - [x] Payouts: confirmation before marking a payout paid
@@ -14,12 +19,18 @@
 - [x] Settings: sender no-reply@roomeasy.fr, reply-to contact@roomeasy.fr
 
 ## Host
+- [x] Replace the host overview with an action-first dashboard
+- [x] Add upcoming activity and inline request decisions
+- [x] Add comparative stats and a nine-month revenue chart
+- [x] Add listing snapshots, recent reviews/messages, and useful empty states
+- [ ] Validate the signed-in host overview on desktop and mobile — blocked locally by the account service’s browser-access policy
 - [x] Calendar: multi-date selection (click, Shift-range, whole month) + apply price/block
 - [x] Apply calendar changes to all listings at once
 - [x] Listing search shows suggestions
 
 ## Visitor
 - [x] Hide host dashboard entries for non-hosts
+- [x] Redirect signed-out visitors away from every account workspace page
 
 ## Footer
 - [x] BxBstudio -> BxB Studio

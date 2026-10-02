@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   Building2,
@@ -18,7 +18,7 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import authWallpaper from "@/assets/auth-wallpaper.jpg";
 import { AccountMenu } from "@/components/layout/AccountMenu";
@@ -50,11 +50,19 @@ export function AccountShell({ children, title, subtitle, actions }: { children:
   const { locale, t } = useLanguage();
   const x = useExtra();
   const { threads, session } = usePlatform();
+  const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const activeHostSection = useRouterState({ select: (state) => (state.location.search as { section?: HostSection }).section });
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const unread = threads.reduce((total, thread) => total + thread.unread, 0);
+
+  useEffect(() => {
+    if (!session) void navigate({ to: "/", replace: true });
+  }, [navigate, session]);
+
+  // Never paint account navigation or private content while signed out.
+  if (!session) return null;
   const copy = pickCopy(locale, {
     en: { workspace: "Account workspace", overview: "Overview", listings: "Listings", newListing: "New listing", collapse: "Collapse menu", expand: "Expand menu", open: "Open account menu" },
     fr: { workspace: "Espace compte", overview: "Aperçu", listings: "Annonces", newListing: "Nouvelle annonce", collapse: "Réduire le menu", expand: "Ouvrir le menu", open: "Ouvrir le menu du compte" },

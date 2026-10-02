@@ -6,6 +6,7 @@
  * With no server address nothing here runs and the demo data stays in charge.
  */
 import { toast } from "sonner";
+import { activeServiceLocale, serviceError } from "@/i18n/serviceErrors";
 
 import { API_BASE_URL, getAccessToken, setAccessToken } from "@/api/http/client";
 import {
@@ -76,8 +77,8 @@ export async function runRemote<T>(action: () => Promise<T>, fallbackMessage: st
     return await action();
   } catch (error) {
     if (offline) return null;
-    const message = error instanceof Error && error.message ? error.message : fallbackMessage;
-    toast.error(message);
+    const message = error instanceof Error && error.message && activeServiceLocale() === "en" ? error.message : fallbackMessage;
+    toast.error(serviceError(message));
     return null;
   }
 }
@@ -106,8 +107,8 @@ export async function remoteAccepted(action: () => Promise<unknown>, fallbackMes
     await action();
     return true;
   } catch (error) {
-    const message = error instanceof Error && error.message ? error.message : fallbackMessage;
-    toast.error(message);
+    const message = error instanceof Error && error.message && activeServiceLocale() === "en" ? error.message : fallbackMessage;
+    toast.error(serviceError(message));
     return false;
   }
 }
@@ -129,6 +130,8 @@ export function toSessionUser(account: AccountDto): SessionUser {
     roles: account.roles,
     backOffice,
     verified: account.verified,
+    verificationStatus: account.verificationStatus ?? "none",
+    payoutsOnboarded: account.host?.payoutsOnboarded ?? false,
     ...(typeof account.twoFactorEnabled === "boolean" ? { twoFactorEnabled: account.twoFactorEnabled } : {}),
     ...(account.avatarUrl ? { avatarUrl: account.avatarUrl } : {}),
   };
@@ -178,6 +181,7 @@ type HostListingRow = {
   propertyId: string;
   status: string;
   approved: boolean;
+  rejectedReason?: string | null;
   currency?: string;
   nightlyUsd: number;
   /** Sent by the host listings endpoint; absent on the admin listing rows. */
@@ -194,6 +198,7 @@ export function toHostListing(row: HostListingRow | AdminListingDto): HostListin
     nightlyUsd: row.nightlyUsd,
     currency: (row as HostListingRow).currency ?? "EUR",
     approved: row.approved,
+    ...(row.rejectedReason ? { rejectedReason: row.rejectedReason } : {}),
     longStay: rules.longStay ?? { enabled: false, threshold: 7, discount: 0 },
     mobile: rules.mobile ?? { enabled: false, discount: 0 },
   };
@@ -359,7 +364,16 @@ export async function hydratePublic(): Promise<void> {
     runRemote(() => fetchAllStays(), "Stays could not be loaded."),
     runRemote(() => settingsApi.get(), "Platform settings could not be loaded."),
   ]);
-  if (stays) setPlatform({ customProperties: stays.map(toProperty) });
+  if (stays) {
+    // Keep the host's own unpublished places, which the public list never carries.
+    setPlatform((current) => {
+      const own = new Set(current.listings.map((listing) => listing.propertyId));
+      const fresh = stays.map(toProperty);
+      const ids = new Set(fresh.map((property) => property.id));
+      const kept = current.customProperties.filter((property) => own.has(property.id) && !ids.has(property.id));
+      return { customProperties: [...fresh, ...kept] };
+    });
+  }
   if (settings?.rateRules) setPlatform({ rateRules: settings.rateRules });
   if (settings) setPlatform({ feeRates: { serviceFeeRate: settings.serviceFeeRate, taxRate: settings.taxRate } });
 }
@@ -384,7 +398,7 @@ export async function hydrateAccount(): Promise<void> {
     return;
   }
   const session = toSessionUser(account);
-  setPlatform({ session });
+  setPlatform({ session, stripeOnboarded: session.payoutsOnboarded ?? false });
 
   const [threads, guestBookings, hostBookings] = await Promise.all([
     runRemote(() => messagingApi.threads(), "Messages could not be loaded."),
@@ -539,7 +553,7 @@ export const remote = {
     if (!result) return null;
     setAccessToken(result.token);
     const session = toSessionUser(result.account);
-    setPlatform({ session });
+    setPlatform({ session, stripeOnboarded: session.payoutsOnboarded ?? false });
     // Load the rest of the account in the background so sign-in moves on at once.
     void hydrateAccount();
     return session;
@@ -553,7 +567,7 @@ export const remote = {
     if (!result) return null;
     setAccessToken(result.token);
     const session = toSessionUser(result.account);
-    setPlatform({ session });
+    setPlatform({ session, stripeOnboarded: session.payoutsOnboarded ?? false });
     // Load the rest of the account in the background so sign-in moves on at once.
     void hydrateAccount();
     return session;
@@ -574,6 +588,7 @@ export const remote = {
       reviews: [],
       hostDashboard: null,
       adminOverview: null,
+      stripeOnboarded: false,
       accountDataStatus: "ready",
     });
   },
@@ -596,7 +611,7 @@ export const remote = {
     );
     if (!account) return null;
     const session = toSessionUser(account);
-    setPlatform({ session });
+    setPlatform({ session, stripeOnboarded: session.payoutsOnboarded ?? false });
     // Load the rest of the account in the background so sign-in moves on at once.
     void hydrateAccount();
     return session;
@@ -617,7 +632,7 @@ export const remote = {
   /** Erases the account for good; the caller signs the person out afterwards. */
   deleteAccount: async (password: string, reason?: string) => {
     if (!backendEnabled || offline) {
-      toast.error("The account service is unreachable right now. Please try again in a moment.");
+      toast.error(serviceError("The account service is unreachable right now. Please try again in a moment."));
       return false;
     }
     const result = await runRemote(
@@ -752,4 +767,9 @@ export async function loadPropertyReviews(propertyId: string): Promise<void> {
   const mapped = list.map(toHostReview);
   const others = getPlatform().reviews.filter((review) => review.propertyId !== propertyId);
   setPlatform({ reviews: [...others, ...mapped] });
+}
+
+// An expired or revoked session wipes the account and its private data at once.
+if (typeof window !== "undefined") {
+  window.addEventListener("nestara:session-expired", () => remote.signOut());
 }

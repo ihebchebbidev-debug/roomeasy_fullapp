@@ -30,6 +30,7 @@ export type AccountDto = {
     responseRate: number | null;
     payoutsOnboarded: boolean;
   } | null;
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
 };
 
 export type SessionDto = { account: AccountDto; token: string };
@@ -60,7 +61,7 @@ export const accountsApi = {
     documentFiles?: string[];
   }) => request<AccountDto>("/accounts/me/become-host", { method: "POST", body }),
   forgotPassword: (body: { email: string }) =>
-    request<{ message: string; devCode?: string; expiresAt?: string }>("/accounts/forgot-password", {
+    request<{ message: string }>("/accounts/forgot-password", {
       method: "POST",
       body,
     }),

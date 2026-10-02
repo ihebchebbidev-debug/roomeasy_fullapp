@@ -14,27 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { verifyTurnstileToken } from "@/lib/turnstile.functions";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { accountFlowCopy } from "@/i18n/accountFlowCopy";
+import { forgotPasswordCopy, useForgotPasswordCopy } from "@/i18n/forgotPasswordCopy";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 
 const TURNSTILE_SITE_KEY =
   import.meta.env["VITE_TURNSTILE_SITE_KEY"] ?? "1x00000000000000000000AA";
 
 export const Route = createFileRoute("/forgot-password")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Reset your password — RoomEasy" },
-      {
-        name: "description",
-        content: "Get a 4-digit verification code to reset your RoomEasy password.",
-      },
-      { property: "og:title", content: "Reset your password — RoomEasy" },
-      {
-        property: "og:description",
-        content: "Get a 4-digit verification code to reset your RoomEasy password.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(`${accountFlowCopy[localeOf(match) ?? "en"].resetTitle} — RoomEasy`, forgotPasswordCopy(localeOf(match) ?? "en").description),
   }),
   component: ForgotPasswordPage,
 });
@@ -42,7 +31,9 @@ export const Route = createFileRoute("/forgot-password")({
 type Step = "email" | "code" | "password";
 
 function ForgotPasswordPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const c = useForgotPasswordCopy();
+  const flow = accountFlowCopy[locale];
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>("email");
@@ -63,10 +54,7 @@ function ForgotPasswordPage() {
       const answer = await remote.forgotPassword(email.trim());
       if (!answer) return false;
       if (!silent) toast.success(answer.message);
-      else toast.success("A new code is on its way.");
-      // Before the mailbox is connected the server hands the code back so the
-      // flow can still be completed.
-      if (answer.devCode) setDigits(answer.devCode.split(""));
+      else toast.success(c.newCode);
       return true;
     } finally {
       setPending(false);
@@ -118,7 +106,7 @@ function ForgotPasswordPage() {
   async function handleCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (code.length !== 4) {
-      toast.error("Enter the 4-digit code from your email.");
+      toast.error(c.invalidCode);
       return;
     }
     setPending(true);
@@ -135,18 +123,18 @@ function ForgotPasswordPage() {
   async function handlePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (password.length < 8) {
-      toast.error("Use at least 8 characters.");
+      toast.error(flow.resetShort);
       return;
     }
     if (password !== confirm) {
-      toast.error("The two passwords do not match.");
+      toast.error(flow.resetMismatch);
       return;
     }
     setPending(true);
     try {
       const answer = await remote.resetPassword(ticket, password);
       if (!answer) return;
-      toast.success(answer.message || "Your password has been changed.");
+      toast.success(answer.message || flow.resetSuccess);
       navigate({ to: "/auth" });
     } finally {
       setPending(false);
@@ -204,7 +192,7 @@ function ForgotPasswordPage() {
                   {t.app.auth.forgotTitle}
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Enter your email and we will send you a 4-digit verification code.
+                  {c.emailHint}
                 </p>
               </div>
               <form className="mt-6 space-y-4" onSubmit={handleEmail}>
@@ -246,7 +234,7 @@ function ForgotPasswordPage() {
                   disabled={pending || !captcha}
                 >
                   {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                  Send code
+                  {c.send}
                 </Button>
               </form>
             </>
@@ -257,11 +245,10 @@ function ForgotPasswordPage() {
               <div className="text-center">
                 <ShieldCheck className="mx-auto size-11 text-primary" aria-hidden />
                 <h1 className="mt-4 font-display text-[1.65rem] leading-snug font-extrabold tracking-tight">
-                  Enter your code
+                  {c.codeTitle}
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  We sent a 4-digit code to <span className="font-semibold text-foreground">{email}</span>. It expires
-                  in 15 minutes.
+                  {c.codePrefix} <span className="font-semibold text-foreground">{email}</span>. {c.codeSuffix}
                 </p>
               </div>
               <form className="mt-6 space-y-5" onSubmit={handleCode}>
@@ -274,7 +261,7 @@ function ForgotPasswordPage() {
                       }}
                       inputMode="numeric"
                       autoComplete="one-time-code"
-                      aria-label={`Digit ${index + 1}`}
+                      aria-label={`${c.digit} ${index + 1}`}
                       maxLength={1}
                       value={digit}
                       onChange={(event) => setDigit(index, event.target.value)}
@@ -292,7 +279,7 @@ function ForgotPasswordPage() {
                   disabled={pending || code.length !== 4}
                 >
                   {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                  Verify code
+                  {c.verify}
                 </Button>
 
                 <div className="flex items-center justify-between text-xs font-semibold">
@@ -304,7 +291,7 @@ function ForgotPasswordPage() {
                       setStep("email");
                     }}
                   >
-                    Change email
+                    {c.changeEmail}
                   </button>
                   <button
                     type="button"
@@ -312,7 +299,7 @@ function ForgotPasswordPage() {
                     disabled={pending}
                     onClick={() => void sendCode(true)}
                   >
-                    Resend code
+                    {c.resend}
                   </button>
                 </div>
               </form>
@@ -323,10 +310,10 @@ function ForgotPasswordPage() {
             <>
               <div className="text-center">
                 <h1 className="font-display text-[1.65rem] leading-snug font-extrabold tracking-tight">
-                  Set a new password
+                  {flow.resetTitle}
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Choose a new password for your account.
+                  {flow.resetDescription}
                 </p>
               </div>
               <form className="mt-6 space-y-4" onSubmit={handlePassword}>
@@ -353,7 +340,7 @@ function ForgotPasswordPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="confirm-password" className="text-[13px] font-semibold">
-                    Confirm password
+                    {flow.confirmPassword}
                   </Label>
                   <div className="group relative">
                     <Lock
@@ -379,7 +366,7 @@ function ForgotPasswordPage() {
                   disabled={pending}
                 >
                   {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                  Change password
+                  {flow.changePassword}
                 </Button>
               </form>
             </>

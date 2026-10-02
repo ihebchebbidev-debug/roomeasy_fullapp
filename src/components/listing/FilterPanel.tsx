@@ -109,7 +109,7 @@ export function FilterPanel({
               >
                 {category === "all" ? (
                   <span className="grid size-7 place-items-center rounded-md border border-current text-[10px] font-bold">
-                    ALL
+                    {{ en: "ALL", fr: "TOUT", es: "TODO", de: "ALLE", pt: "TUDO" }[locale]}
                   </span>
                 ) : (
                   <CategoryIcon category={category} />

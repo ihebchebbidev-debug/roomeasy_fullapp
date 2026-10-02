@@ -1017,10 +1017,49 @@ const PT: Record<string, string> = {
 
 const DICTS: Record<string, Record<string, string>> = { fr: FR, es: ES, de: DE, pt: PT };
 
+const ADDITIONAL: Record<string, Record<string, string>> = {
+  fr: { "Send this payout?": "Envoyer ce versement ?", "This action marks the payout as paid and cannot be undone here.": "Cette action marque le versement comme payé et ne peut pas être annulée ici.", "Confirm payout": "Confirmer le versement", Action: "Action", "All actions": "Toutes les actions", Type: "Type", "All types": "Tous les types", Admin: "Administrateur", "All admins": "Tous les administrateurs", From: "Du", To: "Au", Clear: "Effacer", "Export failed. Please try again.": "Échec de l’exportation. Veuillez réessayer." },
+  es: { "Send this payout?": "¿Enviar este pago?", "This action marks the payout as paid and cannot be undone here.": "Esta acción marca el pago como realizado y no se puede deshacer aquí.", "Confirm payout": "Confirmar pago", Action: "Acción", "All actions": "Todas las acciones", Type: "Tipo", "All types": "Todos los tipos", Admin: "Administrador", "All admins": "Todos los administradores", From: "Desde", To: "Hasta", Clear: "Borrar", "Export failed. Please try again.": "Error al exportar. Inténtalo de nuevo." },
+  de: { "Send this payout?": "Diese Auszahlung senden?", "This action marks the payout as paid and cannot be undone here.": "Diese Aktion markiert die Auszahlung als bezahlt und kann hier nicht rückgängig gemacht werden.", "Confirm payout": "Auszahlung bestätigen", Action: "Aktion", "All actions": "Alle Aktionen", Type: "Typ", "All types": "Alle Typen", Admin: "Administrator", "All admins": "Alle Administratoren", From: "Von", To: "Bis", Clear: "Zurücksetzen", "Export failed. Please try again.": "Export fehlgeschlagen. Bitte versuchen Sie es erneut." },
+  pt: { "Send this payout?": "Enviar este pagamento?", "This action marks the payout as paid and cannot be undone here.": "Esta ação marca o pagamento como concluído e não pode ser anulada aqui.", "Confirm payout": "Confirmar pagamento", Action: "Ação", "All actions": "Todas as ações", Type: "Tipo", "All types": "Todos os tipos", Admin: "Administrador", "All admins": "Todos os administradores", From: "De", To: "Até", Clear: "Limpar", "Export failed. Please try again.": "Falha na exportação. Tente novamente." },
+};
+const EXTRA_ERRORS: Record<string, Record<string, string>> = {
+  fr: { "You do not have access to the back office.": "Vous n'avez pas accès à l'administration.", "The action could not be completed.": "L'action n'a pas pu être effectuée." },
+  es: { "You do not have access to the back office.": "No tienes acceso a la administración.", "The action could not be completed.": "No se pudo completar la acción." },
+  de: { "You do not have access to the back office.": "Sie haben keinen Zugriff auf die Verwaltung.", "The action could not be completed.": "Die Aktion konnte nicht abgeschlossen werden." },
+  pt: { "You do not have access to the back office.": "Não tem acesso à administração.", "The action could not be completed.": "Não foi possível concluir a ação." },
+};
+for (const [locale, messages] of Object.entries(EXTRA_ERRORS)) {
+  const target = ADDITIONAL[locale];
+  if (target) Object.assign(target, messages);
+}
+const TRANSLATION_HELP: Record<string, [string, string, string]> = {
+  fr: ["Remplacez un texte de l'application pour une langue. Utilisez la clé du texte séparée par des points, par ex.", "ou", "Les visiteurs verront les modifications dans environ une minute."],
+  es: ["Sustituye cualquier texto de la aplicación en un idioma. Usa la clave del texto separada por puntos, p. ej.", "o", "Los visitantes verán los cambios en aproximadamente un minuto."],
+  de: ["Ersetzen Sie beliebige App-Texte für eine Sprache. Verwenden Sie den punktgetrennten Schlüssel, z. B.", "oder", "Besucher sehen Änderungen innerhalb von etwa einer Minute."],
+  pt: ["Substitua qualquer texto da aplicação num idioma. Utilize a chave do texto separada por pontos, por ex.", "ou", "Os visitantes verão as alterações dentro de cerca de um minuto."],
+};
+for (const [locale, [intro, or, ending]] of Object.entries(TRANSLATION_HELP)) {
+  ADDITIONAL[locale]!["Replace any text in the app for one language. Use the dotted key of the text, e.g."] = intro;
+  ADDITIONAL[locale]!["or"] = or;
+  ADDITIONAL[locale]!["Changes appear for visitors within about a minute."] = ending;
+}
+
+const REJECTION_REASONS: Record<string, string[]> = {
+  fr: ["Photos manquantes, insuffisantes ou de mauvaise qualité", "Description incomplète ou insuffisamment détaillée", "Adresse ou emplacement incorrect", "Prix irréaliste pour ce logement", "Annonce en double", "Contenu interdit ou offensant", "Coordonnées ou réservation hors plateforme", "Non conforme aux exigences légales ou de sécurité", "Autre motif (précisez ci-dessous)"],
+  es: ["Faltan fotos, son insuficientes o de mala calidad", "Descripción incompleta o poco informativa", "Dirección o ubicación incorrecta", "Precio poco realista para este alojamiento", "Anuncio duplicado", "Contenido prohibido u ofensivo", "Datos de contacto o reservas fuera de la plataforma", "No cumple los requisitos legales o de seguridad", "Otro motivo (explica abajo)"],
+  de: ["Fotos fehlen, sind unzureichend oder von schlechter Qualität", "Beschreibung unvollständig oder nicht aussagekräftig genug", "Adresse oder Standort ist ungenau", "Unrealistischer Preis für diese Unterkunft", "Doppeltes Inserat", "Verbotene oder beleidigende Inhalte", "Kontaktdaten oder Buchung außerhalb der Plattform", "Erfüllt gesetzliche oder Sicherheitsanforderungen nicht", "Anderer Grund (unten erläutern)"],
+  pt: ["Fotografias em falta, insuficientes ou de má qualidade", "Descrição incompleta ou pouco informativa", "Morada ou localização incorreta", "Preço irrealista para este alojamento", "Anúncio duplicado", "Conteúdo proibido ou ofensivo", "Contactos ou reservas fora da plataforma", "Não cumpre os requisitos legais ou de segurança", "Outro motivo (explique abaixo)"],
+};
+const REJECTION_LABELS = ["Photos missing, too few, or of poor quality", "Description incomplete or not informative enough", "Address or location is inaccurate", "Price is unrealistic for this listing", "Duplicate of an existing listing", "Contains prohibited or offensive content", "Contains contact details or off-platform booking", "Does not meet legal or safety requirements", "Other reason (explained below)"];
+for (const [locale, labels] of Object.entries(REJECTION_REASONS)) {
+  labels.forEach((label, index) => { ADDITIONAL[locale]![REJECTION_LABELS[index]!] = label; });
+}
+
 export type AdminT = (text: string, vars?: Record<string, string | number>) => string;
 
 export function translateAdmin(locale: string, text: string, vars?: Record<string, string | number>): string {
-  let out = DICTS[locale]?.[text] ?? text;
+  let out = ADDITIONAL[locale]?.[text] ?? DICTS[locale]?.[text] ?? text;
   if (vars) for (const [k, v] of Object.entries(vars)) out = out.split(`{${k}}`).join(String(v));
   return out;
 }

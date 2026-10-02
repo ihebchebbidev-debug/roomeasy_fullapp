@@ -5,14 +5,13 @@ import { canonical, localeOf, publicPageMeta } from "@/lib/seo";
 import { AppShell } from "@/components/layout/AppShell";
 import { pickCopy } from "@/i18n/copy";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { pageMeta } from "@/i18n/pageMeta";
 
 export const Route = createFileRoute("/privacy")({
   head: ({ match }) => ({
     meta: publicPageMeta({
       locale: localeOf(match),
-      title: "Politique de confidentialité — RoomEasy",
-      description:
-        "Comment RoomEasy collecte, utilise et protège vos données personnelles lors des réservations, de la mise en location et des paiements.",
+      ...pageMeta.privacy[localeOf(match) ?? "en"],
       path: "/privacy",
       type: "article",
     }),

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { accountFlowCopy } from "@/i18n/accountFlowCopy";
 
 /**
  * Turns two-step sign-in on (scan/enter the key, confirm with a code) or off
@@ -22,6 +24,8 @@ export function TwoFactorDialog({
   onOpenChange: (open: boolean) => void;
   onDone: (enabled: boolean) => void;
 }) {
+  const { locale } = useLanguage();
+  const copy = accountFlowCopy[locale];
   const [setup, setSetup] = useState<{ secret: string; otpauthUrl: string } | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -49,11 +53,11 @@ export function TwoFactorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{mode === "enable" ? "Turn on two-step sign-in" : "Turn off two-step sign-in"}</DialogTitle>
+          <DialogTitle>{mode === "enable" ? copy.enableTwoFactor : copy.disableTwoFactor}</DialogTitle>
           <DialogDescription>
             {mode === "enable"
-              ? "Add RoomEasy to an authenticator app (Google Authenticator, 1Password, Authy), then enter the 6-digit code it shows."
-              : "Enter the current 6-digit code from your authenticator app to confirm."}
+              ? copy.enableHint
+              : copy.disableHint}
           </DialogDescription>
         </DialogHeader>
 
@@ -62,9 +66,9 @@ export function TwoFactorDialog({
             setup ? (
               <div className="space-y-3 text-center">
                 <a href={setup.otpauthUrl} className="text-sm font-semibold text-primary underline underline-offset-4">
-                  Open in my authenticator app
+                  {copy.openAuthenticator}
                 </a>
-                <p className="text-xs text-muted-foreground">Or add an account manually with this key:</p>
+                <p className="text-xs text-muted-foreground">{copy.manualKey}</p>
                 <code className="block break-all rounded-md bg-muted px-3 py-2 font-mono text-sm">{setup.secret}</code>
               </div>
             ) : (
@@ -75,7 +79,7 @@ export function TwoFactorDialog({
           ) : null}
 
           <div className="space-y-1.5">
-            <Label htmlFor="twofa-code">6-digit code</Label>
+            <Label htmlFor="twofa-code">{copy.sixDigitCode}</Label>
             <Input
               id="twofa-code"
               inputMode="numeric"
@@ -88,7 +92,7 @@ export function TwoFactorDialog({
           </div>
           <Button type="submit" className="w-full rounded-full" disabled={busy || code.length !== 6 || (mode === "enable" && !setup)}>
             {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-            Confirm
+            {copy.confirm}
           </Button>
         </form>
       </DialogContent>

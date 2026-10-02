@@ -20,13 +20,13 @@ export function absoluteUrl(path = "/"): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Keyword sets reused across the public pages (French market first). */
+/** Keyword sets reused across public pages in the language of the URL. */
 export const KEYWORDS = {
-  home: "location vacances France, réservation logement, séjour, appartement, villa, chalet, maison de vacances, location saisonnière, RoomEasy, roomeasy.fr",
-  search:
-    "location vacances Paris, location Lyon, location Marseille, appartement bord de mer, chalet montagne, villa avec piscine, réservation en ligne",
-  host: "louer mon logement, devenir hôte, mettre son appartement en location, revenus locatifs, conciergerie location saisonnière",
-  help: "aide RoomEasy, service client location, annulation réservation, remboursement, contact support",
+  en: { home: "holiday rentals France, accommodation booking, apartment, villa, chalet, RoomEasy", search: "Paris holiday rental, Lyon apartment, Marseille villa, mountain chalet, book online", host: "rent my place, become a host, list my apartment, holiday rental income", help: "RoomEasy help, booking support, cancellation, refund, contact support" },
+  fr: { home: "location vacances France, réservation logement, séjour, appartement, villa, chalet, RoomEasy", search: "location vacances Paris, location Lyon, location Marseille, chalet montagne, réservation en ligne", host: "louer mon logement, devenir hôte, mettre son appartement en location, revenus locatifs", help: "aide RoomEasy, service client location, annulation réservation, remboursement" },
+  es: { home: "alquiler vacacional Francia, reservar alojamiento, apartamento, villa, chalet, RoomEasy", search: "alquiler vacacional París, apartamento Lyon, villa Marsella, chalet montaña, reservar en línea", host: "alquilar mi alojamiento, ser anfitrión, publicar apartamento, ingresos por alquiler", help: "ayuda RoomEasy, atención al cliente, cancelación de reserva, reembolso" },
+  de: { home: "Ferienwohnung Frankreich, Unterkunft buchen, Apartment, Villa, Chalet, RoomEasy", search: "Ferienwohnung Paris, Apartment Lyon, Villa Marseille, Bergchalet, online buchen", host: "Unterkunft vermieten, Gastgeber werden, Wohnung inserieren, Mieteinnahmen", help: "RoomEasy Hilfe, Buchungsservice, Stornierung, Rückerstattung" },
+  pt: { home: "alojamento de férias França, reservar estadia, apartamento, moradia, chalé, RoomEasy", search: "alojamento Paris, apartamento Lyon, moradia Marselha, chalé montanha, reservar online", host: "alugar o meu alojamento, tornar-me anfitrião, publicar apartamento, rendimentos de alojamento", help: "ajuda RoomEasy, apoio a reservas, cancelamento, reembolso" },
 } as const;
 
 type MetaTag = { title?: string; name?: string; property?: string; content?: string };

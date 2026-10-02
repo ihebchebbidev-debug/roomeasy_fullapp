@@ -28,6 +28,7 @@ import { ComingSoonGate } from "@/components/gate/ComingSoonGate";
 import { getGateState } from "@/lib/gate.functions";
 import type { UrlLocaleRef } from "@/i18n/urlLocale";
 import { statusCopy } from "@/i18n/statusCopy";
+import { pageMeta } from "@/i18n/pageMeta";
 import { useRouterState } from "@tanstack/react-router";
 
 function NotFoundComponent() {
@@ -93,15 +94,15 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient; urlLocale: UrlLocaleRef }>()({
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RoomEasy — Handpicked stays" },
-      { name: "description", content: "Discover and reserve handpicked stays with RoomEasy." },
+      { title: ({ en: "RoomEasy — Handpicked stays", fr: "RoomEasy — Séjours sélectionnés", es: "RoomEasy — Estancias seleccionadas", de: "RoomEasy — Ausgewählte Unterkünfte", pt: "RoomEasy — Estadias selecionadas" })[(match.context as { urlLocale?: UrlLocaleRef } | undefined)?.urlLocale?.current ?? "en"] },
+      { name: "description", content: pageMeta.stays[(match.context as { urlLocale?: UrlLocaleRef } | undefined)?.urlLocale?.current ?? "en"].description },
       { name: "author", content: "RoomEasy" },
-      { property: "og:title", content: "RoomEasy — Handpicked stays" },
-      { property: "og:description", content: "Discover and reserve handpicked stays with RoomEasy." },
+      { property: "og:title", content: pageMeta.stays[(match.context as { urlLocale?: UrlLocaleRef } | undefined)?.urlLocale?.current ?? "en"].title },
+      { property: "og:description", content: pageMeta.stays[(match.context as { urlLocale?: UrlLocaleRef } | undefined)?.urlLocale?.current ?? "en"].description },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -161,18 +162,16 @@ function RootComponent() {
     catalogApi.publicPropertyTypes().then(setPropertyTypes).catch(() => undefined);
   }, []);
 
-  if (locked) {
-    return <ComingSoonGate />;
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <CurrencyProvider>
-          <Outlet />
-          <CookieBanner />
-          <Toaster />
-        </CurrencyProvider>
+        {locked ? <ComingSoonGate /> : (
+          <CurrencyProvider>
+            <Outlet />
+            <CookieBanner />
+            <Toaster />
+          </CurrencyProvider>
+        )}
       </LanguageProvider>
     </QueryClientProvider>
   );

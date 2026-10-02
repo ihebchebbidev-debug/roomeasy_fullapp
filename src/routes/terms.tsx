@@ -5,14 +5,13 @@ import { canonical, localeOf, publicPageMeta } from "@/lib/seo";
 import { AppShell } from "@/components/layout/AppShell";
 import { pickCopy } from "@/i18n/copy";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { pageMeta } from "@/i18n/pageMeta";
 
 export const Route = createFileRoute("/terms")({
   head: ({ match }) => ({
     meta: publicPageMeta({
       locale: localeOf(match),
-      title: "Conditions générales d'utilisation — RoomEasy",
-      description:
-        "Les règles de réservation, d'hébergement, d'annulation et de paiement applicables sur RoomEasy.",
+      ...pageMeta.terms[localeOf(match) ?? "en"],
       path: "/terms",
       type: "article",
     }),

@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSignInReturn } from "@/hooks/useSignInReturn";
 import { useCallback, useEffect, useState } from "react";
@@ -14,23 +16,8 @@ import { useSupportCopy } from "@/i18n/supportCopy";
 import { useSession } from "@/hooks/usePlatform";
 
 export const Route = createFileRoute("/support")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "My support requests — RoomEasy" },
-      {
-        name: "description",
-        content:
-          "Open a support request about a booking, a payment or a listing and follow our team's answers in one place.",
-      },
-      { property: "og:title", content: "My support requests — RoomEasy" },
-      {
-        property: "og:description",
-        content: "Ask the RoomEasy team about a booking, a payment or a listing and follow the answer.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["support"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: SupportPage,
 });

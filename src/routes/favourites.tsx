@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
@@ -13,19 +15,8 @@ import { useLazyList } from "@/hooks/useLazyList";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/favourites")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Saved stays — RoomEasy" },
-      { name: "description", content: "Every RoomEasy stay you saved, ready to compare and book." },
-      { property: "og:title", content: "Saved stays — RoomEasy" },
-      {
-        property: "og:description",
-        content: "Every RoomEasy stay you saved, ready to compare and book.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["favourites"][localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: FavouritesPage,
 });

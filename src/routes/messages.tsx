@@ -1,3 +1,5 @@
+import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link, useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, MessageSquare, CheckCircle2, MoreHorizontal, Paperclip, Search, Send, Smile, Star, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -37,15 +39,9 @@ export const Route = createFileRoute("/messages")({
   // The phone view (list, conversation, details) lives in history so Back steps through it.
   validateSearch: (search: Record<string, unknown>): { view?: "thread" | "details" } =>
     search["view"] === "thread" || search["view"] === "details" ? { view: search["view"] } : {},
-  head: () => ({ meta: [
-      { name: "robots", content: "noindex, nofollow" },
-    { title: "Guest messages — RoomEasy" },
-    { name: "description", content: "Manage RoomEasy guest conversations with listing and reservation context." },
-    { property: "og:title", content: "Guest messages — RoomEasy" },
-    { property: "og:description", content: "Listing-linked guest conversations and reservation details." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(privateRouteMeta["messages"][localeOf(match) ?? "en"]) as [string, string]),
+  }),
   component: MessagesPage,
 });
 

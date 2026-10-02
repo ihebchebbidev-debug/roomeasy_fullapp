@@ -2,6 +2,7 @@ import { BackLink } from "@/components/layout/BackLink";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Check, RotateCcw, ShieldOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRequireSession } from "@/hooks/useRequireSession";
 import { toast } from "sonner";
 
 import { ListingPreview } from "@/components/admin/ListingPreview";
@@ -15,19 +16,20 @@ import { setPlatform, usePlatform } from "@/hooks/usePlatform";
 import { useAllProperties } from "@/hooks/useAllProperties";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { Property } from "@/models/property";
-import { privatePageMeta } from "@/lib/seo";
+import { privatePageMeta, localeOf } from "@/lib/seo";
+import { adminPageMeta } from "@/i18n/adminPageMeta";
+import { useAdminT } from "@/i18n/adminAutoCopy";
 
 export const Route = createFileRoute("/admin_/listings/$listingId")({
-  head: () => ({
-    meta: privatePageMeta(
-      "Listing review — RoomEasy back office",
-      "Full listing preview for moderators, with approval controls.",
-    ),
+  head: ({ match }) => ({
+    meta: privatePageMeta(...Object.values(adminPageMeta.listing[localeOf(match) ?? "en"]) as [string, string]),
   }),
   component: AdminListingDetail,
 });
 
 function AdminListingDetail() {
+  const T = useAdminT();
+  useRequireSession();
   const { listingId } = Route.useParams();
   const { t, locale } = useLanguage();
   const { listings, accountDataStatus } = usePlatform();
@@ -73,7 +75,7 @@ function AdminListingDetail() {
       }));
       toast.success(message);
     } catch {
-      toast.error("The action could not be completed.");
+      toast.error(T("The action could not be completed."));
     } finally {
       setBusy(false);
     }

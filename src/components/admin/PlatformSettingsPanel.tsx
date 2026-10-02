@@ -71,7 +71,6 @@ export function PlatformSettingsPanel() {
       if (!d["SMTP_PORT"]) d["SMTP_PORT"] = "465";
       if (!d["SMTP_SECURE"]) d["SMTP_SECURE"] = "true";
       if (!d["SMTP_USER"]) d["SMTP_USER"] = "support@roomeasy.fr";
-      if (!d["SMTP_PASSWORD"]) d["SMTP_PASSWORD"] = "Roomeasy2026";
       if (!d["MAIL_FROM_ADDRESS"]) d["MAIL_FROM_ADDRESS"] = "support@roomeasy.fr";
       if (!d["MAIL_FROM_NAME"]) d["MAIL_FROM_NAME"] = "RoomEasy";
       if (!d["MAIL_REPLY_TO"]) d["MAIL_REPLY_TO"] = "support@roomeasy.fr";
@@ -125,7 +124,7 @@ export function PlatformSettingsPanel() {
   async function saveSocial() {
     const cleaned = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, social[k].trim()])) as SocialLinksDto;
     const bad = SOCIAL_KEYS.find((k) => cleaned[k] && !/^https?:\/\/\S+$/i.test(cleaned[k]));
-    if (bad) { toast.error(fr ? `Lien ${SOCIAL_LABELS[bad]} invalide : il doit commencer par https://` : `${SOCIAL_LABELS[bad]} link must start with https://`); return; }
+    if (bad) { toast.error(`${T("Invalid link", "Lien invalide")} ${SOCIAL_LABELS[bad]}: ${T("must start with https://", "doit commencer par https://")}`); return; }
     setBusy("social");
     try {
       const saved = await settingsApi.saveAdmin({ socialLinks: cleaned });

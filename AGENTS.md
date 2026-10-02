@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Admin financial and statistic values must wrap responsively and remain fully visible; never truncate monetary data.
+- Host overview modules live under `src/components/host/overview/` so the large host route remains focused on section orchestration.
+- Every page rendered inside the shared account shell is private and redirects signed-out visitors to the landing page before showing account content.
