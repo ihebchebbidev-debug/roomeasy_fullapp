@@ -372,6 +372,9 @@ export const translations = {
         unread: "unread",
         selectThread: "Select a conversation to read it.",
         today: "Today",
+        attachPhoto: "Attach a photo",
+        uploading: "Uploading…",
+        uploadFailed: "Photo could not be sent",
       },
       favourites: {
         title: "Favourites",
@@ -889,6 +892,9 @@ export const translations = {
         unread: "non lus",
         selectThread: "Sélectionnez une conversation.",
         today: "Aujourd’hui",
+        attachPhoto: "Joindre une photo",
+        uploading: "Envoi en cours…",
+        uploadFailed: "La photo n'a pas pu être envoyée",
       },
       favourites: {
         title: "Favoris",

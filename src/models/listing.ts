@@ -111,7 +111,7 @@ export function emptyListingDraft(): ListingDraft {
     category: "apartment",
     summary: "",
     description: "",
-    location: { city: "", country: "", postal: "", neighbourhood: "", lat: null, lng: null },
+    location: { city: "", country: "France", postal: "", neighbourhood: "", lat: null, lng: null },
     capacity: { guests: 2, rooms: 1, beds: 1, baths: 1, area: 60 },
     amenities: ["wifi"],
     equipment: [],

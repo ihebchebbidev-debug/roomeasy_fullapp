@@ -18,6 +18,8 @@ export type SessionUser = {
   /** True when one of those roles can open the back office. */
   backOffice?: boolean;
   verified: boolean;
+  /** True once the signup email address has been confirmed via the emailed link. */
+  emailVerified: boolean;
   /** Host identity review, distinct from email verification. */
   verificationStatus?: "none" | "pending" | "verified" | "rejected";
   /** Whether the host's payout account is ready to receive transfers. */
@@ -51,6 +53,8 @@ export type Booking = {
   payment?: import("@/models/booking").PaymentRecord;
   /** The guest's own review of this stay, as stored on the server. */
   review?: { id: string; rating: number; text: string };
+  /** Stay details saved with the booking, so a trip still shows if the listing is no longer public. */
+  propertySnapshot?: { name: string; city: string; image: string; cancellationPolicy?: string };
   createdAt?: string;
   updatedAt?: string;
 };
@@ -83,7 +87,7 @@ export type Thread = {
   withName: string;
   withAvatar?: string;
   unread: number;
-  messages: { id: string; from: "me" | "them"; text: string; time: string }[];
+  messages: { id: string; from: "me" | "them"; text: string; time: string; attachmentUrl?: string | null }[];
 };
 
 export type PlatformUser = {

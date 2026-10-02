@@ -125,7 +125,7 @@ function CheckoutPage() {
 
   const from = search.from ?? addDays(new Date().toISOString().slice(0, 10), 14);
   const to = search.to ?? addDays(from, search.nights ?? 2);
-  const guests = search.guests ?? 2;
+  const guests = search.guests ?? 3; // match the search widget's default (2 adults + 1 child)
 
   const [name, setName] = useState(session?.name ?? "");
   const [email, setEmail] = useState(session?.email ?? "");
@@ -205,8 +205,10 @@ function CheckoutPage() {
         setStripeStage({ clientSecret: intent.clientSecret, bookingId: booking.id });
       } catch (caught) {
         const code = caught instanceof ApiError ? (caught.code as ApiErrorCode) : "NOT_FOUND";
-        setError(c.errors[code]);
-        toast.error(c.errors[code]);
+        const errors = c.errors as Record<string, string>;
+        const message = errors[code] ?? c.errors.NOT_FOUND;
+        setError(message);
+        toast.error(message);
       } finally {
         setPreparing(false);
       }

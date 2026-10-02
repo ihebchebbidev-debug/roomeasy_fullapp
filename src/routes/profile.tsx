@@ -84,7 +84,11 @@ function ProfilePage() {
     setTwoFactorBusy(false);
     setTwoFactor(enabled);
     setPlatform({ session: { ...session, twoFactorEnabled: enabled } });
-    toast.success(t.app.profile.saved);
+    toast.success(
+      locale === "fr"
+        ? enabled ? "Connexion en deux étapes activée" : "Connexion en deux étapes désactivée"
+        : enabled ? "Two-step sign-in is on" : "Two-step sign-in is off",
+    );
   }
 
 
@@ -129,7 +133,7 @@ function ProfilePage() {
     {
       icon: CalendarCheck,
       label: t.app.trips.title,
-      value: bookings.length,
+      value: bookings.filter((b) => b.status !== "cancelled").length,
       to: "/trips" as const,
     },
     {
@@ -192,6 +196,9 @@ function ProfilePage() {
                 >
                   <Camera className="size-4" aria-hidden />
                 </Button>
+                <p className="mt-2 max-w-[8rem] truncate text-center text-sm font-medium text-foreground sm:max-w-[9rem]">
+                  {session?.name ?? p.title}
+                </p>
               </div>
 
               <div className="min-w-0 flex-1 sm:pb-2">
@@ -214,7 +221,7 @@ function ProfilePage() {
                   ) : null}
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {session?.verified ? (
+                  {session?.emailVerified ? (
                     <Badge className="rounded-full border-0 bg-emerald-500/15 text-[0.65rem] font-semibold tracking-[0.14em] text-emerald-700 uppercase">
                       {t.app.auth.verified}
                     </Badge>
@@ -279,7 +286,7 @@ function ProfilePage() {
                 <p className="mt-1 text-sm text-muted-foreground">{p.personalInfoDesc}</p>
               </div>
 
-              {session?.verified ? (
+              {session?.emailVerified ? (
                 <div className="flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
                   <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" aria-hidden />
                   <p className="text-sm font-medium text-emerald-800">{p.emailVerifiedBox}</p>
@@ -403,7 +410,7 @@ function ProfilePage() {
           {/* Right column */}
           <div className="space-y-6">
             {/* Account status */}
-            {session?.verified ? (
+            {session?.emailVerified ? (
              <section className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <span className="grid size-10 place-items-center rounded-full bg-emerald-500/20 text-emerald-700">
@@ -479,7 +486,7 @@ function ProfilePage() {
                       : "rounded-full border-0 bg-secondary text-[0.65rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase"
                   }
                 >
-                  {twoFactor ? t.app.profile.saved : t.app.auth.verified}
+                  {twoFactor ? (locale === "fr" ? "Activée" : "On") : (locale === "fr" ? "Désactivée" : "Off")}
                 </Badge>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{p.twoFactorDesc}</p>
@@ -620,6 +627,7 @@ function useDeleteCopy() {
 /** Asks for the password and an explicit keyword, then erases and signs out. */
 function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const d = useDeleteCopy();
+  const { locale } = useLanguage();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [reason, setReason] = useState("");
@@ -629,8 +637,10 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   // The phrase in the current language, or the English one.
   const phraseOk = norm(typed) === norm(d.keyword) || norm(typed) === "delete my account";
 
+  const [conflictError, setConflictError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!open) { setPassword(""); setReason(""); setTyped(""); }
+    if (!open) { setPassword(""); setReason(""); setTyped(""); setConflictError(null); }
   }, [open]);
 
   async function submit(event: React.FormEvent) {
@@ -639,10 +649,14 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       toast.error(d.keywordError);
       return;
     }
+    setConflictError(null);
     setBusy(true);
-    const done = await remote.deleteAccount(password, reason.trim() || undefined);
+    const result = await remote.deleteAccount(password, reason.trim() || undefined);
     setBusy(false);
-    if (!done) return;
+    if (!result.ok) {
+      if (result.code === "CONFLICT") setConflictError(accountFlowCopy[locale].deleteBlockedConflict);
+      return;
+    }
     toast.success(d.done);
     onOpenChange(false);
     remote.signOut();
@@ -658,6 +672,11 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <p className="text-sm text-muted-foreground">{d.intro}</p>
+          {conflictError ? (
+            <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              {conflictError}
+            </p>
+          ) : null}
           <div className="space-y-2">
             <Label htmlFor="delete-password">{d.password}</Label>
             <Input
@@ -766,8 +785,15 @@ function PasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
     },
   });
 
+  const [currentError, setCurrentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) { setCurrent(""); setNext(""); setConfirm(""); setCurrentError(null); }
+  }, [open]);
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    setCurrentError(null);
     if (next.length < 8) {
       toast.error(c.short);
       return;
@@ -777,9 +803,12 @@ function PasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
       return;
     }
     setBusy(true);
-    const accepted = await remote.changePassword(current, next);
+    const result = await remote.changePassword(current, next);
     setBusy(false);
-    if (!accepted) return;
+    if (!result.ok) {
+      if (result.code === "INVALID_CURRENT_PASSWORD") setCurrentError(accountFlowCopy[locale].currentPasswordIncorrect);
+      return;
+    }
     toast.success(c.done);
     setCurrent("");
     setNext("");
@@ -801,9 +830,11 @@ function PasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
               type="password"
               autoComplete="current-password"
               value={current}
-              onChange={(e) => setCurrent(e.target.value)}
+              onChange={(e) => { setCurrent(e.target.value); setCurrentError(null); }}
+              aria-invalid={Boolean(currentError)}
               required
             />
+            {currentError ? <p role="alert" className="text-sm text-destructive">{currentError}</p> : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-password">{c.next}</Label>

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { activeServiceLocale, serviceError } from "@/i18n/serviceErrors";
 
 import { API_BASE_URL, getAccessToken, setAccessToken } from "@/api/http/client";
+import { ApiError, type ApiErrorCode } from "@/api/types";
 import {
   accountsApi,
   adminApi,
@@ -130,6 +131,7 @@ export function toSessionUser(account: AccountDto): SessionUser {
     roles: account.roles,
     backOffice,
     verified: account.verified,
+    emailVerified: account.emailVerified,
     verificationStatus: account.verificationStatus ?? "none",
     payoutsOnboarded: account.host?.payoutsOnboarded ?? false,
     ...(typeof account.twoFactorEnabled === "boolean" ? { twoFactorEnabled: account.twoFactorEnabled } : {}),
@@ -155,7 +157,7 @@ export function toProperty(dto: PropertyDto): Property {
     rating: dto.rating,
     reviewCount: dto.reviewCount,
     ...(dto.host?.name
-      ? { host: { ...(dto.host.id ? { id: dto.host.id } : {}), name: dto.host.name, ...(dto.host.avatarUrl ? { avatarUrl: dto.host.avatarUrl } : {}), since: dto.host.since ?? 0, superhost: dto.host.superhost } }
+      ? { host: { ...(dto.host.id ? { id: dto.host.id } : {}), name: dto.host.name, ...(dto.host.avatarUrl ? { avatarUrl: dto.host.avatarUrl } : {}), since: dto.host.since ?? 0, superhost: dto.host.superhost, verified: dto.host.verified === true } }
       : {}),
     tags: dto.tags ?? [],
     amenities: (dto.amenities ?? []) as AmenityId[],
@@ -277,6 +279,7 @@ export function toThread(dto: ThreadDto): Thread {
       from: message.from,
       text: message.text,
       time: message.time,
+      ...(message.attachmentUrl ? { attachmentUrl: message.attachmentUrl } : {}),
     })),
   };
 }
@@ -294,7 +297,11 @@ type ServerBooking = {
   message: string | null;
   price: { total: number; totalUsd?: number; currency?: string };
   currency?: string;
-  payment?: unknown;
+  payment?: { method?: "card"; brand: string; last4: string; status: string; reference: string } | null;
+  propertyName?: string | null;
+  propertyCity?: string | null;
+  propertyPhoto?: string | null;
+  cancellationPolicy?: string | null;
   review?: { id: string; rating: number; body: string } | null;
   createdAt?: string;
   updatedAt?: string;
@@ -316,6 +323,27 @@ export function toBooking(dto: ServerBooking): Booking {
     ...(dto.guest?.email ? { guestEmail: dto.guest.email } : {}),
     ...(dto.guest?.phone ? { guestPhone: dto.guest.phone } : {}),
     ...(dto.message ? { message: dto.message } : {}),
+    ...(dto.payment
+      ? {
+          payment: {
+            method: "card" as const,
+            brand: (["visa", "mastercard", "amex"].includes(dto.payment.brand) ? dto.payment.brand : "card") as NonNullable<Booking["payment"]>["brand"],
+            last4: dto.payment.last4,
+            status: dto.payment.status as NonNullable<Booking["payment"]>["status"],
+            reference: dto.payment.reference,
+          },
+        }
+      : {}),
+    ...(dto.propertyName
+      ? {
+          propertySnapshot: {
+            name: dto.propertyName,
+            city: dto.propertyCity ?? "",
+            image: dto.propertyPhoto ?? "",
+            ...(dto.cancellationPolicy ? { cancellationPolicy: dto.cancellationPolicy } : {}),
+          },
+        }
+      : {}),
     ...(dto.review ? { review: { id: dto.review.id, rating: dto.review.rating, text: dto.review.body } } : {}),
     ...(dto.createdAt ? { createdAt: dto.createdAt } : {}),
     ...(dto.updatedAt ? { updatedAt: dto.updatedAt } : {}),
@@ -345,9 +373,9 @@ export async function ensureStays(ids: string[]): Promise<void> {
   const missing = [...new Set(ids)].filter((id) => id && !known.has(id));
   if (missing.length === 0) return;
 
-  const loaded = await Promise.all(
-    missing.map((id) => runRemote(() => propertiesApi.get(id), "This stay could not be loaded.")),
-  );
+  // A pending/own listing can 404 on the public endpoint until it is approved;
+  // that is expected, so fail quietly instead of showing an error toast.
+  const loaded = await Promise.all(missing.map((id) => runQuiet(() => propertiesApi.get(id))));
   const extra = loaded.filter((dto): dto is PropertyDto => Boolean(dto)).map(toProperty);
   if (extra.length === 0) return;
 
@@ -625,22 +653,47 @@ export const remote = {
     remoteAccepted(() => accountsApi.twoFactorEnable(code), "That code is not valid."),
   disableTwoFactor: (code: string) =>
     remoteAccepted(() => accountsApi.twoFactorDisable(code), "That code is not valid."),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    remoteAccepted(
-      () => accountsApi.changePassword({ currentPassword, newPassword }),
-      "Your password could not be changed.",
-    ),
-  /** Erases the account for good; the caller signs the person out afterwards. */
-  deleteAccount: async (password: string, reason?: string) => {
+  /**
+   * Returns the server's verdict directly instead of a plain boolean so the
+   * dialog can show an inline, translated message for a wrong current
+   * password instead of a generic toast (the member stays signed in either
+   * way).
+   */
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ ok: boolean; code?: ApiErrorCode }> => {
+    if (!backendEnabled || offline) return { ok: true };
+    try {
+      await accountsApi.changePassword({ currentPassword, newPassword });
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "INVALID_CURRENT_PASSWORD") {
+        return { ok: false, code: error.code };
+      }
+      const message = error instanceof Error && error.message && activeServiceLocale() === "en" ? error.message : "Your password could not be changed.";
+      toast.error(serviceError(message));
+      return { ok: false };
+    }
+  },
+  /**
+   * Erases the account for good; the caller signs the person out afterwards.
+   * A `CONFLICT` (upcoming trip or pending payout) is handed back untouched
+   * so the dialog can explain it inline instead of a generic toast.
+   */
+  deleteAccount: async (password: string, reason?: string): Promise<{ ok: boolean; code?: ApiErrorCode }> => {
     if (!backendEnabled || offline) {
       toast.error(serviceError("The account service is unreachable right now. Please try again in a moment."));
-      return false;
+      return { ok: false };
     }
-    const result = await runRemote(
-      () => accountsApi.deleteMe({ password, ...(reason ? { reason } : {}) }),
-      "Your account could not be deleted.",
-    );
-    return Boolean(result);
+    try {
+      await accountsApi.deleteMe({ password, ...(reason ? { reason } : {}) });
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "CONFLICT") {
+        return { ok: false, code: error.code };
+      }
+      const message = error instanceof Error && error.message && activeServiceLocale() === "en" ? error.message : "Your account could not be deleted.";
+      toast.error(serviceError(message));
+      return { ok: false };
+    }
   },
 
 
@@ -668,8 +721,13 @@ export const remote = {
       () => messagingApi.start({ propertyId, ...(bookingId ? { bookingId } : {}), body: text }),
       "The conversation could not be started.",
     ),
-  sendMessage: (threadId: string, text: string) =>
-    runRemote(() => messagingApi.send(threadId, text), "Your message could not be sent."),
+  openThread: (propertyId: string, bookingId?: string) =>
+    runRemote(
+      () => messagingApi.open({ propertyId, ...(bookingId ? { bookingId } : {}) }),
+      "The conversation could not be opened.",
+    ),
+  sendMessage: (threadId: string, text: string, attachmentUrl?: string) =>
+    runRemote(() => messagingApi.send(threadId, text, attachmentUrl), "Your message could not be sent."),
   markThreadRead: (threadId: string) => runRemote(() => messagingApi.markRead(threadId), "The thread could not be updated."),
 
   decideBooking: (bookingId: string, decision: "confirmed" | "declined") =>

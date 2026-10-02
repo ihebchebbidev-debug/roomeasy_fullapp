@@ -14,6 +14,7 @@ export type AccountDto = {
   email: string;
   phone: string | null;
   verified: boolean;
+  emailVerified: boolean;
   suspended: boolean;
   avatarUrl: string | null;
   locale: string;
@@ -123,7 +124,7 @@ export type PropertyDto = {
   tags: string[];
   image: string | null;
   gallery: string[];
-  host: { id: string | null; name: string | null; avatarUrl: string | null; since: number | null; superhost: boolean } | null;
+  host: { id: string | null; name: string | null; avatarUrl: string | null; since: number | null; superhost: boolean; verified: boolean } | null;
   listing: {
     id: string;
     status: string;
@@ -210,6 +211,7 @@ export type MessageDto = {
   from: "me" | "them";
   senderRole: string;
   text: string;
+  attachmentUrl?: string | null;
   sentAt: string;
   time: string;
   readAt: string | null;
@@ -235,10 +237,12 @@ export const messagingApi = {
     request<ThreadDto>(`/messaging/threads/${encodeURIComponent(id)}?markRead=${markRead ? "true" : "false"}`),
   start: (body: { propertyId?: string; bookingId?: string; body: string }) =>
     request<ThreadDto>("/messaging/threads", { method: "POST", body }),
-  send: (threadId: string, text: string) =>
+  open: (body: { propertyId: string; bookingId?: string }) =>
+    request<ThreadDto>("/messaging/threads/open", { method: "POST", body }),
+  send: (threadId: string, text: string, attachmentUrl?: string) =>
     request<MessageDto>(`/messaging/threads/${encodeURIComponent(threadId)}/messages`, {
       method: "POST",
-      body: { body: text },
+      body: { body: text, ...(attachmentUrl ? { attachmentUrl } : {}) },
     }),
   markRead: (threadId: string) =>
     request<unknown>(`/messaging/threads/${encodeURIComponent(threadId)}/read`, { method: "POST", body: {} }),

@@ -45,3 +45,11 @@
 - [x] Show a visible error when admin CSV export fails
 - [x] Give the admin screen a primary page landmark
 - [x] Re-test signed-in booking, payment, reviews, replies (2026-09-29, test card)
+
+## RoomEasy QA fixes (2026-10-02)
+- [x] Accounts: wrong current password logs out; stale verify-email banner; listing host name stale; deletion 409 toast; deletion/cancellation emails
+- [x] Bookings: unpaid pending holds dates + emails + "paid" UI; duplicate request email; min-night error shown; error debug leak
+- [x] Listing page (except statistics link — needs exact repro): fake amenities/badges; reviews count; pending 404 call; wizard copy (steps left, France default, FR placeholders, highlights→equipment)
+- [x] Messaging: no auto-send on Message host; checkout note in thread; attachments; host avatar
+- [ ] Content: remove QA/test listings & reviews from public lists (data — needs backend DB access)
+- [ ] Stripe live keys (needs the owner's live keys)

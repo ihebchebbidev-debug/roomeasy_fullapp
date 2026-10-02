@@ -970,7 +970,7 @@ export function ListingWizard({
                       {cancellationLabel(draft.policies.cancellationPolicy, cc)}
                     </p>
                     <p className="text-muted-foreground">
-                      {fill(c.equipmentCount, { n: draft.equipment.length })} · {fill(c.photoCount, { n: draft.photos.length })}
+                      {fill(c.equipmentCount, { n: new Set([...draft.equipment, ...draft.amenities.map((a) => AMENITY_EQUIPMENT[a as AmenityId] ?? a)]).size })} · {fill(c.photoCount, { n: draft.photos.length })}
                     </p>
                   </div>
                 </div>

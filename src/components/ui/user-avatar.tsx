@@ -16,8 +16,8 @@ export function UserAvatar({ name, src, className }: { name: string; src?: strin
   const resolved = mediaUrl(realAvatar(src));
   const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("");
   return (
-    <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-primary", className, !(resolved && !failed) && "bg-white text-primary ring-1 ring-border")}>
-      {resolved && !failed ? <img src={resolved} alt={name} className="size-full object-cover" onError={() => setFailed(true)} /> : initials ? <span className="text-[0.34em] font-bold" aria-label={name}>{initials}</span> : <UserRound className="size-1/2" aria-label={name} />}
+    <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-primary [container-type:inline-size]", className, !(resolved && !failed) && "bg-white text-primary ring-1 ring-border")}>
+      {resolved && !failed ? <img src={resolved} alt={name} className="size-full object-cover" onError={() => setFailed(true)} /> : initials ? <span className="font-bold leading-none text-[45cqw]" aria-label={name}>{initials}</span> : <UserRound className="size-1/2" aria-label={name} />}
     </span>
   );
 }

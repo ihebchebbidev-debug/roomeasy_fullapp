@@ -360,6 +360,9 @@ export const pt: DeepPartial<Dictionary> = {
       unread: "por ler",
       selectThread: "Selecione uma conversa para a ler.",
       today: "Hoje",
+      attachPhoto: "Anexar uma foto",
+      uploading: "A carregar…",
+      uploadFailed: "Não foi possível enviar a foto",
     },
     favourites: {
       title: "Favoritos",

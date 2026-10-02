@@ -106,8 +106,10 @@ export function BookingReceipt({
         <Line label={t.app.checkout.serviceFee} value={format(booking.price.serviceFee)} />
         <Line label={t.app.checkout.taxes} value={format(booking.price.taxes)} />
         <div className="flex items-center justify-between border-t border-border pt-4">
-          <dt className="font-semibold">{c.totalPaid}</dt>
-          <dd className="font-display text-2xl font-bold">{format(booking.price.total)}</dd>
+          <dt className="font-semibold">{booking.payment.status === "paid" ? c.totalPaid : c.notPaid}</dt>
+          {booking.payment.status === "paid" && (
+            <dd className="font-display text-2xl font-bold">{format(booking.price.total)}</dd>
+          )}
         </div>
         {cardKnown ? (
           <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
@@ -122,14 +124,18 @@ export function BookingReceipt({
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/30 px-6 py-4">
         <p className="max-w-md text-[11px] leading-relaxed text-muted-foreground">{c.receiptFooter}</p>
         <div className="flex gap-2" data-print-hide>
-          <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
-            <Printer className="size-4" aria-hidden />
-            {c.print}
-          </Button>
-          <Button type="button" variant="ghost" size="sm" onClick={() => window.print()}>
-            <Download className="size-4" aria-hidden />
-            {c.download}
-          </Button>
+          {booking.payment.status === "paid" && (
+            <>
+              <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
+                <Printer className="size-4" aria-hidden />
+                {c.print}
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => window.print()}>
+                <Download className="size-4" aria-hidden />
+                {c.download}
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </section>

@@ -32,3 +32,20 @@ export async function prepareAvatar(file: File): Promise<string> {
   }
   return dataUrl;
 }
+/** Downscale a message photo (no cropping) to a compact data URL. */
+export async function prepareAttachment(file: File): Promise<string> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Choose a JPEG, PNG, or WebP image.');
+  }
+  if (file.size > 8 * 1024 * 1024) throw new Error('Choose an image under 8 MB.');
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('This image could not be processed.');
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return canvas.toDataURL('image/webp', 0.8);
+}

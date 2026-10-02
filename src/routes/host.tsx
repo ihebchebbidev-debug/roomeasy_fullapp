@@ -273,9 +273,10 @@ function HostPage() {
           <SmartPricingPanel listings={listings.map((l) => ({ propertyId: l.propertyId, currency: l.currency, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
         </section>)) : null}
 
-        {isReady && section === "stats" ? (bookings.length === 0 ? (
+        {isReady && section === "stats" ? (listings.length === 0 ? (
           <EmptyState icon={TrendingUp} title={t.app.host.noStats} />
         ) : (<section className="grid gap-5 lg:grid-cols-2">
+          {bookings.length === 0 ? <p className="lg:col-span-2 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">{t.app.host.noStats}</p> : null}
           <Panel className="lg:col-span-2">
             <h2 className="font-display text-lg font-bold">{x.bookingsPerMonth}</h2>
             <div className="mt-6 flex h-40 items-end gap-2 sm:gap-3">
@@ -425,7 +426,7 @@ function ListingRow({ listing }: { listing: HostListing }) {
     fill(lc.minNightsValue, { n: property.minNights ?? 1 }),
     `${lc.checkIn} ${property.checkIn ?? "15:00"}`,
     cancellationLabel(property.cancellationPolicy ?? "moderate", cc),
-    fill(lc.equipmentCount, { n: property.equipment?.length ?? 0 }),
+    fill(lc.equipmentCount, { n: new Set([...(property.equipment ?? []), ...((property.amenities ?? []) as string[])]).size }),
   ];
 
   return (

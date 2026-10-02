@@ -63,6 +63,7 @@ const en = {
   paymentMethod: "Payment method",
   totalPaid: "Total paid",
   paid: "Paid",
+  notPaid: "Not paid",
   receiptFooter: "RoomEasy acts as an agent for the host. Keep this receipt for your records.",
   status: "Status",
   errors: {
@@ -73,6 +74,7 @@ const en = {
     CARD_INVALID: "Please check the card number, expiry date and CVC.",
     NOT_FOUND: "We could not find what you were looking for.",
     NOT_CANCELLABLE: "This booking can no longer be cancelled.",
+    MIN_NIGHTS_NOT_MET: "This stay requires a longer minimum stay than the dates you chose.",
   },
 };
 
@@ -137,6 +139,7 @@ const fr: Booking = {
   paymentMethod: "Moyen de paiement",
   totalPaid: "Total payé",
   paid: "Payé",
+  notPaid: "Non payé",
   receiptFooter: "RoomEasy agit en tant qu'agent de l'hôte. Conservez ce reçu.",
   status: "Statut",
   errors: {
@@ -147,6 +150,7 @@ const fr: Booking = {
     CARD_INVALID: "Vérifiez le numéro de carte, la date d'expiration et le CVC.",
     NOT_FOUND: "Nous n'avons pas trouvé ce que vous cherchiez.",
     NOT_CANCELLABLE: "Cette réservation ne peut plus être annulée.",
+    MIN_NIGHTS_NOT_MET: "Ce logement exige un séjour minimum plus long que les dates choisies.",
   },
 };
 
@@ -209,6 +213,7 @@ const es: Booking = {
   paymentMethod: "Método de pago",
   totalPaid: "Total pagado",
   paid: "Pagado",
+  notPaid: "No pagado",
   receiptFooter: "RoomEasy actúa como agente del anfitrión. Guarda este recibo.",
   status: "Estado",
   errors: {
@@ -219,6 +224,7 @@ const es: Booking = {
     CARD_INVALID: "Revisa el número de tarjeta, la caducidad y el CVC.",
     NOT_FOUND: "No encontramos lo que buscabas.",
     NOT_CANCELLABLE: "Esta reserva ya no se puede cancelar.",
+    MIN_NIGHTS_NOT_MET: "Este alojamiento exige una estancia mínima más larga que las fechas elegidas.",
   },
 };
 
@@ -281,6 +287,7 @@ const de: Booking = {
   paymentMethod: "Zahlungsart",
   totalPaid: "Gezahlter Betrag",
   paid: "Bezahlt",
+  notPaid: "Nicht bezahlt",
   receiptFooter: "RoomEasy handelt als Vermittler des Gastgebers. Bitte bewahre diesen Beleg auf.",
   status: "Status",
   errors: {
@@ -291,6 +298,7 @@ const de: Booking = {
     CARD_INVALID: "Bitte prüfe Kartennummer, Ablaufdatum und Prüfziffer.",
     NOT_FOUND: "Wir konnten es nicht finden.",
     NOT_CANCELLABLE: "Diese Buchung kann nicht mehr storniert werden.",
+    MIN_NIGHTS_NOT_MET: "Diese Unterkunft erfordert einen längeren Mindestaufenthalt als die gewählten Daten.",
   },
 };
 
@@ -353,6 +361,7 @@ const pt: Booking = {
   paymentMethod: "Método de pagamento",
   totalPaid: "Total pago",
   paid: "Pago",
+  notPaid: "Não pago",
   receiptFooter: "A RoomEasy actua como agente do anfitrião. Guarde este recibo.",
   status: "Estado",
   errors: {
@@ -363,6 +372,7 @@ const pt: Booking = {
     CARD_INVALID: "Verifique o número do cartão, a validade e o CVC.",
     NOT_FOUND: "Não encontrámos o que procurava.",
     NOT_CANCELLABLE: "Esta reserva já não pode ser cancelada.",
+    MIN_NIGHTS_NOT_MET: "Este alojamento exige uma estadia mínima mais longa do que as datas escolhidas.",
   },
 };
 

@@ -20,7 +20,10 @@ export type ApiErrorCode =
   | "PAYMENT_DECLINED"
   | "CARD_INVALID"
   | "NOT_FOUND"
-  | "NOT_CANCELLABLE";
+  | "NOT_CANCELLABLE"
+  | "MIN_NIGHTS_NOT_MET"
+  | "INVALID_CURRENT_PASSWORD"
+  | "CONFLICT";
 
 /** Thrown by every adapter so the UI can branch on a stable code, not a string. */
 export class ApiError extends Error {

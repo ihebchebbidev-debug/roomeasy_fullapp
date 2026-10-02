@@ -60,7 +60,9 @@ function ConfirmIconButton({ kind, onConfirm, itemName, description, label, disa
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setOpen(true);
+          // Editing is non-destructive: go straight to the editor.
+          if (kind === "edit") void onConfirm();
+          else setOpen(true);
         }}
         className={cn(
           label ? "gap-1.5" : "size-8 rounded-full",

@@ -49,6 +49,7 @@ import { propertiesApi } from "@/api/http/platform.http";
 import { useAllProperties } from "@/hooks/useAllProperties";
 import { dateFnsLocale } from "@/i18n/dateLocale";
 import { pickCopy } from "@/i18n/copy";
+import { useBookingCopy } from "@/i18n/booking";
 import { interpolate, useLanguage } from "@/i18n/LanguageProvider";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { useExtra } from "@/i18n/extra";
@@ -232,6 +233,7 @@ function ListingDetail() {
   const formatCurrency = (amount: number, options?: { decimals?: boolean }) =>
     formatDisplay(amount, { ...options, from: property?.currency });
   const x = useExtra();
+  const bookingCopy = useBookingCopy();
   const navigate = useNavigate();
   const isMobile = useIsMobileDevice();
   const cc = useClientCopy();
@@ -246,7 +248,7 @@ function ListingDetail() {
   const [expanded, setExpanded] = useState(false);
   const [range, setRange] = useState<DateRange | undefined>();
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
+  const [children, setChildren] = useState(1); // match the search widget's default of 3 guests (2 adults + 1 child)
   const [serverQuote, setServerQuote] = useState<{ key: string; quote: Quote } | null>(null);
   const quoteFrom = range?.from ? toISODate(range.from) : "";
   const quoteTo = range?.to ? toISODate(range.to) : "";
@@ -523,15 +525,6 @@ function ListingDetail() {
     pt: "Ainda não há avaliações para esta estadia.",
   });
   const hostName = property.host?.name ?? hostFallback;
-  const amenities: ReadonlyArray<readonly [LucideIcon, string]> = [
-    [Wifi, t.detail.wifi],
-    [Car, t.detail.parking],
-    [ChefHat, t.detail.kitchen],
-    [Laptop, t.detail.workspace],
-    [Snowflake, t.detail.air],
-    [ShieldCheck, t.detail.security],
-  ] as const;
-
   // Only facts taken from the listing itself: no invented statistics.
   const highlights: ReadonlyArray<readonly [LucideIcon, string, string]> = [
     ...(property.instantBook ? ([[Key, d.selfCheckIn, d.selfCheckInText]] as const) : []),
@@ -544,7 +537,7 @@ function ListingDetail() {
           ],
         ] as const)
       : []),
-    ...(property.host?.superhost ? ([[Sparkles, t.detail.superhost, d.cleanText]] as const) : []),
+    ...(property.host?.verified ? ([[Sparkles, t.detail.superhost, d.cleanText]] as const) : []),
   ];
 
   // Only real reviews returned by the service are shown; none are invented.
@@ -571,9 +564,8 @@ function ListingDetail() {
       return;
     }
     const existing = threads.find((thread) => thread.propertyId === property.id);
-    const intro = `Hi! I have a question about ${property.name}.`;
     if (!existing && backendEnabled) {
-      const created = await remote.startThread(property.id, intro);
+      const created = await remote.openThread(property.id);
       if (!created) return;
       const thread = toThread(created);
       setPlatform((state) => ({
@@ -591,17 +583,7 @@ function ListingDetail() {
             propertyId: property.id,
             withName: `${property.host?.name ?? "Host"} (host)`,
             unread: 0,
-            messages: [
-              {
-                id: "m-intro",
-                from: "me" as const,
-                text: `Hi! I have a question about ${property.name}.`,
-                time: new Date().toLocaleTimeString(undefined, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-              },
-            ],
+            messages: [],
           },
           ...state.threads,
         ],
@@ -615,6 +597,10 @@ function ListingDetail() {
     if (!property) return;
     if (!nights || !range?.from || !range.to) {
       toast.error(t.detail.selectDates);
+      return;
+    }
+    if (property.minNights && nights < property.minNights) {
+      toast.error(bookingCopy.errors.MIN_NIGHTS_NOT_MET);
       return;
     }
     if (blockedNightsIn(calendar, property.id, range.from, range.to).length) {
@@ -788,10 +774,8 @@ function ListingDetail() {
                   <div>
                     <p className="text-sm font-semibold">{`${d.hostedBy} ${hostName}`}</p>
                     <p className="text-xs text-muted-foreground">
-                      {property.host?.superhost ? `${t.detail.superhost} · ` : ""}
-                      {property.host?.since
-                        ? `${d.hostSince} ${property.host.since}`
-                        : t.detail.hostNote}
+                      {property.host?.verified ? `${t.detail.superhost} · ` : ""}
+                      {property.host?.since ? `${d.hostSince} ${property.host.since}` : ""}
                     </p>
                   </div>
                 </div>
@@ -864,23 +848,7 @@ function ListingDetail() {
                 ) : null}
               </Section>
 
-              {/* Amenities */}
-              <Section>
-                <h2 className="font-display text-xl font-semibold">{t.detail.amenities}</h2>
-                <ul className="mt-6 grid grid-cols-1 gap-x-10 sm:grid-cols-2">
-                  {amenities.map(([Icon, label]) => (
-                    <li
-                      key={label}
-                      className="flex items-center gap-4 border-b border-border/60 py-4 text-sm last:border-0"
-                    >
-                      <Icon className="size-5 shrink-0 text-foreground" aria-hidden />
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              </Section>
-
-              {/* Equipment & services */}
+              {/* Equipment & services — only what the host actually selected */}
               {property.equipment?.length ? (
                 <Section>
                   <EquipmentList ids={property.equipment} />

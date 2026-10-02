@@ -53,7 +53,7 @@ export const generateListingStory = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => factsSchema.parse(input))
   .handler(async ({ data }): Promise<{ story: ListingStory; source: "model" | "template"; note?: string }> => {
     const { coverPhoto, ...rest } = data;
-    const facts = rest as StoryFacts;
+    const facts = { ...rest, locale: rest.locale.slice(0, 2).toLowerCase() } as StoryFacts;
     const fallback = composeListingStory(facts);
 
     const key = process.env["LOVABLE_API_KEY"];

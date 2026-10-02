@@ -43,7 +43,7 @@ const en = {
   policySaved: "Cancellation policy saved",
   cancelBooking: "Cancel booking",
   bookingCancelled: "Booking cancelled",
-  refundDue: "Refund due",
+  refundDue: "Refund if cancelled today",
 };
 
 const fr: typeof en = {
@@ -85,7 +85,7 @@ const fr: typeof en = {
   policySaved: "Conditions d'annulation enregistrées",
   cancelBooking: "Annuler la réservation",
   bookingCancelled: "Réservation annulée",
-  refundDue: "Remboursement dû",
+  refundDue: "Remboursement si annulation aujourd'hui",
 };
 
 
@@ -125,7 +125,7 @@ const es: typeof en = {
   policySaved: "Política de cancelación guardada",
   cancelBooking: "Cancelar reserva",
   bookingCancelled: "Reserva cancelada",
-  refundDue: "Reembolso pendiente",
+  refundDue: "Reembolso si cancelas hoy",
 };
 
 const de: typeof en = {
@@ -164,7 +164,7 @@ const de: typeof en = {
   policySaved: "Stornierungsbedingungen gespeichert",
   cancelBooking: "Buchung stornieren",
   bookingCancelled: "Buchung storniert",
-  refundDue: "Erstattung fällig",
+  refundDue: "Erstattung bei Stornierung heute",
 };
 
 const pt: typeof en = {
@@ -203,7 +203,7 @@ const pt: typeof en = {
   policySaved: "Política de cancelamento guardada",
   cancelBooking: "Cancelar reserva",
   bookingCancelled: "Reserva cancelada",
-  refundDue: "Reembolso pendente",
+  refundDue: "Reembolso se cancelar hoje",
 };
 
 export const clientCopy = { en, fr, es, de, pt };

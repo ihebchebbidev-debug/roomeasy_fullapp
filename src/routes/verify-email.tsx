@@ -5,6 +5,9 @@ import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { request } from "@/api/http/client";
+import { accountsApi } from "@/api/http/platform.http";
+import { toSessionUser } from "@/api/backend";
+import { setPlatform } from "@/hooks/usePlatform";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -42,7 +45,15 @@ function VerifyEmailPage() {
       return;
     }
     request("/accounts/verify-email", { method: "POST", body: { token } })
-      .then(() => setState("ok"))
+      .then(() => {
+        setState("ok");
+        // Refresh the signed-in session so the "verify your email" banner
+        // and badge clear immediately without a manual reload.
+        accountsApi
+          .me()
+          .then((account) => setPlatform({ session: toSessionUser(account) }))
+          .catch(() => {});
+      })
       .catch(() => setState("fail"));
   }, [token]);
 

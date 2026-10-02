@@ -117,7 +117,17 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
   const cancelBooking = useCancelBooking();
   const properties = useAllProperties();
   const cc = useClientCopy();
-  const property = properties.find((p) => p.id === booking.propertyId);
+  const property =
+    properties.find((p) => p.id === booking.propertyId) ??
+    (booking.propertySnapshot
+      ? ({
+          id: booking.propertyId,
+          name: booking.propertySnapshot.name,
+          image: booking.propertySnapshot.image,
+          cancellationPolicy: booking.propertySnapshot.cancellationPolicy,
+          host: undefined,
+        } as unknown as (typeof properties)[number])
+      : undefined);
   if (!property) return null;
 
   const policy = property.cancellationPolicy ?? "moderate";
@@ -142,13 +152,13 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
             </ul>
             <p className="mt-3 text-xs text-muted-foreground">
               {cc.cancellationPolicy}: <span className="font-semibold">{cancellationLabel(policy, cc)}</span>
-              {["pending", "confirmed"].includes(booking.status)
+              {["pending", "confirmed"].includes(booking.status) && booking.payment?.status === "paid"
                 ? ` · ${cc.refundDue}: ${format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}`
                 : ""}
             </p>
           </div>
           <div className="flex flex-col gap-4 border-t border-border pt-4 lg:items-end lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
-            <p className="font-display text-xl font-bold tabular-nums">{format(booking.totalUsd, { from: booking.currency })}</p>
+            <p className="font-display text-xl font-bold tabular-nums">{booking.payment?.status === "paid" ? format(booking.totalUsd, { from: booking.currency }) : c.notPaid}</p>
             <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap lg:justify-end">
                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link to="/stays/$propertyId" params={{ propertyId: property.id }}>{t.app.trips.view}</Link>
@@ -166,6 +176,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
               >
                 <MessageSquare className="size-3.5" aria-hidden />{t.app.trips.message}
               </Button>
+{booking.payment?.status === "paid" && (
                <Button
                 variant="outline"
                 size="sm"
@@ -177,6 +188,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
               >
                 <Receipt className="size-3.5" aria-hidden />{t.app.trips.receipt}
               </Button>
+              )}
               {["pending", "confirmed"].includes(booking.status) ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -193,8 +205,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>{fr ? "Annuler cette réservation ?" : "Cancel this booking?"}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {property.name} · {booking.from} → {booking.to}. {cc.refundDue}:{" "}
-                        {format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}.{" "}
+                        {property.name} · {booking.from} → {booking.to}. {booking.payment?.status === "paid" && (<>{cc.refundDue}:{" "}{format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}.{" "}</>)}
                         {fr ? "Cette action est définitive." : "This cannot be undone."}
                       </AlertDialogDescription>
                     </AlertDialogHeader>

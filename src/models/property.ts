@@ -47,6 +47,8 @@ export type PropertyHost = {
   avatarUrl?: string;
   since: number;
   superhost: boolean;
+  /** Real identity verification, not the marketing "superhost" badge. */
+  verified: boolean;
 };
 
 export type Property = {
