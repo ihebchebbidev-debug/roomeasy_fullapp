@@ -1,4 +1,5 @@
 import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { countLabel } from "@/i18n/countLabel";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSignInReturn } from "@/hooks/useSignInReturn";
@@ -414,7 +415,7 @@ function CheckoutPage() {
             </li>
             <li className="flex items-center gap-1.5">
               <Users className="size-3.5" aria-hidden />
-              {guests} {t.listings.guests}
+              {countLabel(guests, t.listings.guests)}
             </li>
           </ul>
 

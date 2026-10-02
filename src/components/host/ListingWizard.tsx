@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { equipmentLabel, findEquipment, useEquipmentVersion } from "@/data/equipment";
 import { categoryLabel } from "@/i18n/categories";
 import { useClientCopy } from "@/i18n/clientCopy";
-import { currencies, useCurrency } from "@/i18n/CurrencyProvider";
+import { currencies, currencyName, useCurrency } from "@/i18n/CurrencyProvider";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { fill, useListingCopy } from "@/i18n/listingCopy";
 import { cancellationLabel, cancellationText } from "@/lib/cancellation";
@@ -784,7 +784,7 @@ export function ListingWizard({
                   >
                     {currencies.map((item) => (
                       <option key={item.code} value={item.code}>
-                        {item.code} — {item.label}
+                        {item.code} — {currencyName(item.code, locale, item.label)}
                       </option>
                     ))}
                   </select>

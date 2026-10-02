@@ -1,5 +1,6 @@
 import { Download, Printer } from "lucide-react";
 
+import { countLabel } from "@/i18n/countLabel";
 import { Button } from "@/components/ui/button";
 import { brandLabel, shortDate } from "@/lib/cardFormat";
 import type { Booking } from "@/models/booking";
@@ -82,7 +83,7 @@ export function BookingReceipt({
           {propertyLocation ? <p className="text-muted-foreground">{propertyLocation}</p> : null}
           <p className="text-muted-foreground">
             {shortDate(booking.from, locale)} — {shortDate(booking.to, locale)} · {booking.nights}{" "}
-            {t.app.trips.nights} · {booking.guests} {t.listings.guests}
+            {t.app.trips.nights} · {countLabel(booking.guests, t.listings.guests)}
           </p>
         </div>
       </div>

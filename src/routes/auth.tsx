@@ -137,7 +137,13 @@ function AuthPage() {
       toast.error(flow.securityCheck);
       return;
     }
-    const digits = phone.replace(/\D/g, "");
+    // Drop a country code the visitor typed themselves (e.g. "+33 6…" or
+    // "0033 6…") and a national leading 0, since the selector adds the code.
+    const dialDigits = dialCode.replace(/\D/g, "");
+    let digits = phone.trim().replace(/\D/g, "");
+    if (phone.trim().startsWith("+") && digits.startsWith(dialDigits)) digits = digits.slice(dialDigits.length);
+    else if (digits.startsWith(`00${dialDigits}`)) digits = digits.slice(dialDigits.length + 2);
+    digits = digits.replace(/^0+/, "");
     if (created && digits.length < 6) {
       toast.error(p.invalid);
       return;
@@ -166,7 +172,16 @@ function AuthPage() {
         toast.message(flow.otpPrompt);
         return;
       }
-      if (!session) return;
+      if (!session) {
+        toast.error(
+          created
+            ? pickCopy(locale, { en: "The account could not be created. This email may already be in use.", fr: "Le compte n'a pas pu être créé. Cette adresse e-mail est peut-être déjà utilisée.", es: "No se pudo crear la cuenta. Es posible que este correo ya esté en uso.", de: "Das Konto konnte nicht erstellt werden. Diese E-Mail wird möglicherweise bereits verwendet.", pt: "Não foi possível criar a conta. Este e-mail pode já estar em uso." })
+            : otpStep
+              ? pickCopy(locale, { en: "Incorrect two-step code. Please try again.", fr: "Code de vérification incorrect. Réessayez.", es: "Código de verificación incorrecto. Inténtalo de nuevo.", de: "Falscher Bestätigungscode. Bitte erneut versuchen.", pt: "Código de verificação incorreto. Tente novamente." })
+              : pickCopy(locale, { en: "Incorrect email or password.", fr: "Adresse e-mail ou mot de passe incorrect.", es: "Correo o contraseña incorrectos.", de: "E-Mail-Adresse oder Passwort ist falsch.", pt: "E-mail ou palavra-passe incorretos." }),
+        );
+        return;
+      }
       if (created && digits) {
         const account = await remote.saveProfile({ phone: `${dialCode} ${digits}` });
         if (account) setPlatform((state) => ({

@@ -731,7 +731,7 @@ function ListingDetail() {
                   {t.detail.entire} · {cityName(property, locale)}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {property.guests} {t.listings.guests} ·{" "}
+                  {countLabel(property.guests, t.listings.guests)} ·{" "}
                   {property.rooms != null ? `${countLabel(property.rooms, lc.rooms)} · ` : ""}
                   {countLabel(property.beds, t.listings.beds)} ·{" "}
                   {property.baths} {t.listings.baths} · {property.area} m²
@@ -1022,7 +1022,7 @@ function ListingDetail() {
             <div className="mt-6 grid gap-8 sm:grid-cols-3">
               {(
                 [
-                  [d.houseRules, [t.detail.arrival, `${property.guests} ${t.listings.guests} max`]],
+                  [d.houseRules, [t.detail.arrival, `${countLabel(property.guests, t.listings.guests)} max`]],
                   [d.safety, [t.detail.security, t.detail.mapNote]],
                   [
                     d.cancellation,

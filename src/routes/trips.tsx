@@ -1,4 +1,5 @@
 import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { countLabel } from "@/i18n/countLabel";
 import { shortDate } from "@/lib/cardFormat";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Paged, rowText } from "@/components/admin/ListControls";
@@ -148,7 +149,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
             <p className="text-sm text-muted-foreground">{cityName(property, locale as never)}</p>
             <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
               <li className="flex items-center gap-1.5"><CalendarDays className="size-3.5" aria-hidden />{shortDate(booking.from, locale)} → {shortDate(booking.to, locale)}</li>
-              <li className="flex items-center gap-1.5"><Users className="size-3.5" aria-hidden />{booking.guests} {t.listings.guests}</li>
+              <li className="flex items-center gap-1.5"><Users className="size-3.5" aria-hidden />{countLabel(booking.guests, t.listings.guests)}</li>
               <li>{booking.nights} {t.app.trips.nights}</li>
             </ul>
             <p className="mt-3 text-xs text-muted-foreground">

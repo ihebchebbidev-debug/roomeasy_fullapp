@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 export const PAGE_SIZE = 20;
 
 const listCopy = {
-  en: { search: "Search…", searchLabel: "Search", clear: "Clear", results: "results", filter: "Filter", all: "All", of: "of", previous: "Previous", next: "Next", pagination: "Pagination" },
-  fr: { search: "Rechercher…", searchLabel: "Rechercher", clear: "Effacer", results: "résultats", filter: "Filtrer", all: "Tous", of: "sur", previous: "Précédent", next: "Suivant", pagination: "Pagination" },
-  es: { search: "Buscar…", searchLabel: "Buscar", clear: "Borrar", results: "resultados", filter: "Filtrar", all: "Todos", of: "de", previous: "Anterior", next: "Siguiente", pagination: "Paginación" },
-  de: { search: "Suchen…", searchLabel: "Suchen", clear: "Löschen", results: "Ergebnis(se)", filter: "Filtern", all: "Alle", of: "von", previous: "Zurück", next: "Weiter", pagination: "Seitennavigation" },
-  pt: { search: "Pesquisar…", searchLabel: "Pesquisar", clear: "Limpar", results: "resultados", filter: "Filtrar", all: "Todos", of: "de", previous: "Anterior", next: "Seguinte", pagination: "Paginação" },
+  en: { search: "Search…", searchLabel: "Search", clear: "Clear", result: "result", results: "results", filter: "Filter", all: "All", of: "of", previous: "Previous", next: "Next", pagination: "Pagination" },
+  fr: { search: "Rechercher…", searchLabel: "Rechercher", clear: "Effacer", result: "résultat", results: "résultats", filter: "Filtrer", all: "Tous", of: "sur", previous: "Précédent", next: "Suivant", pagination: "Pagination" },
+  es: { search: "Buscar…", searchLabel: "Buscar", clear: "Borrar", result: "resultado", results: "resultados", filter: "Filtrar", all: "Todos", of: "de", previous: "Anterior", next: "Siguiente", pagination: "Paginación" },
+  de: { search: "Suchen…", searchLabel: "Suchen", clear: "Löschen", result: "Ergebnis", results: "Ergebnisse", filter: "Filtern", all: "Alle", of: "von", previous: "Zurück", next: "Weiter", pagination: "Seitennavigation" },
+  pt: { search: "Pesquisar…", searchLabel: "Pesquisar", clear: "Limpar", result: "resultado", results: "resultados", filter: "Filtrar", all: "Todos", of: "de", previous: "Anterior", next: "Seguinte", pagination: "Paginação" },
 };
 
 export type ListFilter<T> = { value: string; label: string; test: (row: T) => boolean };
@@ -128,7 +128,7 @@ export function ListToolbar({ controls, extra, placeholder, suggestions }: {
         </div>
         {extra}
         <span className="shrink-0 text-xs text-muted-foreground tabular-nums sm:pl-2">
-          {controls.total} {copy.results}
+          {controls.total} {controls.total === 1 ? copy.result : copy.results}
         </span>
       </div>
       {controls.filters.length > 0 && (

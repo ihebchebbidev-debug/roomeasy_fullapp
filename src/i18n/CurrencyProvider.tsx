@@ -17,6 +17,16 @@ export const currencies: { code: CurrencyCode; symbol: string; label: string }[]
   { code: "BRL", symbol: "R$", label: "Brazilian Real" },
 ];
 
+/** Currency name in the visitor's language (e.g. "dollar des États-Unis"), falling back to the English label. */
+export function currencyName(code: CurrencyCode, locale: string, fallback: string): string {
+  try {
+    const name = new Intl.DisplayNames([locale], { type: "currency" }).of(code);
+    return name ? name.charAt(0).toUpperCase() + name.slice(1) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 const STORAGE_KEY = "nestara.currency";
 const RATES_STORAGE_KEY = "nestara.currency-rates";
 /** Rates move through the day, so a cached set is only trusted for an hour. */

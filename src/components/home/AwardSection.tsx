@@ -62,7 +62,7 @@ export function AwardSection() {
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
               <li className="flex items-center gap-1.5">
                 <Users className="size-3.5" aria-hidden />
-                {featured.guests} {t.listings.guests}
+                {countLabel(featured.guests, t.listings.guests)}
               </li>
               <li className="flex items-center gap-1.5">
                 <BedDouble className="size-3.5" aria-hidden />

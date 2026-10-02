@@ -67,7 +67,7 @@ export function HostOverview(props: Props) {
     const property = props.properties.find((item) => item.id === listing.propertyId);
     tasks.push({ key: `rejected-${listing.id}`, icon: AlertCircle, title: c.rejected, detail: [property?.name, listing.rejectedReason].filter(Boolean).join(" · "), to: "/list-your-place", search: { edit: listing.propertyId }, label: c.edit, tone: "danger" });
   });
-  if (props.session?.verificationStatus !== "verified") tasks.push({ key: "identity", icon: ShieldCheck, title: c.identity, ...(props.session?.verificationStatus ? { detail: props.session.verificationStatus } : {}), to: "/profile", label: c.finishVerification });
+  if (props.session?.verificationStatus !== "verified") tasks.push({ key: "identity", icon: ShieldCheck, title: c.identity, to: "/profile", label: c.finishVerification });
   if (!props.stripeOnboarded) tasks.push({ key: "payouts", icon: Wallet, title: c.payouts, to: "/host", search: { section: "payouts" }, label: c.setupPayouts });
   if (pending.length) {
     const nearestExpiry = Math.min(...pending.map((booking) => requestExpiry(booking.createdAt)));

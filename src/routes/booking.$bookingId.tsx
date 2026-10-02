@@ -1,4 +1,5 @@
 import { privateRouteMeta } from "@/i18n/privateRouteMeta";
+import { countLabel } from "@/i18n/countLabel";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -110,7 +111,7 @@ function BookingConfirmation() {
                 </p>
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Users className="size-3.5" aria-hidden />
-                  {booking.guests} {t.listings.guests} · {booking.nights} {t.app.trips.nights}
+                  {countLabel(booking.guests, t.listings.guests)} · {booking.nights} {t.app.trips.nights}
                 </p>
               </div>
             </div>
