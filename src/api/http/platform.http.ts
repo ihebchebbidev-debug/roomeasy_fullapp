@@ -186,7 +186,7 @@ export const propertiesApi = {
   get: (id: string) => request<PropertyDto>(`/stays/${encodeURIComponent(id)}`),
   reviews: (id: string) => request<ReviewDto[]>(`/stays/${encodeURIComponent(id)}/reviews`),
   calendar: (id: string, from: string, to: string) =>
-    request<{ night: string; blocked: boolean; priceUsd: number | null }[]>(
+    request<{ propertyId: string; nights: { night: string; blocked: boolean; priceUsd: number | null }[]; bookedNights: string[] }>(
       `/stays/${encodeURIComponent(id)}/calendar`,
       { query: { from, to } },
     ),

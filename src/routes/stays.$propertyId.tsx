@@ -57,7 +57,8 @@ import { useExtra } from "@/i18n/extra";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useIsMobileDevice } from "@/hooks/use-mobile";
 import { setPlatform, usePlatform } from "@/hooks/usePlatform";
-import { blockedNightsIn, isNightBlocked, quoteStay, toISODate, type Quote } from "@/lib/pricing";
+import { useStayUnavailableNights } from "@/hooks/useStayUnavailableNights";
+import { blockedNightsIn, isNightBlocked, stayNights, quoteStay, toISODate, type Quote } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { absoluteUrl, canonical, localeOf, publicPageMeta } from "@/lib/seo";
 import { withLocale } from "@/i18n/urlLocale";
@@ -241,6 +242,12 @@ function ListingDetail() {
   const lc = useListingCopy();
   const { listings, calendar, rateRules, threads, reviews } = usePlatform();
   const session = usePlatform().session;
+  const { booked: bookedNights, blocked: hostBlockedNights } = useStayUnavailableNights(propertyId);
+  // A night is unavailable to sleep in when the host blocked it or another
+  // booking took it. A booked night can still be a guest's check-out day.
+  const nightUnavailable = (iso: string) =>
+    bookedNights.has(iso) || hostBlockedNights.has(iso) || isNightBlocked(calendar, propertyId, iso);
+  const nightFullyBlocked = (iso: string) => hostBlockedNights.has(iso) || isNightBlocked(calendar, propertyId, iso);
   const ownListing = listings.find((item) => item.propertyId === propertyId);
   const isOwner = Boolean(session && ownListing && session.role !== "admin");
   const { isFavorite, toggle } = useFavorites();
@@ -248,6 +255,16 @@ function ListingDetail() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [range, setRange] = useState<DateRange | undefined>();
+  // Keep picked ranges free of taken nights, while still allowing check-out
+  // on a morning another guest arrives.
+  const selectRange = (next: DateRange | undefined) => {
+    if (next?.from && next.to && stayNights(next.from, next.to).some((n) => nightUnavailable(n))) {
+      toast.error(x.nightsUnavailable);
+      setRange({ from: next.from });
+      return;
+    }
+    setRange(next);
+  };
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(1); // match the search widget's default of 3 guests (2 adults + 1 child)
   const [serverQuote, setServerQuote] = useState<{ key: string; quote: Quote } | null>(null);
@@ -604,7 +621,7 @@ function ListingDetail() {
       toast.error(bookingCopy.errors.MIN_NIGHTS_NOT_MET);
       return;
     }
-    if (blockedNightsIn(calendar, property.id, range.from, range.to).length) {
+    if (blockedNightsIn(calendar, property.id, range.from, range.to).length || stayNights(range.from, range.to).some((n) => nightUnavailable(n))) {
       toast.error(x.nightsUnavailable);
       return;
     }
@@ -885,11 +902,11 @@ function ListingDetail() {
                     mode="range"
                     numberOfMonths={2}
                     selected={range}
-                    onSelect={setRange}
+                    onSelect={selectRange}
                     locale={dateLocale}
                     disabled={[
                       { before: new Date() },
-                      (date: Date) => isNightBlocked(calendar, property.id, toISODate(date)),
+                      (date: Date) => nightFullyBlocked(toISODate(date)),
                     ]}
                   />
                 </div>
@@ -903,7 +920,7 @@ function ListingDetail() {
                   propertyPrice={property.price}
                   currency={property.currency}
                   range={range}
-                  setRange={setRange}
+                  setRange={selectRange}
                   adults={adults}
                   setAdults={setAdults}
                   children={children}
@@ -916,7 +933,7 @@ function ListingDetail() {
                   rating={displayedRating}
                   reviewCount={displayedReviewCount}
                   isNightUnavailable={(date) =>
-                    isNightBlocked(calendar, property.id, toISODate(date))
+                    nightFullyBlocked(toISODate(date))
                   }
                 />
               </div>
@@ -1090,7 +1107,7 @@ function ListingDetail() {
                 propertyPrice={property.price}
                   currency={property.currency}
                 range={range}
-                setRange={setRange}
+                setRange={selectRange}
                 adults={adults}
                 setAdults={setAdults}
                 children={children}
@@ -1103,7 +1120,7 @@ function ListingDetail() {
                 rating={displayedRating}
                 reviewCount={displayedReviewCount}
                 isNightUnavailable={(date) =>
-                  isNightBlocked(calendar, property.id, toISODate(date))
+                  nightFullyBlocked(toISODate(date))
                 }
               />
             </PopoverContent>
