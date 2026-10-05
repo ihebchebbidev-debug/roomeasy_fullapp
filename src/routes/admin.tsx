@@ -639,7 +639,7 @@ function AdminPage() {
               const id = rejecting.id;
               if (!(await remote.rejectListing(id, code, details))) return;
               setPlatform((s) => ({
-                listings: s.listings.map((l) => (l.id === id ? { ...l, status: "suspended" as const } : l)),
+                listings: s.listings.map((l) => (l.id === id ? { ...l, status: "draft" as const, approved: false } : l)),
               }));
               toast.success(t.app.admin.rejected);
             }}

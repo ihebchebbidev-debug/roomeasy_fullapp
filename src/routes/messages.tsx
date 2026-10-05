@@ -2,7 +2,7 @@ import { privateRouteMeta } from "@/i18n/privateRouteMeta";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link, useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, MessageSquare, CheckCircle2, MoreHorizontal, Paperclip, Search, Send, Smile, Star, Users } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AccountShell } from "@/components/layout/AccountShell";
@@ -34,6 +34,41 @@ function isEmojiOnly(text: string): boolean {
   const stripped = text.replace(/\s/g, "");
   if (!stripped || stripped.length > 12) return false;
   return /^(\p{Extended_Pictographic}|\p{Emoji_Component}|\uFE0F|\u200D)+$/u.test(stripped);
+}
+
+/**
+ * Renders a server instant (always UTC, e.g. "2024-01-02T03:04:05.000Z") as a
+ * clock reading in the browser's own timezone. Used for both freshly sent and
+ * previously stored messages so a message's time never shifts after reload.
+ */
+function formatClock(iso?: string): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
+/** A same-day key in the viewer's local timezone, for grouping the day separators. */
+function localDayKey(iso?: string): string {
+  const date = iso ? new Date(iso) : new Date();
+  if (Number.isNaN(date.getTime())) return "unknown";
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+/** Today / Yesterday / a dated label, compared against the viewer's local calendar day. */
+function localDayLabel(iso: string | undefined, locale: string, labels: { today: string; yesterday: string }): string {
+  const date = iso ? new Date(iso) : new Date();
+  if (Number.isNaN(date.getTime())) return labels.today;
+  const now = new Date();
+  const startOf = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
+  const diffDays = Math.round((startOf(now) - startOf(date)) / 86_400_000);
+  if (diffDays === 0) return labels.today;
+  if (diffDays === 1) return labels.yesterday;
+  return date.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    ...(date.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}),
+  });
 }
 
 export const Route = createFileRoute("/messages")({
@@ -82,23 +117,23 @@ function MessagesPage() {
     ?? bookings.find((item) => item.propertyId === active?.propertyId);
   const copy = pickCopy(locale, {
     en: {
-      inbox: "Inbox", conversations: "Conversations", search: "Search guest or listing", inquiry: "Inquiry for", today: "Today", details: "Stay details", reservation: "Reservation", checkIn: "Check-in", checkOut: "Check-out", guests: "Guests", nights: "nights", payout: "Host payout", status: "Status", confirmed: "Confirmed", property: "Listing", view: "View listing", placeholder: "Write a message…", info: "Details", select: "Select a conversation", response: "Usually responds within an hour", send: "Send message", attach: "Attach file", noResults: "No conversations found", newLabel: "New",
+      inbox: "Inbox", conversations: "Conversations", search: "Search guest or listing", inquiry: "Inquiry for", today: "Today", yesterday: "Yesterday", details: "Stay details", reservation: "Reservation", checkIn: "Check-in", checkOut: "Check-out", guests: "Guests", nights: "nights", payout: "Host payout", status: "Status", confirmed: "Confirmed", property: "Listing", view: "View listing", placeholder: "Write a message…", info: "Details", select: "Select a conversation", response: "Usually responds within an hour", send: "Send message", attach: "Attach file", noResults: "No conversations found", newLabel: "New",
       emoji: "Add emoji", reactions: "Smileys", stay: "Stay", trip: "Travel", noReservation: "No reservation linked yet", sending: "Sending…", total: "Total paid", attachPhoto: "Attach a photo", uploading: "Uploading…", uploadFailed: "Photo could not be sent",
     },
     fr: {
-      inbox: "Boîte de réception", conversations: "Conversations", search: "Rechercher un voyageur ou une annonce", inquiry: "Demande pour", today: "Aujourd’hui", details: "Détails du séjour", reservation: "Réservation", checkIn: "Arrivée", checkOut: "Départ", guests: "Voyageurs", nights: "nuits", payout: "Versement hôte", status: "Statut", confirmed: "Confirmée", property: "Annonce", view: "Voir l’annonce", placeholder: "Écrire un message…", info: "Détails", select: "Sélectionnez une conversation", response: "Répond généralement en moins d’une heure", send: "Envoyer le message", attach: "Joindre un fichier", noResults: "Aucune conversation trouvée", newLabel: "Nouveau",
+      inbox: "Boîte de réception", conversations: "Conversations", search: "Rechercher un voyageur ou une annonce", inquiry: "Demande pour", today: "Aujourd’hui", yesterday: "Hier", details: "Détails du séjour", reservation: "Réservation", checkIn: "Arrivée", checkOut: "Départ", guests: "Voyageurs", nights: "nuits", payout: "Versement hôte", status: "Statut", confirmed: "Confirmée", property: "Annonce", view: "Voir l’annonce", placeholder: "Écrire un message…", info: "Détails", select: "Sélectionnez une conversation", response: "Répond généralement en moins d’une heure", send: "Envoyer le message", attach: "Joindre un fichier", noResults: "Aucune conversation trouvée", newLabel: "Nouveau",
       emoji: "Ajouter un émoji", reactions: "Émotions", stay: "Logement", trip: "Voyage", noReservation: "Aucune réservation liée", sending: "Envoi…", total: "Total payé", attachPhoto: "Joindre une photo", uploading: "Envoi en cours…", uploadFailed: "La photo n'a pas pu être envoyée",
     },
     es: {
-      inbox: "Bandeja de entrada", conversations: "Conversaciones", search: "Buscar huésped o anuncio", inquiry: "Consulta sobre", today: "Hoy", details: "Detalles de la estancia", reservation: "Reserva", checkIn: "Llegada", checkOut: "Salida", guests: "Huéspedes", nights: "noches", payout: "Pago al anfitrión", status: "Estado", confirmed: "Confirmada", property: "Anuncio", view: "Ver anuncio", placeholder: "Escribe un mensaje…", info: "Detalles", select: "Selecciona una conversación", response: "Suele responder en menos de una hora", send: "Enviar mensaje", attach: "Adjuntar archivo", noResults: "No se encontraron conversaciones", newLabel: "Nuevo",
+      inbox: "Bandeja de entrada", conversations: "Conversaciones", search: "Buscar huésped o anuncio", inquiry: "Consulta sobre", today: "Hoy", yesterday: "Ayer", details: "Detalles de la estancia", reservation: "Reserva", checkIn: "Llegada", checkOut: "Salida", guests: "Huéspedes", nights: "noches", payout: "Pago al anfitrión", status: "Estado", confirmed: "Confirmada", property: "Anuncio", view: "Ver anuncio", placeholder: "Escribe un mensaje…", info: "Detalles", select: "Selecciona una conversación", response: "Suele responder en menos de una hora", send: "Enviar mensaje", attach: "Adjuntar archivo", noResults: "No se encontraron conversaciones", newLabel: "Nuevo",
       emoji: "Añadir emoji", reactions: "Emociones", stay: "Alojamiento", trip: "Viaje", noReservation: "Sin reserva vinculada", sending: "Enviando…", total: "Total pagado", attachPhoto: "Adjuntar una foto", uploading: "Subiendo…", uploadFailed: "No se pudo enviar la foto",
     },
     de: {
-      inbox: "Postfach", conversations: "Unterhaltungen", search: "Gast oder Anzeige suchen", inquiry: "Anfrage für", today: "Heute", details: "Details zum Aufenthalt", reservation: "Reservierung", checkIn: "Anreise", checkOut: "Abreise", guests: "Gäste", nights: "Nächte", payout: "Auszahlung an Gastgeber", status: "Status", confirmed: "Bestätigt", property: "Anzeige", view: "Anzeige ansehen", placeholder: "Nachricht schreiben…", info: "Details", select: "Wähle eine Unterhaltung", response: "Antwortet meist innerhalb einer Stunde", send: "Nachricht senden", attach: "Datei anhängen", noResults: "Keine Unterhaltungen gefunden", newLabel: "Neu",
+      inbox: "Postfach", conversations: "Unterhaltungen", search: "Gast oder Anzeige suchen", inquiry: "Anfrage für", today: "Heute", yesterday: "Gestern", details: "Details zum Aufenthalt", reservation: "Reservierung", checkIn: "Anreise", checkOut: "Abreise", guests: "Gäste", nights: "Nächte", payout: "Auszahlung an Gastgeber", status: "Status", confirmed: "Bestätigt", property: "Anzeige", view: "Anzeige ansehen", placeholder: "Nachricht schreiben…", info: "Details", select: "Wähle eine Unterhaltung", response: "Antwortet meist innerhalb einer Stunde", send: "Nachricht senden", attach: "Datei anhängen", noResults: "Keine Unterhaltungen gefunden", newLabel: "Neu",
       emoji: "Emoji hinzufügen", reactions: "Smileys", stay: "Unterkunft", trip: "Reise", noReservation: "Noch keine Reservierung verknüpft", sending: "Senden…", total: "Gesamt bezahlt", attachPhoto: "Foto anhängen", uploading: "Wird hochgeladen…", uploadFailed: "Foto konnte nicht gesendet werden",
     },
     pt: {
-      inbox: "Caixa de entrada", conversations: "Conversas", search: "Procurar hóspede ou anúncio", inquiry: "Pedido para", today: "Hoje", details: "Detalhes da estadia", reservation: "Reserva", checkIn: "Chegada", checkOut: "Partida", guests: "Hóspedes", nights: "noites", payout: "Pagamento ao anfitrião", status: "Estado", confirmed: "Confirmada", property: "Anúncio", view: "Ver anúncio", placeholder: "Escrever uma mensagem…", info: "Detalhes", select: "Selecione uma conversa", response: "Costuma responder em menos de uma hora", send: "Enviar mensagem", attach: "Anexar ficheiro", noResults: "Nenhuma conversa encontrada", newLabel: "Novo",
+      inbox: "Caixa de entrada", conversations: "Conversas", search: "Procurar hóspede ou anúncio", inquiry: "Pedido para", today: "Hoje", yesterday: "Ontem", details: "Detalhes da estadia", reservation: "Reserva", checkIn: "Chegada", checkOut: "Partida", guests: "Hóspedes", nights: "noites", payout: "Pagamento ao anfitrião", status: "Estado", confirmed: "Confirmada", property: "Anúncio", view: "Ver anúncio", placeholder: "Escrever uma mensagem…", info: "Detalhes", select: "Selecione uma conversa", response: "Costuma responder em menos de uma hora", send: "Enviar mensagem", attach: "Anexar ficheiro", noResults: "Nenhuma conversa encontrada", newLabel: "Novo",
       emoji: "Adicionar emoji", reactions: "Emoções", stay: "Alojamento", trip: "Viagem", noReservation: "Sem reserva associada", sending: "A enviar…", total: "Total pago", attachPhoto: "Anexar uma foto", uploading: "A carregar…", uploadFailed: "Não foi possível enviar a foto",
     },
   });
@@ -110,6 +145,18 @@ function MessagesPage() {
       return `${thread.withName} ${listing?.name ?? ""}`.toLocaleLowerCase().includes(needle);
     });
   }, [allProperties, query, threads]);
+
+  const messageGroups = useMemo(() => {
+    const messages = active?.messages ?? [];
+    const groups: { key: string; label: string; messages: typeof messages }[] = [];
+    for (const message of messages) {
+      const key = localDayKey(message.sentAt);
+      const current = groups.at(-1);
+      if (current && current.key === key) current.messages.push(message);
+      else groups.push({ key, label: localDayLabel(message.sentAt, locale, copy), messages: [message] });
+    }
+    return groups;
+  }, [active, locale, copy]);
 
   const messageCount = active?.messages.length ?? 0;
 
@@ -148,25 +195,35 @@ function MessagesPage() {
     if (!active || sending) return;
     const localId = `m-${Date.now()}`;
     setSending(true);
+    let dataUrl: string;
     try {
-      const dataUrl = await prepareAttachment(file);
-      setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: [...thread.messages, { id: localId, from: "me", text: "", attachmentUrl: dataUrl, time: new Date().toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) }] } : thread) }));
-      const saved = await remote.sendMessage(active.id, "", dataUrl);
-      if (backendEnabled && !serverOffline() && !saved) throw new Error("not sent");
+      dataUrl = await prepareAttachment(file);
     } catch {
-      setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: thread.messages.filter((message) => message.id !== localId) } : thread) }));
+      // The photo itself could not be read/resized locally: nothing was sent yet.
       toast.error(copy.uploadFailed);
-    } finally {
       setSending(false);
       if (fileRef.current) fileRef.current.value = "";
+      return;
     }
+    const sentAt = new Date().toISOString();
+    setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: [...thread.messages, { id: localId, from: "me", text: "", attachmentUrl: dataUrl, sentAt, time: formatClock(sentAt) }] } : thread) }));
+    // `remote.sendMessage` already surfaces the server's own reason (e.g. "too
+    // large") as a toast, so a failure here should just roll back the
+    // optimistic bubble instead of hiding that message behind a generic one.
+    const saved = await remote.sendMessage(active.id, "", dataUrl);
+    if (backendEnabled && !serverOffline() && !saved) {
+      setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: thread.messages.filter((message) => message.id !== localId) } : thread) }));
+    }
+    setSending(false);
+    if (fileRef.current) fileRef.current.value = "";
   }
 
   async function send() {
     if (!draft.trim() || !active || sending) return;
     const text = draft.trim();
     const localId = `m-${Date.now()}`;
-    setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: [...thread.messages, { id: localId, from: "me", text, time: new Date().toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) }] } : thread) }));
+    const sentAt = new Date().toISOString();
+    setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: [...thread.messages, { id: localId, from: "me", text, sentAt, time: formatClock(sentAt) }] } : thread) }));
     setDraft("");
     setSending(true);
     const saved = await remote.sendMessage(active.id, text);
@@ -206,7 +263,7 @@ function MessagesPage() {
                 <Button variant="ghost" onClick={() => openThread(thread.id)} className={cn("relative h-auto w-full justify-start rounded-none border-b border-border/70 px-4 py-4 text-left transition-colors", selected && "bg-primary/10 hover:bg-primary/10")}>
                   <span className="grid w-full grid-cols-[auto_minmax(0,1fr)] gap-3 whitespace-normal">
                     {selected ? <span className="absolute inset-y-3 left-0 w-0.5 rounded-r-full bg-primary" /> : null}<span className="relative block size-10 shrink-0"><UserAvatar name={thread.withName} src={thread.withAvatar} className="size-10" />{thread.unread > 0 ? <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-surface bg-primary" /> : null}</span>
-                    <span className="min-w-0"><span className="flex items-baseline justify-between gap-2"><strong className="truncate text-sm">{thread.withName}</strong><span className="shrink-0 text-[10px] font-normal text-muted-foreground">{last?.time}</span></span><span className="mt-1 block truncate text-[11px] font-semibold text-primary">{copy.inquiry} {listing?.name}</span><span className="mt-1 block truncate text-xs font-normal text-muted-foreground">{last?.text}</span></span>
+                    <span className="min-w-0"><span className="flex items-baseline justify-between gap-2"><strong className="truncate text-sm">{thread.withName}</strong><span className="shrink-0 text-[10px] font-normal text-muted-foreground">{formatClock(last?.sentAt) || last?.time}</span></span><span className="mt-1 block truncate text-[11px] font-semibold text-primary">{copy.inquiry} {listing?.name}</span><span className="mt-1 block truncate text-xs font-normal text-muted-foreground">{last?.text}</span></span>
                   </span>
                 </Button>
               </li>;
@@ -223,11 +280,15 @@ function MessagesPage() {
               <div className="flex gap-1"><Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileView("details")}>{copy.info}</Button><Button variant="ghost" size="icon" aria-label={{ en: "More options", fr: "Plus d'options", es: "Más opciones", de: "Weitere Optionen", pt: "Mais opções" }[locale]}><MoreHorizontal /></Button></div>
             </header>
              <ul ref={streamRef} className="flex-1 space-y-4 overflow-y-auto bg-background/70 p-4 sm:p-6">
-               <li className="mx-auto w-fit rounded-full border border-border bg-surface px-3 py-1 text-[10px] font-semibold text-muted-foreground">{copy.today}</li>
-                {active.messages.map((message) => {
-                  const emojiOnly = isEmojiOnly(message.text);
-                  return <li key={message.id} className={cn("flex", message.from === "me" ? "justify-end" : "justify-start")}><div className={cn(emojiOnly ? "max-w-[86%] px-1 py-1" : "max-w-[86%] px-4 py-3 text-sm shadow-sm sm:max-w-[72%]", !emojiOnly && (message.from === "me" ? "rounded-l-lg rounded-tr-lg bg-primary text-primary-foreground" : "rounded-r-lg rounded-tl-lg border border-border bg-surface"))}>{message.attachmentUrl && <img src={message.attachmentUrl} alt="" className="mb-1 max-h-72 w-full rounded-md object-cover" />}{message.text && <p className={cn("leading-relaxed", emojiOnly && "text-4xl leading-none")}>{message.text}</p>}<p className={cn("mt-1.5 text-[10px]", !emojiOnly && message.from === "me" ? "text-primary-foreground/70" : "text-muted-foreground", emojiOnly && (message.from === "me" ? "text-right" : "text-left"))}>{message.time}</p></div></li>;
-                })}
+               {messageGroups.map((group) => (
+                 <Fragment key={group.key}>
+                   <li className="mx-auto w-fit rounded-full border border-border bg-surface px-3 py-1 text-[10px] font-semibold text-muted-foreground">{group.label}</li>
+                   {group.messages.map((message) => {
+                     const emojiOnly = isEmojiOnly(message.text);
+                     return <li key={message.id} className={cn("flex min-w-0", message.from === "me" ? "justify-end" : "justify-start")}><div className={cn("min-w-0 break-words [overflow-wrap:anywhere]", emojiOnly ? "max-w-[86%] px-1 py-1" : "max-w-[86%] px-4 py-3 text-sm shadow-sm sm:max-w-[72%]", !emojiOnly && (message.from === "me" ? "rounded-l-lg rounded-tr-lg bg-primary text-primary-foreground" : "rounded-r-lg rounded-tl-lg border border-border bg-surface"))}>{message.attachmentUrl && <img src={message.attachmentUrl} alt="" className="mb-1 max-h-72 w-full rounded-md object-cover" />}{message.text && <p className={cn("leading-relaxed break-words [overflow-wrap:anywhere]", emojiOnly && "text-4xl leading-none")}>{message.text}</p>}<p className={cn("mt-1.5 text-[10px]", !emojiOnly && message.from === "me" ? "text-primary-foreground/70" : "text-muted-foreground", emojiOnly && (message.from === "me" ? "text-right" : "text-left"))}>{formatClock(message.sentAt) || message.time}</p></div></li>;
+                   })}
+                 </Fragment>
+               ))}
             </ul>
              <form className="sticky bottom-0 border-t border-border bg-surface p-3 sm:p-4" onSubmit={(event) => { event.preventDefault(); send(); }}>
                <div className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-1 rounded-lg border border-input bg-background p-1.5 focus-within:border-primary">

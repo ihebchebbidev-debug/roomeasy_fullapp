@@ -1,9 +1,9 @@
 # Roadmap — customer feedback
 
 ## Localization audit
-- [ ] Audit every page and shared interface for untranslated text in English, French, Spanish, German, and Portuguese
-- [ ] Fill missing translations and replace static interface text where found
-- [ ] Verify translation parity and representative public/account screens
+- [x] Audit every page and shared interface for untranslated text in English, French, Spanish, German, and Portuguese
+- [x] Fill missing translations and replace static interface text where found
+- [x] Verify translation parity and representative public/account screens
 
 ## Admin
 - [x] Identity checks: visible navigation entry + live pending counter

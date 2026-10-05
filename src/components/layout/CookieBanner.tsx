@@ -23,18 +23,18 @@ export function CookieBanner() {
             </Link>
           </p>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-md text-xs font-semibold uppercase tracking-[0.1em]"
+            className="h-auto min-h-8 rounded-md py-1.5 text-center text-xs font-semibold whitespace-normal uppercase tracking-[0.06em]"
             onClick={() => { setPlatform({ cookiesChoice: "essential" }); void remote.cookieConsent("essential"); }}
           >
             {t.app.cookies.decline}
           </Button>
           <Button
             size="sm"
-            className="rounded-md text-xs font-semibold uppercase tracking-[0.1em]"
+            className="h-auto min-h-8 rounded-md py-1.5 text-center text-xs font-semibold whitespace-normal uppercase tracking-[0.06em]"
             onClick={() => { setPlatform({ cookiesChoice: "accepted" }); void remote.cookieConsent("accepted"); }}
           >
             {t.app.cookies.accept}

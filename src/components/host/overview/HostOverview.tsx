@@ -41,10 +41,11 @@ export function HostOverview(props: Props) {
 
   const pending = props.bookings.filter((booking) => booking.status === "pending").sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
   const confirmed = props.bookings.filter((booking) => booking.status === "confirmed");
-  const earned = props.bookings.filter((booking) => booking.status === "completed" || (booking.status === "confirmed" && booking.to <= today)).reduce((sum, booking) => sum + booking.totalUsd, 0);
+  const isEarnedBooking = (booking: Booking) => booking.status === "completed" || (booking.status === "confirmed" && booking.to <= today);
+  const earned = props.bookings.filter(isEarnedBooking).reduce((sum, booking) => sum + booking.totalUsd, 0);
   const upcomingRevenue = confirmed.filter((booking) => booking.to > today).reduce((sum, booking) => sum + booking.totalUsd, 0);
-  const recentRevenue = props.bookings.filter((booking) => booking.status === "completed" && booking.to >= isoDay(thirtyDaysAgo) && booking.to <= today).reduce((sum, booking) => sum + booking.totalUsd, 0);
-  const previousRevenue = props.bookings.filter((booking) => booking.status === "completed" && booking.to >= isoDay(sixtyDaysAgo) && booking.to < isoDay(thirtyDaysAgo)).reduce((sum, booking) => sum + booking.totalUsd, 0);
+  const recentRevenue = props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to >= isoDay(thirtyDaysAgo) && booking.to <= today).reduce((sum, booking) => sum + booking.totalUsd, 0);
+  const previousRevenue = props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to >= isoDay(sixtyDaysAgo) && booking.to < isoDay(thirtyDaysAgo)).reduce((sum, booking) => sum + booking.totalUsd, 0);
   const recentRequests = props.bookings.filter((booking) => booking.createdAt && new Date(booking.createdAt) >= thirtyDaysAgo).length;
   const previousRequests = props.bookings.filter((booking) => booking.createdAt && new Date(booking.createdAt) >= sixtyDaysAgo && new Date(booking.createdAt) < thirtyDaysAgo).length;
   const nextOccupancy = occupancyForRange(props.bookings, props.listings, today, inThirtyDays);

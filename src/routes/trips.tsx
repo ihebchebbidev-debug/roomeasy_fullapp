@@ -26,6 +26,7 @@ import { useExtra } from "@/i18n/extra";
 import { useBookingCopy } from "@/i18n/booking";
 import { useCancelBooking } from "@/hooks/useBookingApi";
 import { backendEnabled, remote } from "@/api/backend";
+import { ApiError } from "@/api/types";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
@@ -49,6 +50,15 @@ export const Route = createFileRoute("/trips")({
   component: TripsPage,
 });
 
+/** The YYYY-MM-DD calendar date in the browser's local time zone, not UTC. */
+function localCalendarDate(value?: string | Date): string {
+  const d = value === undefined ? new Date() : new Date(value);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function statusTone(status: BookingStatus) {
   return {
     pending: "bg-amber-500/15 text-amber-700",
@@ -66,9 +76,9 @@ function TripsPage() {
   useEnsureStays(bookings.map((booking) => booking.propertyId));
   // A confirmed stay whose check-out day has come is over: it belongs in "Past"
   // and can be reviewed, exactly as the server allows.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localCalendarDate();
   const isUpcoming = (b: (typeof bookings)[number]) =>
-    b.status === "pending" || (b.status === "confirmed" && String(b.to).slice(0, 10) > today);
+    b.status === "pending" || (b.status === "confirmed" && localCalendarDate(b.to) > today);
   const upcoming = bookings.filter(isUpcoming);
   const past = bookings.filter((b) => !isUpcoming(b));
 
@@ -110,8 +120,7 @@ function TripsPage() {
 }
 
 function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
-  const { t, locale: lang } = useLanguage();
-  const fr = String(lang).startsWith("fr");
+  const { t } = useLanguage();
   const { format } = useCurrency();
   const x = useExtra();
   const navigate = useNavigate();
@@ -209,14 +218,14 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>{fr ? "Annuler cette réservation ?" : "Cancel this booking?"}</AlertDialogTitle>
+                      <AlertDialogTitle>{c.cancelDialogTitle}</AlertDialogTitle>
                       <AlertDialogDescription>
                         {property.name} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)}. {booking.payment?.status === "paid" && (<>{cc.refundDue}:{" "}{format(Math.round(booking.totalUsd * refundShare(policy, daysBefore)), { from: booking.currency })}.{" "}</>)}
-                        {fr ? "Cette action est définitive." : "This cannot be undone."}
+                        {c.cancelDialogCannotUndo}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>{fr ? "Garder ma réservation" : "Keep my booking"}</AlertDialogCancel>
+                      <AlertDialogCancel>{c.keepBooking}</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         onClick={async () => {
@@ -228,12 +237,19 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                               ),
                             }));
                             toast.success(t.app.trips.cancelled);
-                          } catch {
-                            toast.error(c.errors.NOT_CANCELLABLE);
+                          } catch (error) {
+                            // Only a real "not cancellable" response from the API should say
+                            // so; a dropped connection or a 5xx is a different problem and
+                            // must not be blamed on the booking's cancellation policy.
+                            const message =
+                              error instanceof ApiError && error.code === "NOT_CANCELLABLE"
+                                ? c.errors.NOT_CANCELLABLE
+                                : c.errors.NETWORK_ERROR;
+                            toast.error(message);
                           }
                         }}
                       >
-                        {fr ? "Oui, annuler" : "Yes, cancel booking"}
+                        {c.confirmCancelBooking}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -241,7 +257,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
               ) : null}
             </div>
           </div>
-          {booking.status === "completed" || (booking.status === "confirmed" && String(booking.to).slice(0, 10) <= new Date().toISOString().slice(0, 10)) ? <ReviewForm booking={booking} /> : null}
+          {booking.status === "completed" || (booking.status === "confirmed" && localCalendarDate(booking.to) <= localCalendarDate()) ? <ReviewForm booking={booking} /> : null}
         </div>
       </div>
     </li>

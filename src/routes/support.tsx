@@ -110,11 +110,11 @@ function SupportPage() {
       <AppShell title={c.supportTitle} subtitle={c.supportSubtitle}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <p className="text-sm text-muted-foreground">{c.needSignIn}</p>
-          <div className="mt-4 flex gap-2">
-            <Button asChild>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild className="h-auto min-h-9 py-2 text-center whitespace-normal">
               <Link to="/auth" search={signInReturn()}>{c.signIn}</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="h-auto min-h-9 py-2 text-center whitespace-normal">
               <Link to="/help">{c.helpFirst}</Link>
             </Button>
           </div>

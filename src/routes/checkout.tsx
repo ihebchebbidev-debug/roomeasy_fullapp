@@ -95,9 +95,17 @@ const SIGNED_OUT_COPY = {
 const COUNTRY_BY_LOCALE = { en: "GB", fr: "FR", es: "ES", de: "DE", pt: "PT" } as const;
 
 function addDays(iso: string, days: number) {
-  const date = new Date(`${iso}T00:00:00`);
-  date.setDate(date.getDate() + days);
+  // Pure calendar arithmetic in UTC, so the guest's time zone never shifts the day.
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
+}
+
+/** Today's date as the guest sees it on their own clock (YYYY-MM-DD). */
+function localToday() {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 function CheckoutPage() {
@@ -124,7 +132,7 @@ function CheckoutPage() {
   const formatCharged = (amount: number) => formatChargedIn(amount, listingCurrency);
   const propertyMissing = !property && !loadingStay && properties.length > 0;
 
-  const from = search.from ?? addDays(new Date().toISOString().slice(0, 10), 14);
+  const from = search.from ?? addDays(localToday(), 14);
   const to = search.to ?? addDays(from, search.nights ?? 2);
   const guests = search.guests ?? 3; // match the search widget's default (2 adults + 1 child)
 

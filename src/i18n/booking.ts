@@ -67,6 +67,10 @@ const en = {
   refunded: "Refunded",
   receiptFooter: "RoomEasy acts as an agent for the host. Keep this receipt for your records.",
   status: "Status",
+  cancelDialogTitle: "Cancel this booking?",
+  cancelDialogCannotUndo: "This cannot be undone.",
+  keepBooking: "Keep my booking",
+  confirmCancelBooking: "Yes, cancel booking",
   errors: {
     INVALID_DATES: "Please pick a check-out date after the check-in date.",
     UNAVAILABLE: "Those nights are no longer available. Please choose others.",
@@ -75,6 +79,7 @@ const en = {
     CARD_INVALID: "Please check the card number, expiry date and CVC.",
     NOT_FOUND: "We could not find what you were looking for.",
     NOT_CANCELLABLE: "This booking can no longer be cancelled.",
+    NETWORK_ERROR: "We could not reach the server. Check your connection and try again.",
     MIN_NIGHTS_NOT_MET: "This stay requires a longer minimum stay than the dates you chose.",
   },
 };
@@ -144,6 +149,10 @@ const fr: Booking = {
   refunded: "Remboursé",
   receiptFooter: "RoomEasy agit en tant qu'agent de l'hôte. Conservez ce reçu.",
   status: "Statut",
+  cancelDialogTitle: "Annuler cette réservation ?",
+  cancelDialogCannotUndo: "Cette action est définitive.",
+  keepBooking: "Garder ma réservation",
+  confirmCancelBooking: "Oui, annuler",
   errors: {
     INVALID_DATES: "Choisissez une date de départ après la date d'arrivée.",
     UNAVAILABLE: "Ces nuits ne sont plus disponibles. Choisissez d'autres dates.",
@@ -152,6 +161,7 @@ const fr: Booking = {
     CARD_INVALID: "Vérifiez le numéro de carte, la date d'expiration et le CVC.",
     NOT_FOUND: "Nous n'avons pas trouvé ce que vous cherchiez.",
     NOT_CANCELLABLE: "Cette réservation ne peut plus être annulée.",
+    NETWORK_ERROR: "Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.",
     MIN_NIGHTS_NOT_MET: "Ce logement exige un séjour minimum plus long que les dates choisies.",
   },
 };
@@ -219,6 +229,10 @@ const es: Booking = {
   refunded: "Reembolsado",
   receiptFooter: "RoomEasy actúa como agente del anfitrión. Guarda este recibo.",
   status: "Estado",
+  cancelDialogTitle: "¿Cancelar esta reserva?",
+  cancelDialogCannotUndo: "Esta acción no se puede deshacer.",
+  keepBooking: "Mantener mi reserva",
+  confirmCancelBooking: "Sí, cancelar reserva",
   errors: {
     INVALID_DATES: "Elige una fecha de salida posterior a la de entrada.",
     UNAVAILABLE: "Esas noches ya no están disponibles. Elige otras fechas.",
@@ -227,6 +241,7 @@ const es: Booking = {
     CARD_INVALID: "Revisa el número de tarjeta, la caducidad y el CVC.",
     NOT_FOUND: "No encontramos lo que buscabas.",
     NOT_CANCELLABLE: "Esta reserva ya no se puede cancelar.",
+    NETWORK_ERROR: "No se pudo contactar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
     MIN_NIGHTS_NOT_MET: "Este alojamiento exige una estancia mínima más larga que las fechas elegidas.",
   },
 };
@@ -294,6 +309,10 @@ const de: Booking = {
   refunded: "Erstattet",
   receiptFooter: "RoomEasy handelt als Vermittler des Gastgebers. Bitte bewahre diesen Beleg auf.",
   status: "Status",
+  cancelDialogTitle: "Diese Buchung stornieren?",
+  cancelDialogCannotUndo: "Dies kann nicht rückgängig gemacht werden.",
+  keepBooking: "Buchung behalten",
+  confirmCancelBooking: "Ja, Buchung stornieren",
   errors: {
     INVALID_DATES: "Bitte wähle ein Abreisedatum nach dem Anreisedatum.",
     UNAVAILABLE: "Diese Nächte sind nicht mehr frei. Bitte wähle andere Daten.",
@@ -302,6 +321,7 @@ const de: Booking = {
     CARD_INVALID: "Bitte prüfe Kartennummer, Ablaufdatum und Prüfziffer.",
     NOT_FOUND: "Wir konnten es nicht finden.",
     NOT_CANCELLABLE: "Diese Buchung kann nicht mehr storniert werden.",
+    NETWORK_ERROR: "Der Server konnte nicht erreicht werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     MIN_NIGHTS_NOT_MET: "Diese Unterkunft erfordert einen längeren Mindestaufenthalt als die gewählten Daten.",
   },
 };
@@ -369,6 +389,10 @@ const pt: Booking = {
   refunded: "Reembolsado",
   receiptFooter: "A RoomEasy actua como agente do anfitrião. Guarde este recibo.",
   status: "Estado",
+  cancelDialogTitle: "Cancelar esta reserva?",
+  cancelDialogCannotUndo: "Esta ação não pode ser desfeita.",
+  keepBooking: "Manter a minha reserva",
+  confirmCancelBooking: "Sim, cancelar reserva",
   errors: {
     INVALID_DATES: "Escolha uma data de saída posterior à de entrada.",
     UNAVAILABLE: "Essas noites já não estão disponíveis. Escolha outras datas.",
@@ -377,6 +401,7 @@ const pt: Booking = {
     CARD_INVALID: "Verifique o número do cartão, a validade e o CVC.",
     NOT_FOUND: "Não encontrámos o que procurava.",
     NOT_CANCELLABLE: "Esta reserva já não pode ser cancelada.",
+    NETWORK_ERROR: "Não foi possível contactar o servidor. Verifique a sua ligação e tente novamente.",
     MIN_NIGHTS_NOT_MET: "Este alojamento exige uma estadia mínima mais longa do que as datas escolhidas.",
   },
 };

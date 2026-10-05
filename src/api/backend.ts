@@ -279,6 +279,9 @@ export function toThread(dto: ThreadDto): Thread {
       from: message.from,
       text: message.text,
       time: message.time,
+      // Keep the raw UTC instant so the UI can render it in the viewer's own
+      // timezone instead of trusting the server's precomputed clock string.
+      ...(message.sentAt ? { sentAt: message.sentAt } : {}),
       ...(message.attachmentUrl ? { attachmentUrl: message.attachmentUrl } : {}),
     })),
   };

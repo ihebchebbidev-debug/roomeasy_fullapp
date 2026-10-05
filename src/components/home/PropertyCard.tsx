@@ -54,7 +54,7 @@ export function PropertyCard({ property, isFavorite, onToggleFavorite, priority 
         />
 
         {property.host?.superhost && property.rating >= 4.85 ? (
-          <span className="absolute top-3 left-3 z-[2] rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
+          <span className="absolute top-3 left-3 z-[2] inline-flex max-w-[calc(100%-4.5rem)] items-center justify-center rounded-full bg-surface px-3 py-1.5 text-center text-xs leading-tight font-semibold text-foreground shadow-sm">
             {t.listings.guestFavourite}
           </span>
         ) : null}

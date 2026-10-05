@@ -154,7 +154,7 @@ function AdminListingDetail() {
               onOpenChange={setRejectOpen}
               listingName={property?.name}
               onConfirm={(code, details) =>
-                act(() => adminApi.rejectListing(listing.id, code, details), { status: "suspended" }, t.app.admin.rejected)
+                act(() => adminApi.rejectListing(listing.id, code, details), { status: "draft", approved: false }, t.app.admin.rejected)
               }
             />
           </div>

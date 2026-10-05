@@ -4,6 +4,7 @@ import {
   ChefHat,
   Croissant,
   Laptop,
+  LayoutGrid,
   PawPrint,
   Snowflake,
   Star,
@@ -40,6 +41,18 @@ import {
 } from "@/data/equipment";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { cn } from "@/lib/utils";
+
+/**
+ * Filter options size to their own label, so a long word in any language
+ * ("Beliebig", "Cualquiera", "Qualquer") is never cut or pushed off-centre.
+ * They share the row evenly and wrap to a new line when space runs out.
+ */
+const OPTION_CLASS =
+  "h-auto min-h-9 min-w-fit flex-1 basis-0 whitespace-nowrap px-3 py-2 text-center text-xs leading-tight";
+
+/** Pill tags: content centred, long labels wrap inside the pill instead of overflowing. */
+const CHIP_CLASS =
+  "inline-flex min-h-9 max-w-full items-center justify-center gap-2 rounded-full border px-3.5 py-2 text-center text-xs leading-tight font-semibold transition-colors";
 
 const amenityIcons: Record<AmenityId, LucideIcon> = {
   wifi: Wifi,
@@ -101,20 +114,18 @@ export function FilterPanel({
                 onClick={() => update({ category })}
                 aria-pressed={active}
                 className={cn(
-                  "flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-colors",
+                  "flex min-w-0 flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-colors",
                   active
                     ? "border-foreground bg-secondary"
                     : "border-border hover:border-foreground/40 hover:bg-secondary/60",
                 )}
               >
                 {category === "all" ? (
-                  <span className="grid size-7 place-items-center rounded-md border border-current text-[10px] font-bold">
-                    {{ en: "ALL", fr: "TOUT", es: "TODO", de: "ALLE", pt: "TUDO" }[locale]}
-                  </span>
+                  <LayoutGrid className="size-7 p-1" strokeWidth={1.5} aria-hidden />
                 ) : (
                   <CategoryIcon category={category} />
                 )}
-                <span className="text-xs font-semibold">{categoryLabel(category, locale)}</span>
+                <span className="w-full text-xs leading-tight font-semibold break-words hyphens-auto">{categoryLabel(category, locale)}</span>
                 {typeof count === "number" ? (
                   <span className="text-[11px] text-muted-foreground">{count}</span>
                 ) : null}
@@ -165,13 +176,13 @@ export function FilterPanel({
       </Group>
 
       <Group label={t.explore.guestRating}>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-wrap gap-2">
           {[0, 4.5, 4.8].map((rating) => (
             <Button
               key={rating}
               variant={search.rating === rating ? "default" : "outline"}
               size="sm"
-              className="min-w-0 truncate px-1 text-[11px]"
+              className={OPTION_CLASS}
               onClick={() => update({ rating })}
             >
               {rating ? (
@@ -199,13 +210,13 @@ export function FilterPanel({
                 onClick={() => toggleAmenity(amenity)}
                 aria-pressed={active}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors",
+                  CHIP_CLASS,
                   active
                     ? "border-foreground bg-foreground text-background"
                     : "border-border hover:border-foreground/40 hover:bg-secondary",
                 )}
               >
-                <Icon className="size-3.5" aria-hidden />
+                <Icon className="size-3.5 shrink-0" aria-hidden />
                 {t.explore.amenity[amenity]}
               </button>
             );
@@ -226,7 +237,7 @@ export function FilterPanel({
                 onClick={() => toggleEquipment(id)}
                 aria-pressed={active}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors",
+                  CHIP_CLASS,
                   active
                     ? "border-foreground bg-foreground text-background"
                     : "border-border hover:border-foreground/40 hover:bg-secondary",
@@ -234,7 +245,7 @@ export function FilterPanel({
               >
                 {equipmentLabel(item, locale)}
                 {item.paid ? (
-                  <span className="text-[10px] font-bold opacity-70">{cc.paid}</span>
+                  <span className="shrink-0 text-[10px] font-bold opacity-70">{cc.paid}</span>
                 ) : null}
               </button>
             );
@@ -276,13 +287,13 @@ export function FilterPanel({
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {nightOptions.map((option) => (
                 <Button
                   key={option}
                   variant={search.nights === option ? "default" : "outline"}
                   size="sm"
-                  className="px-1 text-xs"
+                  className={OPTION_CLASS}
                   onClick={() => update({ nights: option })}
                 >
                   {option ? interpolate(sc.nights, { n: option }) : sc.any}
@@ -342,13 +353,13 @@ function Segmented({
   onSelect: (value: number) => void;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {options.map((option) => (
         <Button
           key={option}
           variant={value === option ? "default" : "outline"}
           size="sm"
-          className="min-w-0 truncate px-0.5 text-[10px]"
+          className={OPTION_CLASS}
           onClick={() => onSelect(option)}
         >
           {option ? `${option}+` : anyLabel}

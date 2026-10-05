@@ -214,16 +214,16 @@ function StaysPage() {
           </aside>
 
           <div className="min-w-0">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <div className="min-w-0">
-                <h2 className="truncate font-display text-xl font-bold sm:text-2xl">
+                <h2 className="font-display leading-tight break-words text-xl font-bold sm:text-2xl">
                   {total} {t.explore.results}
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {search.where || t.explore.worldwide}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2 max-sm:[&>*:first-child]:flex-1">
                 <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="lg:hidden">
@@ -571,12 +571,12 @@ function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }
       type="button"
       onClick={onRemove}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary",
+        "inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs leading-none font-semibold whitespace-nowrap text-primary",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
       )}
     >
-      {label}
-      <X className="size-3.5" />
+      <span>{label}</span>
+      <X className="size-3.5 shrink-0" />
     </button>
   );
 }

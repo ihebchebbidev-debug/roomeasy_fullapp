@@ -1132,8 +1132,9 @@ async function shrinkImage(file: File, maxSide = 1600, quality = 0.82): Promise<
       element.onerror = reject;
       element.src = source;
     });
-    // The whole listing (up to 10 photos) is sent in one request and the
-    // server rejects requests over ~1 MB, so each photo gets a size budget.
+    // The whole listing (up to 10 photos) is sent in one request; that
+    // request must stay small enough to upload quickly on mobile, so each
+    // photo gets a size budget (the server itself accepts up to 25 MB).
     const budget = 90_000;
     let side = Math.min(maxSide, 1280);
     let q = Math.min(quality, 0.78);

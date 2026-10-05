@@ -269,9 +269,10 @@ function ProfilePage() {
                 if (!session) return;
                 const account = await remote.saveProfile({ fullName: name, phone: phone || null });
                 if (!account) return;
+                const { phone: _oldPhone, ...rest } = session;
                 setPlatform({
                   session: {
-                    ...session,
+                    ...rest,
                     name: account.fullName,
                     ...(account.phone ? { phone: account.phone } : {}),
                     ...(account.avatarUrl ? { avatarUrl: account.avatarUrl } : {}),

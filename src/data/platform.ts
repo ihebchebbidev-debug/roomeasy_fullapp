@@ -87,7 +87,7 @@ export type Thread = {
   withName: string;
   withAvatar?: string;
   unread: number;
-  messages: { id: string; from: "me" | "them"; text: string; time: string; attachmentUrl?: string | null }[];
+  messages: { id: string; from: "me" | "them"; text: string; time: string; /** ISO UTC instant; used to render the time in the browser's local timezone. */ sentAt?: string; attachmentUrl?: string | null }[];
 };
 
 export type PlatformUser = {

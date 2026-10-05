@@ -37,7 +37,7 @@ export function EquipmentList({ ids }: { ids: string[] }) {
                   <span>
                     {equipmentLabel(item, locale)}
                     {item.paid ? (
-                      <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
+                      <span className="ml-2 inline-flex items-center rounded-full bg-secondary px-2 py-0.5 align-middle text-[10px] leading-none font-bold tracking-wide whitespace-nowrap uppercase">
                         {cc.paid}
                       </span>
                     ) : null}
