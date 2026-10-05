@@ -314,10 +314,10 @@ export const adminOpsApi = {
     }),
 
   /* bookings */
+  /** Walks every page so the list always holds all matching reservations. */
   bookings: (filters: AdminBookingFilters = {}) =>
-    request<AdminBookingDto[]>("/admin/bookings", {
+    requestAll<AdminBookingDto>("/admin/bookings", {
       query: {
-        limit: filters.limit ?? 50,
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.search ? { search: filters.search } : {}),
         ...(filters.guest ? { guest: filters.guest } : {}),

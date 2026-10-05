@@ -330,10 +330,10 @@ export function DashboardPanel({ overview, canStats, onOpen }: Props) {
               <ChartCard title={T("Occupancy rate")} subtitle={T("Booked vs available nights, {p}", { p: periodText.toLowerCase() })}>
                 {statsState === "loading" ? <Skeleton className="h-56 w-full" /> : occupancy.length === 0 ? <NoData T={T} /> : (
                   <ChartContainer config={occupancyConfig} className="h-56 w-full">
-                    <BarChart data={occupancy} margin={{ left: 0, right: 8, top: 8 }}>
+                    <BarChart data={occupancy} margin={{ left: 4, right: 8, top: 8 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} width={32} unit="%" />
+                      <YAxis tickLine={false} axisLine={false} width={48} unit="%" />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="rate" fill="var(--color-rate)" radius={4} />
                     </BarChart>

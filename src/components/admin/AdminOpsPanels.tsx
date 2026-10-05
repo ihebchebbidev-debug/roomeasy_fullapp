@@ -1422,7 +1422,7 @@ export function BookingsDeskPanel() {
     let active = true;
     setLoading(true);
     void adminOpsApi
-      .bookings({ limit: 100, ...applied }) // server maximum page size
+      .bookings(applied) // loads every page
       .then((data) => {
         if (active) setRows(data);
       })
