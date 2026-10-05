@@ -292,7 +292,7 @@ export const adminOpsApi = {
 
   /* members */
   verifications: (status?: VerificationDto["status"]) =>
-    request<VerificationDto[]>("/admin/verifications", { query: { limit: 50, ...(status ? { status } : {}) } }),
+    request<VerificationDto[]>("/admin/verifications", { query: { limit: 100, ...(status ? { status } : {}) } }),
   setVerification: (userId: string, status: VerificationDto["status"], notes?: string) =>
     request<{ userId: string; status: string }>(`/admin/users/${encodeURIComponent(userId)}/verification`, {
       method: "POST",

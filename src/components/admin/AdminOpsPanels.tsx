@@ -247,6 +247,8 @@ export function VerificationPanel() {
 
   const statusLabel = (status: VerificationDto["status"]) =>
     status === "verified" ? copy.identityVerified : status === "rejected" ? copy.identityRejected : copy.identityPending;
+  // A pending member who never uploaded anything is not waiting for a review yet.
+  const hasNoDocument = (row: VerificationDto) => row.status === "pending" && !row.documentKind;
 
   const decide = (row: VerificationDto, status: "verified" | "rejected") =>
     run(
@@ -276,105 +278,114 @@ export function VerificationPanel() {
           setDocsFor(null);
         }}
       />
-      <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
-      <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((row) => (
-        <div
-          key={row.userId}
-          className={cn(
-            "p-4 transition-colors hover:bg-muted/30 sm:px-5",
-            row.status === "pending" && "border-l-4 border-l-amber-500 bg-amber-500/5",
-          )}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link
-              to="/admin/hosts/$userId"
-              params={{ userId: row.userId }}
-              className="flex min-w-0 items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              <UserAvatar name={row.fullName} src={avatarOf(row)} className="size-11 shrink-0 text-base" />
-              <div className="min-w-0">
-                <p className="truncate font-semibold hover:underline">{row.fullName}</p>
-                <p className="truncate text-sm text-muted-foreground">{row.email}</p>
-              </div>
-            </Link>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => setDocsFor(row)}>
-                <FileText className="size-4" />
-                {T("See documents")}
-              </Button>
-              <Badge
-                className={cn(
-                  "border-0",
-                  row.status === "verified"
-                    ? "bg-emerald-500/15 text-emerald-700"
-                    : row.status === "rejected"
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-amber-500/15 text-amber-700",
-                )}
-              >
-                {statusLabel(row.status)}
-              </Badge>
-            </div>
-          </div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <Input
-              value={notes[row.userId] ?? ""}
-              onChange={(e) => setNotes((s) => ({ ...s, [row.userId]: e.target.value }))}
-              placeholder={copy.optionalNote}
-              aria-label={copy.optionalNote}
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                onClick={async () =>
-                  (await confirmAction("Approve this identity?", "The member will be marked as verified.")) && void run(
-                    () => adminOpsApi.setVerification(row.userId, "verified", notes[row.userId]?.trim() || undefined),
-                    reload,
-                    copy.saved,
-                    copy.failed,
-                  )
-                }
-              >
-                {copy.approveIdentity}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={async () =>
-                  (await confirmAction("Refuse this identity?", "The member will have to send a new document.")) && void run(
-                    () => adminOpsApi.setVerification(row.userId, "rejected", notes[row.userId]?.trim() || undefined),
-                    reload,
-                    copy.saved,
-                    copy.failed,
-                  )
-                }
-              >
-                {copy.refuseIdentity}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-destructive"
-                onClick={() => {
-                  const reason = (notes[row.userId] ?? "").trim();
-                  if (reason.length < 5) return void toast.error(copy.reasonRequired);
-                  void confirmAction("Ban this member?", "They will no longer be able to use their account.").then((ok) => { if (ok) void run(() => adminOpsApi.banUser(row.userId, reason), reload, copy.saved, copy.failed); });
-                }}
-              >
-                {copy.ban}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => void run(() => adminOpsApi.unbanUser(row.userId), reload, copy.saved, copy.failed)}
-              >
-                {copy.unban}
-              </Button>
-            </div>
-          </div>
+      <Paged rows={rows} text={rowText} filters={[
+        { value: "pending", label: copy.identityPending, test: (r) => r.status === "pending" && !!r.documentKind },
+        { value: "none", label: T("No document"), test: (r) => r.status === "pending" && !r.documentKind },
+        { value: "verified", label: copy.identityVerified, test: (r) => r.status === "verified" },
+        { value: "rejected", label: copy.identityRejected, test: (r) => r.status === "rejected" },
+      ]}>{(__rows) => (
+        <div className="col-span-full overflow-x-auto rounded-lg border border-border bg-surface">
+          <table className="w-full min-w-[56rem] text-sm">
+            <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-semibold">{T("Member")}</th>
+                <th className="px-4 py-3 font-semibold">{T("Document")}</th>
+                <th className="px-4 py-3 font-semibold">{T("Status")}</th>
+                <th className="px-4 py-3 font-semibold">{copy.optionalNote}</th>
+                <th className="px-4 py-3 text-right font-semibold">{T("Actions")}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {__rows.map((row) => (
+                <tr key={row.userId} className={cn("align-middle transition-colors hover:bg-muted/30", row.status === "pending" && !hasNoDocument(row) && "bg-amber-500/5")}>
+                  <td className="px-4 py-3">
+                    <Link
+                      to="/admin/hosts/$userId"
+                      params={{ userId: row.userId }}
+                      className="flex min-w-0 items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      <UserAvatar name={row.fullName} src={avatarOf(row)} className="size-9 shrink-0 text-sm" />
+                      <div className="min-w-0">
+                        <p className="font-semibold break-words hover:underline">{row.fullName}</p>
+                        <p className="text-xs text-muted-foreground break-all">{row.email}</p>
+                      </div>
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Button size="sm" variant="outline" onClick={() => setDocsFor(row)}>
+                      <FileText className="size-4" />
+                      {T("See documents")}
+                    </Button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge
+                      className={cn(
+                        "border-0 whitespace-nowrap",
+                        row.status === "verified"
+                          ? "bg-emerald-500/15 text-emerald-700"
+                          : row.status === "rejected"
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-amber-500/15 text-amber-700",
+                      )}
+                    >
+                      {hasNoDocument(row) ? T("No document") : statusLabel(row.status)}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Input
+                      value={notes[row.userId] ?? ""}
+                      onChange={(e) => setNotes((s) => ({ ...s, [row.userId]: e.target.value }))}
+                      placeholder={copy.optionalNote}
+                      aria-label={copy.optionalNote}
+                      className="h-9 min-w-40"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {row.status !== "verified" ? (
+                        <Button
+                          size="sm"
+                          onClick={() => setDocsFor(row)}
+                        >
+                          {copy.approveIdentity}
+                        </Button>
+                      ) : null}
+                      {row.status !== "rejected" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setDocsFor(row)}
+                        >
+                          {copy.refuseIdentity}
+                        </Button>
+                      ) : null}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive"
+                        onClick={() => {
+                          const reason = (notes[row.userId] ?? "").trim();
+                          if (reason.length < 5) return void toast.error(copy.reasonRequired);
+                          void confirmAction("Ban this member?", "They will no longer be able to use their account.").then((ok) => { if (ok) void run(() => adminOpsApi.banUser(row.userId, reason), reload, copy.saved, copy.failed); });
+                        }}
+                      >
+                        {copy.ban}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => void run(() => adminOpsApi.unbanUser(row.userId), reload, copy.saved, copy.failed)}
+                      >
+                        {copy.unban}
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))}</Paged>
-      </div>
+      )}</Paged>
     </Shell>
   );
 }

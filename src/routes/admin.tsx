@@ -443,6 +443,8 @@ function AdminPage() {
 
   return (
     <main className="min-h-screen bg-background font-sans text-foreground">
+      {/* Always mounted so every admin section asks for confirmation before sensitive actions. */}
+      <ConfirmDialogHost />
       <Tabs value={section} onValueChange={setSection} className="min-w-0 gap-0">
         <div className="flex min-h-screen">
           <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
@@ -913,7 +915,6 @@ function AdminPage() {
             ))}
           </ul>
           <ShowMore controls={payoutList} />
-          <ConfirmDialogHost />
           <AlertDialog open={payoutToConfirm !== null} onOpenChange={(open) => { if (!open) setPayoutToConfirm(null); }}>
             <AlertDialogContent>
               <AlertDialogHeader>
