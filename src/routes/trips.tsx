@@ -69,6 +69,14 @@ export function statusTone(status: BookingStatus) {
   }[status];
 }
 
+const CANCELLED_TAB: Record<string, string> = {
+  en: "Cancelled",
+  fr: "Annulés",
+  es: "Cancelados",
+  de: "Storniert",
+  pt: "Cancelados",
+};
+
 function TripsPage() {
   const { t, locale } = useLanguage();
   const { bookings, accountDataStatus } = usePlatform();
@@ -79,8 +87,12 @@ function TripsPage() {
   const today = localCalendarDate();
   const isUpcoming = (b: (typeof bookings)[number]) =>
     b.status === "pending" || (b.status === "confirmed" && localCalendarDate(b.to) > today);
+  const isCancelled = (b: (typeof bookings)[number]) => b.status === "cancelled" || b.status === "declined";
   const upcoming = bookings.filter(isUpcoming);
-  const past = bookings.filter((b) => !isUpcoming(b));
+  const past = bookings.filter((b) => !isUpcoming(b) && !isCancelled(b));
+  // Cancelled and declined trips get their own tab so they never seem to vanish.
+  const cancelled = bookings.filter(isCancelled);
+  const cancelledLabel = CANCELLED_TAB[locale] ?? CANCELLED_TAB["en"]!;
 
   return (
     <AccountShell title={t.app.trips.title} subtitle={t.app.trips.subtitle}>
@@ -88,11 +100,15 @@ function TripsPage() {
         <DataState status={accountDataStatus} loading={t.app.common.loading} error={t.app.common.loadError} retry={t.app.common.retry} />
       ) : (
       <Tabs defaultValue="upcoming">
-        <TabsList className="grid h-11 w-full grid-cols-2 rounded-lg bg-muted p-1 sm:w-80">
+        <TabsList className="flex h-auto min-h-11 w-full flex-wrap justify-start gap-1 rounded-lg bg-muted p-1 sm:w-auto">
           <TabsTrigger value="upcoming">{t.app.trips.upcoming}</TabsTrigger>
           <TabsTrigger value="past">{t.app.trips.past}</TabsTrigger>
+          <TabsTrigger value="cancelled">
+            {cancelledLabel}
+            {cancelled.length > 0 ? <span className="ml-1.5 text-xs text-muted-foreground tabular-nums">({cancelled.length})</span> : null}
+          </TabsTrigger>
         </TabsList>
-        {([["upcoming", upcoming], ["past", past]] as const).map(([key, list]) => (
+        {([["upcoming", upcoming], ["past", past], ["cancelled", cancelled]] as const).map(([key, list]) => (
           <TabsContent key={key} value={key} className="mt-6">
             {list.length === 0 ? (
               <SharedEmptyState

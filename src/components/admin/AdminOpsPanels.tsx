@@ -18,7 +18,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { ImageOff } from "lucide-react";
+import { Check, FileText, ImageOff, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { adminApi, type AdminHostProfileDto } from "@/api/http/platform.http";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -228,16 +237,43 @@ export function VerificationPanel() {
   const avatarOf = (row: VerificationDto) =>
     row.avatarUrl ?? platformUsers.find((u) => u.id === row.userId)?.avatarUrl ?? null;
 
-  if (loading) return <Note text={copy.loading} />;
-  if (data.length === 0) return <Note text={copy.empty} />;
+  const T = useAdminT();
+  const [docsFor, setDocsFor] = useState<VerificationDto | null>(null);
+  const rows = data.filter((row) => !row.email.endsWith("@deleted.invalid"));
+
+  // Only show the loading note on first load: unmounting the list on reload cleared the search.
+  if (loading && data.length === 0) return <Note text={copy.loading} />;
+  if (rows.length === 0) return <Note text={copy.empty} />;
 
   const statusLabel = (status: VerificationDto["status"]) =>
     status === "verified" ? copy.identityVerified : status === "rejected" ? copy.identityRejected : copy.identityPending;
 
+  const decide = (row: VerificationDto, status: "verified" | "rejected") =>
+    run(
+      () => adminOpsApi.setVerification(row.userId, status, notes[row.userId]?.trim() || undefined),
+      reload,
+      copy.saved,
+      copy.failed,
+    );
+
   return (
     <Shell>
+      <IdentityDocumentsDialog
+        row={docsFor}
+        onClose={() => setDocsFor(null)}
+        onDecide={async (status) => {
+          if (!docsFor) return;
+          const ok = await confirmAction(
+            status === "verified" ? "Approve this identity?" : "Refuse this identity?",
+            status === "verified" ? "The member will be marked as verified." : "The member will have to send a new document.",
+          );
+          if (!ok) return;
+          await decide(docsFor, status);
+          setDocsFor(null);
+        }}
+      />
       <div className="overflow-hidden rounded-lg border border-border bg-surface divide-y divide-border">
-      <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
+      <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((row) => (
         <div
           key={row.userId}
           className={cn(
@@ -257,18 +293,24 @@ export function VerificationPanel() {
                 <p className="truncate text-sm text-muted-foreground">{row.email}</p>
               </div>
             </Link>
-            <Badge
-              className={cn(
-                "border-0",
-                row.status === "verified"
-                  ? "bg-emerald-500/15 text-emerald-700"
-                  : row.status === "rejected"
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-amber-500/15 text-amber-700",
-              )}
-            >
-              {statusLabel(row.status)}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setDocsFor(row)}>
+                <FileText className="size-4" />
+                {T("See documents")}
+              </Button>
+              <Badge
+                className={cn(
+                  "border-0",
+                  row.status === "verified"
+                    ? "bg-emerald-500/15 text-emerald-700"
+                    : row.status === "rejected"
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-amber-500/15 text-amber-700",
+                )}
+              >
+                {statusLabel(row.status)}
+              </Badge>
+            </div>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
             <Input
@@ -330,6 +372,103 @@ export function VerificationPanel() {
       ))}</Paged>
       </div>
     </Shell>
+  );
+}
+
+/** Shows the identity documents a member uploaded, with approve / refuse actions. */
+function IdentityDocumentsDialog({
+  row,
+  onClose,
+  onDecide,
+}: {
+  row: VerificationDto | null;
+  onClose: () => void;
+  onDecide: (status: "verified" | "rejected") => Promise<void>;
+}) {
+  const T = useAdminT();
+  const [docs, setDocs] = useState<AdminHostProfileDto["documents"] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!row) return;
+    let alive = true;
+    setDocs(null);
+    setFailed(false);
+    adminApi
+      .hostProfile(row.userId)
+      .then((p) => alive && setDocs(p.documents))
+      .catch(() => alive && setFailed(true));
+    return () => {
+      alive = false;
+    };
+  }, [row]);
+
+  const act = async (status: "verified" | "rejected") => {
+    setBusy(true);
+    try {
+      await onDecide(status);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open={row !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>{T("Identity documents")}</DialogTitle>
+          <DialogDescription className="break-words">
+            {row?.fullName} · {row?.email}
+          </DialogDescription>
+        </DialogHeader>
+        {failed ? (
+          <p className="text-sm text-destructive">{T("Could not load the documents.")}</p>
+        ) : docs === null ? (
+          <p className="text-sm text-muted-foreground">{T("Loading…")}</p>
+        ) : docs.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{T("This member has not sent any identity document.")}</p>
+        ) : (
+          <div className="space-y-5">
+            {docs.map((doc) => (
+              <div key={doc.id} className="space-y-3">
+                <dl className="grid gap-3 text-sm sm:grid-cols-3">
+                  <div><dt className="text-xs text-muted-foreground uppercase">{T("Document type")}</dt><dd className="font-medium">{T((doc.documentKind ?? "—").replace(/_/g, " "))}</dd></div>
+                  <div><dt className="text-xs text-muted-foreground uppercase">{T("Document number")}</dt><dd className="font-medium break-all">{doc.documentReference ?? "—"}</dd></div>
+                  <div><dt className="text-xs text-muted-foreground uppercase">{T("Sent on")}</dt><dd className="font-medium">{new Date(doc.createdAt).toLocaleString()}</dd></div>
+                </dl>
+                {doc.notes ? <p className="rounded-md bg-muted p-3 text-sm"><span className="font-medium">{T("Note")}: </span>{doc.notes}</p> : null}
+                {doc.documentFiles && doc.documentFiles.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {doc.documentFiles.map((file, i) => (
+                      <a key={i} href={file} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg border border-border bg-muted">
+                        <img src={file} alt={`${T("Identity proof")} ${i + 1}`} className="aspect-[4/3] w-full object-contain" />
+                        <span className="block px-2 py-1 text-xs text-muted-foreground">{T("Proof")} {i + 1} · {T("open full size")}</span>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{T("No proof image uploaded.")}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        <DialogFooter className="flex-wrap gap-2">
+          {row ? (
+            <Button variant="ghost" asChild>
+              <Link to="/admin/hosts/$userId" params={{ userId: row.userId }}>{T("Open member profile")}</Link>
+            </Button>
+          ) : null}
+          <Button variant="outline" disabled={busy || row?.status === "rejected"} onClick={() => void act("rejected")}>
+            <X className="size-4" />{T("Refuse")}
+          </Button>
+          <Button disabled={busy || row?.status === "verified"} onClick={() => void act("verified")}>
+            <Check className="size-4" />{T("Approve")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -1171,6 +1310,7 @@ export function StatsComparePanel() {
 export function BookingsDeskPanel() {
   const copy = useAdminCopy();
   const T = useAdminT();
+  const { locale } = useLanguage();
   const { format } = useCurrency();
   const [filters, setFilters] = useState<AdminBookingFilters>({});
   const [applied, setApplied] = useState<AdminBookingFilters>({});
@@ -1266,8 +1406,8 @@ export function BookingsDeskPanel() {
     try {
       setConversation(await adminOpsApi.bookingConversation(booking.id));
     } catch {
-      // No conversation available for this booking: the panel shows the empty state.
-      setConversation({ messages: [] } as unknown as BookingConversationDto);
+      // The server only opens guest/host messages from a support ticket (privacy rule).
+      setConversation({ threadId: null, guestName: null, hostName: null, messages: [], locked: true } as BookingConversationDto & { locked: boolean });
     }
   };
 
@@ -1499,8 +1639,8 @@ export function BookingsDeskPanel() {
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkHost ?? "Hôte"}</p>
-              <p className="mt-1 truncate text-sm font-semibold">{conversation?.hostName ?? bookingHost?.name ?? "—"}</p>
-              {bookingHost?.email ? <p className="truncate text-xs text-muted-foreground">{bookingHost.email}</p> : null}
+              <p className="mt-1 truncate text-sm font-semibold">{selected.hostName ?? conversation?.hostName ?? bookingHost?.name ?? "—"}</p>
+              {(selected.hostEmail ?? bookingHost?.email) ? <p className="truncate text-xs text-muted-foreground">{selected.hostEmail ?? bookingHost?.email}</p> : null}
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{copy.bkFrom} → {copy.bkTo}</p>
@@ -1546,14 +1686,18 @@ export function BookingsDeskPanel() {
                 {conversation.messages.map((message) => (
                   <div key={message.id} className="rounded-lg border border-border bg-background p-3 text-sm">
                     <p className="text-xs text-muted-foreground">
-                      {message.senderName ?? message.senderRole} · {new Date(message.sentAt).toLocaleString()}
+                      {message.senderName ?? T(message.senderRole)} · {new Date(message.sentAt).toLocaleString(locale)}
                     </p>
                     <p className="mt-1 whitespace-pre-wrap">{message.text}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="mt-2 text-sm text-muted-foreground">{copy.bkNoConversation}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {(conversation as { locked?: boolean } | null)?.locked
+                  ? T("Messages between the guest and the host are private. Open a support ticket on this booking to read them.")
+                  : copy.bkNoConversation}
+              </p>
             )}
           </div>
         </div>

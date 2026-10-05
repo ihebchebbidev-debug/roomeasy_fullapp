@@ -215,14 +215,26 @@ function ListingDetail() {
   // True until the fetch for this stay has finished, so the page shows a
   // loading state instead of claiming the stay does not exist.
   const [loadingStay, setLoadingStay] = useState(true);
+  // True once the public catalogue serves this stay: it is approved and live,
+  // even if the host's own copy of their listings is stale.
+  const [publiclyLive, setPubliclyLive] = useState(false);
   useEffect(() => {
     let cancelled = false;
     setLoadingStay(true);
+    setPubliclyLive(false);
     void loadPropertyReviews(propertyId);
     // The hydrated catalogue is capped, so fetch this stay if it is missing.
     void ensureStays([propertyId]).finally(() => {
       if (!cancelled) setLoadingStay(false);
     });
+    if (backendEnabled) {
+      propertiesApi
+        .get(propertyId)
+        .then(() => {
+          if (!cancelled) setPubliclyLive(true);
+        })
+        .catch(() => undefined);
+    }
     return () => {
       cancelled = true;
     };
@@ -644,7 +656,7 @@ function ListingDetail() {
     });
   }
 
-  const ownerNotice = !isOwner || !ownListing
+  const ownerNotice = !isOwner || !ownListing || publiclyLive
     ? null
     : ownListing.status === "suspended"
       ? { title: d.suspendedTitle, text: d.suspendedText }
@@ -865,6 +877,21 @@ function ListingDetail() {
                   </div>
                 ) : null}
               </Section>
+
+              {/* Highlighted amenities the host ticked (Wi-Fi, kitchen…) */}
+              {property.amenities?.length ? (
+                <Section>
+                  <h2 className="font-display text-xl font-semibold">{t.detail.amenities}</h2>
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {property.amenities.map((id) => (
+                      <li key={id} className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm">
+                        <Check className="size-4 shrink-0" aria-hidden />
+                        {(t.explore.amenity as Record<string, string>)[id] ?? id}
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
+              ) : null}
 
               {/* Equipment & services — only what the host actually selected */}
               {property.equipment?.length ? (

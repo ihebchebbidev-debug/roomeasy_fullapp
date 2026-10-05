@@ -160,6 +160,9 @@ export type AdminBookingDto = {
   propertyCity: string;
   propertyCountry: string;
   hostId: string | null;
+  /** Host name and e-mail; missing on older servers. */
+  hostName?: string | null;
+  hostEmail?: string | null;
   guest: { name: string; email: string | null; phone: string | null };
   checkIn: string;
   checkOut: string;

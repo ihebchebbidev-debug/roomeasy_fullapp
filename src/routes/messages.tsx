@@ -55,6 +55,13 @@ function localDayKey(iso?: string): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
 
+/** A stay date (YYYY-MM-DD) in the reader's language, e.g. "10 novembre 2026". */
+function stayDate(iso: string, locale: string): string {
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
+}
+
 /** Today / Yesterday / a dated label, compared against the viewer's local calendar day. */
 function localDayLabel(iso: string | undefined, locale: string, labels: { today: string; yesterday: string }): string {
   const date = iso ? new Date(iso) : new Date();
@@ -324,7 +331,7 @@ function MessagesPage() {
              <div className="relative"><img src={property.image} alt={property.name} className="aspect-[16/10] w-full object-cover" />{booking ? <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-surface/95 px-2 py-1 text-[10px] font-semibold text-primary"><CheckCircle2 className="size-3" />{t.app.status[booking.status]}</span> : null}</div>
             <div className="p-5"><p className="text-[10px] font-semibold text-muted-foreground uppercase">{copy.property}</p><h2 className="mt-1 font-display text-lg font-semibold">{property.name}</h2><p className="mt-1 text-xs text-muted-foreground">{cityName(property, locale)}</p><p className="mt-2 flex items-center gap-1 text-xs font-semibold"><Star className="size-3 fill-current text-primary" />{property.rating.toFixed(1)}</p>
               <Button asChild variant="outline" className="mt-4 w-full"><Link to="/stays/$propertyId" params={{ propertyId: property.id }}>{copy.view}</Link></Button>
-               <div className="mt-6 border-t border-border pt-5"><p className="text-[10px] font-semibold text-muted-foreground uppercase">{copy.reservation}</p>{booking ? <dl className="mt-4 space-y-4 text-sm"><Detail icon={CalendarDays} label={copy.checkIn} value={booking.from} /><Detail icon={CalendarDays} label={copy.checkOut} value={booking.to} /><Detail icon={Users} label={copy.guests} value={`${booking.guests} · ${booking.nights} ${copy.nights}`} /></dl> : <p className="mt-3 text-sm text-muted-foreground">{copy.noReservation}</p>}</div>
+               <div className="mt-6 border-t border-border pt-5"><p className="text-[10px] font-semibold text-muted-foreground uppercase">{copy.reservation}</p>{booking ? <dl className="mt-4 space-y-4 text-sm"><Detail icon={CalendarDays} label={copy.checkIn} value={stayDate(booking.from, locale)} /><Detail icon={CalendarDays} label={copy.checkOut} value={stayDate(booking.to, locale)} /><Detail icon={Users} label={copy.guests} value={`${booking.guests} · ${booking.nights} ${copy.nights}`} /></dl> : <p className="mt-3 text-sm text-muted-foreground">{copy.noReservation}</p>}</div>
                {booking ? <div className="mt-5 border-t border-border pt-5"><div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">{copy.total}</span><strong>{format(Math.round(booking.totalUsd), { from: booking.currency })}</strong></div><div className="mt-3 flex items-center justify-between text-sm"><span className="text-muted-foreground">{copy.status}</span><span className="font-semibold text-primary">{t.app.status[booking.status]}</span></div></div> : null}
             </div>
           </div> : null}
