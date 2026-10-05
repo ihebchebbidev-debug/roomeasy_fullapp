@@ -309,7 +309,7 @@ function AdminPage() {
   const metric = (value: number | string) => accountDataStatus === "ready" ? value : "—";
 
   const overview = [
-    { label: t.app.admin.approvals, value: metric(adminOverview?.listings.awaitingApproval ?? pending.length), tone: "amber" as const, to: "approvals" },
+    { label: t.app.admin.approvals, value: metric(pending.length), tone: "amber" as const, to: "approvals" },
     { label: t.app.admin.users, value: metric(adminOverview?.users.total ?? users.length), tone: "primary" as const, to: "users" },
     { label: t.app.admin.host, value: metric(hostsCount), tone: "emerald" as const, to: "users" },
     { label: t.app.admin.payouts, value: metric(format(payoutsTotal)), tone: "primary" as const, to: "payouts" },
@@ -394,7 +394,7 @@ function AdminPage() {
             const Icon = item.icon;
             const active = item.value === section;
             const counts: Record<string, number> = {
-              approvals: Number(adminOverview?.listings.awaitingApproval ?? pending.length),
+              approvals: pending.length,
               "listing-reports": todo.reports,
               verification: todo.verifications,
               support: todo.support,
