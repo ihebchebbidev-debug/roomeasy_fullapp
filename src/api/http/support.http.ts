@@ -2,7 +2,7 @@
  * Member side of the support desk (open a request, reply, report a listing)
  * and the administrator team screen (hand out back-office access levels).
  */
-import { request } from "@/api/http/client";
+import { request, requestAll } from "@/api/http/client";
 
 export type MemberTicketMessage = {
   id: string;
@@ -68,14 +68,14 @@ export type GrantableRole = "host" | "admin" | "moderator" | "support" | "accoun
 
 export const adminTeamApi = {
   members: (search?: string, role?: string) =>
-    request<AdminMemberRow[]>("/admin/users", {
-      query: { limit: search ? 30 : 100, ...(search ? { search } : {}), ...(role ? { role } : {}) },
-    }),
+    search
+      ? request<AdminMemberRow[]>("/admin/users", { query: { limit: 30, search, ...(role ? { role } : {}) } })
+      : requestAll<AdminMemberRow>("/admin/users", { query: { ...(role ? { role } : {}) } }),
   /** Everyone holding a back-office role, merged and de-duplicated. */
   staff: async () => {
     const lists = await Promise.all(
       ["admin", "moderator", "support", "accounting"].map((role) =>
-        request<AdminMemberRow[]>("/admin/users", { query: { limit: 100, role } }),
+        requestAll<AdminMemberRow>("/admin/users", { query: { role } }),
       ),
     );
     const byId = new Map<string, AdminMemberRow>();

@@ -3,7 +3,7 @@
  * accounts, stays, favourites, messaging, host, admin, reviews, settings,
  * equipment and currency. One function per route of the Node backend.
  */
-import { request, requestWithMeta } from "@/api/http/client";
+import { request, requestAll, requestWithMeta } from "@/api/http/client";
 import type { ListingRejectionCode } from "@/lib/listingRejectionReasons";
 
 /* ---------------------------------------------------------------- accounts */
@@ -461,8 +461,8 @@ export type AdminOverviewDto = {
 export const adminApi = {
   overview: () => request<AdminOverviewDto>("/admin/overview"),
   reports: () => request<AdminReportsDto>("/admin/reports?months=12"),
-  listings: () => request<AdminListingDto[]>("/admin/listings?scope=all&limit=100"),
-  reviews: () => request<ReviewDto[]>("/admin/reviews"),
+  listings: () => requestAll<AdminListingDto>("/admin/listings", { query: { scope: "all" } }),
+  reviews: () => requestAll<ReviewDto>("/admin/reviews"),
   approveListing: (id: string) =>
     request<unknown>(`/admin/listings/${encodeURIComponent(id)}/approve`, { method: "POST", body: {} }),
   rejectListing: (id: string, reasonCode: ListingRejectionCode, details?: string) =>
@@ -474,7 +474,7 @@ export const adminApi = {
     request<unknown>(`/admin/listings/${encodeURIComponent(id)}/suspend`, { method: "POST", body: { reason } }),
   restoreListing: (id: string) =>
     request<unknown>(`/admin/listings/${encodeURIComponent(id)}/restore`, { method: "POST", body: {} }),
-  users: () => request<AdminUserDto[]>("/admin/users"),
+  users: () => requestAll<AdminUserDto>("/admin/users"),
   /** `until` is an ISO date/time; omit it for a suspension with no end date. */
   suspendUser: (id: string, reason = "Suspended from the admin back office.", until?: string | null) =>
     request<unknown>(`/admin/users/${encodeURIComponent(id)}/suspend`, {
@@ -484,7 +484,7 @@ export const adminApi = {
   hostProfile: (id: string) => request<AdminHostProfileDto>(`/admin/hosts/${encodeURIComponent(id)}`),
   restoreUser: (id: string) =>
     request<unknown>(`/admin/users/${encodeURIComponent(id)}/restore`, { method: "POST", body: {} }),
-  payouts: () => request<PayoutDto[]>("/admin/payouts"),
+  payouts: () => requestAll<PayoutDto>("/admin/payouts"),
   /** Sends the money to the host, then records the payout as paid. */
   markPayoutPaid: (payoutId: string) =>
     request<PayoutDto>(`/admin/payouts/${encodeURIComponent(payoutId)}/paid`, { method: "POST", body: {} }),
@@ -493,7 +493,7 @@ export const adminApi = {
   restoreReview: (id: string) =>
     request<unknown>(`/admin/reviews/${encodeURIComponent(id)}/restore`, { method: "POST", body: {} }),
   deleteReview: (id: string) => request<void>(`/admin/reviews/${encodeURIComponent(id)}`, { method: "DELETE" }),
-  moderationLog: () => request<Record<string, unknown>[]>("/admin/moderation-log"),
+  moderationLog: () => requestAll<Record<string, unknown>>("/admin/moderation-log"),
 };
 
 /* -------------------------------------------------- settings / catalogues */

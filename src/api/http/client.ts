@@ -130,3 +130,28 @@ export async function requestWithMeta<T>(
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   return (await requestWithMeta<T>(path, options)).data;
 }
+
+/**
+ * Loads every page of a list endpoint so admin screens never silently miss rows.
+ * Pages through `offset` in steps of `pageSize` (the server caps a page at 100)
+ * until a short page comes back; `maxRows` is only a safety stop.
+ */
+export async function requestAll<T>(
+  path: string,
+  options: RequestOptions = {},
+  pageSize = 100,
+  maxRows = 10_000,
+): Promise<T[]> {
+  const rows: T[] = [];
+  let previousFirst = "";
+  for (let offset = 0; offset < maxRows; offset += pageSize) {
+    const page = await request<T[]>(path, { ...options, query: { ...(options.query ?? {}), limit: pageSize, offset } });
+    // Safety: an endpoint that ignores `offset` would return the same page forever.
+    const first = page.length ? JSON.stringify(page[0]) : "";
+    if (offset > 0 && first === previousFirst) break;
+    previousFirst = first;
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows;
+}

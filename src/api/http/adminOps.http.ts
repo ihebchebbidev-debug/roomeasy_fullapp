@@ -4,7 +4,7 @@
  * the support desk, the audit trail, queued notification emails and the
  * period-over-period statistics (with CSV export).
  */
-import { API_BASE_URL, getAccessToken, request } from "@/api/http/client";
+import { API_BASE_URL, getAccessToken, request, requestAll } from "@/api/http/client";
 import { serviceError } from "@/i18n/serviceErrors";
 
 export type AdminMeDto = {
@@ -280,7 +280,7 @@ export const adminOpsApi = {
 
   /* listing reports */
   listingReports: (status: ListingReportDto["status"] | "all" = "open") =>
-    request<ListingReportDto[]>("/admin/listing-reports", { query: { status, limit: 50 } }),
+    requestAll<ListingReportDto>("/admin/listing-reports", { query: { status } }),
   setReportStatus: (reportId: string, status: ListingReportDto["status"], resolution?: string) =>
     request<ListingReportDto>(`/admin/listing-reports/${encodeURIComponent(reportId)}/status`, {
       method: "POST",
@@ -294,7 +294,7 @@ export const adminOpsApi = {
 
   /* members */
   verifications: (status?: VerificationDto["status"]) =>
-    request<VerificationDto[]>("/admin/verifications", { query: { limit: 100, ...(status ? { status } : {}) } }),
+    requestAll<VerificationDto>("/admin/verifications", { query: { ...(status ? { status } : {}) } }),
   setVerification: (userId: string, status: VerificationDto["status"], notes?: string) =>
     request<{ userId: string; status: string }>(`/admin/users/${encodeURIComponent(userId)}/verification`, {
       method: "POST",
@@ -306,7 +306,7 @@ export const adminOpsApi = {
     request<unknown>(`/admin/users/${encodeURIComponent(userId)}/unban`, { method: "POST", body: {} }),
 
   /* commission */
-  commissions: () => request<HostCommissionDto[]>("/admin/commissions", { query: { limit: 100 } }),
+  commissions: () => requestAll<HostCommissionDto>("/admin/commissions"),
   setCommission: (hostId: string, commissionRate: number | null, note?: string) =>
     request<{ hostId: string; commissionRate: number | null }>(`/admin/commissions/${encodeURIComponent(hostId)}`, {
       method: "PUT",
@@ -348,7 +348,7 @@ export const adminOpsApi = {
 
   /* support desk */
   tickets: (status: TicketDto["status"] | "all" = "open") =>
-    request<TicketDto[]>("/admin/tickets", { query: { status, limit: 50 } }),
+    requestAll<TicketDto>("/admin/tickets", { query: { status } }),
   ticket: (ticketId: string) => request<TicketDto>(`/admin/tickets/${encodeURIComponent(ticketId)}`),
   replyToTicket: (ticketId: string, body: string, internalNote = false) =>
     request<TicketDto>(`/admin/tickets/${encodeURIComponent(ticketId)}/messages`, {
@@ -375,7 +375,7 @@ export const adminOpsApi = {
     }),
 
   /* audit + notifications */
-  auditLog: () => request<AuditEntryDto[]>("/admin/moderation-log", { query: { limit: 60 } }),
+  auditLog: () => requestAll<AuditEntryDto>("/admin/moderation-log"),
   notifications: () => request<NotificationDto[]>("/admin/notifications", { query: { limit: 50 } }),
 
   /* outgoing email: credentials health, manual drain, retry, test message */

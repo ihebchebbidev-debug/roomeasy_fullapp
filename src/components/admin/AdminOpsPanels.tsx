@@ -230,7 +230,14 @@ export function ListingReportsPanel() {
 
 export function VerificationPanel() {
   const copy = useAdminCopy();
-  const load = useCallback(() => adminOpsApi.verifications(), []);
+  // The full list is capped, so also fetch every member awaiting a check and put them first —
+  // otherwise older pending documents fall off the list while the sidebar still counts them.
+  const load = useCallback(async () => {
+    const [pending, all] = await Promise.all([adminOpsApi.verifications("pending"), adminOpsApi.verifications()]);
+    const waiting = pending.filter((r) => !!r.documentKind);
+    const seen = new Set(waiting.map((r) => r.userId));
+    return [...waiting, ...all.filter((r) => !seen.has(r.userId))];
+  }, []);
   const { data, loading, reload } = useRemoteList<VerificationDto[]>(load, []);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const { users: platformUsers } = usePlatform();
