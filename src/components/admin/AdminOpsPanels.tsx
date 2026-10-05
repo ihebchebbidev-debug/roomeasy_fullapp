@@ -342,7 +342,7 @@ export function VerificationPanel() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap justify-end gap-1.5">
-                      {row.status !== "verified" ? (
+                      {row.status !== "verified" && !hasNoDocument(row) ? (
                         <Button
                           size="sm"
                           onClick={() => setDocsFor(row)}
@@ -350,7 +350,7 @@ export function VerificationPanel() {
                           {copy.approveIdentity}
                         </Button>
                       ) : null}
-                      {row.status !== "rejected" ? (
+                      {row.status !== "rejected" && !hasNoDocument(row) ? (
                         <Button
                           size="sm"
                           variant="outline"
@@ -359,6 +359,7 @@ export function VerificationPanel() {
                           {copy.refuseIdentity}
                         </Button>
                       ) : null}
+                      {!row.banned ? (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -371,6 +372,7 @@ export function VerificationPanel() {
                       >
                         {copy.ban}
                       </Button>
+                      ) : (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -378,6 +380,7 @@ export function VerificationPanel() {
                       >
                         {copy.unban}
                       </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -388,6 +391,16 @@ export function VerificationPanel() {
       )}</Paged>
     </Shell>
   );
+}
+
+/** Proof preview that shows a readable message instead of a blank box when the image cannot load (PDF, expired link). */
+function ProofImage({ src, alt, fallback }: { src: string; alt: string; fallback: string }) {
+  const [broken, setBroken] = useState(false);
+  const isPdf = /\.pdf($|\?)/i.test(src);
+  if (broken || isPdf) {
+    return <span className="flex aspect-[4/3] w-full items-center justify-center p-4 text-center text-sm text-muted-foreground">{fallback}</span>;
+  }
+  return <img src={src} alt={alt} onError={() => setBroken(true)} className="aspect-[4/3] w-full object-contain" />;
 }
 
 /** Shows the identity documents a member uploaded, with approve / refuse actions. */
@@ -457,7 +470,7 @@ function IdentityDocumentsDialog({
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {doc.documentFiles.map((file, i) => (
                       <a key={i} href={file} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg border border-border bg-muted">
-                        <img src={file} alt={`${T("Identity proof")} ${i + 1}`} className="aspect-[4/3] w-full object-contain" />
+                        <ProofImage src={file} alt={`${T("Identity proof")} ${i + 1}`} fallback={T("Preview unavailable — open the file")} />
                         <span className="block px-2 py-1 text-xs text-muted-foreground">{T("Proof")} {i + 1} · {T("open full size")}</span>
                       </a>
                     ))}

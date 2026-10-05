@@ -190,8 +190,9 @@ function AdminPage() {
     const load = async () => {
       const count = async (p: Promise<unknown[]>) => { try { return (await p).length; } catch { return 0; } };
       // Deleted accounts are hidden from the ID-check list, so they must not be counted either.
-      const countLive = async (p: Promise<{ email: string }[]>) => {
-        try { return (await p).filter((r) => !r.email.endsWith("@deleted.invalid")).length; } catch { return 0; }
+      // Only members who actually sent a document need a check.
+      const countLive = async (p: Promise<{ email: string; documentKind?: string | null }[]>) => {
+        try { return (await p).filter((r) => !r.email.endsWith("@deleted.invalid") && !!r.documentKind).length; } catch { return 0; }
       };
       const [support, reports, verifications] = await Promise.all([
         me.capabilities.includes("support.manage") ? count(adminOpsApi.tickets("open")) : 0,

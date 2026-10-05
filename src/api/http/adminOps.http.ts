@@ -43,6 +43,8 @@ export type VerificationDto = {
   notes: string | null;
   decidedAt: string | null;
   accountVerified: boolean;
+  /** Account closed by an admin; missing on older servers. */
+  banned?: boolean;
 };
 
 export type HostCommissionDto = {
