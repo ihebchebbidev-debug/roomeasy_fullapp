@@ -38,8 +38,14 @@ export function useBooking(id: string) {
     // While payment is still being confirmed (e.g. after 3-D Secure), re-check
     // every few seconds so the page updates without a manual reload.
     refetchInterval: (query) => {
-      const data = query.state.data as { status?: string } | undefined;
-      return data?.status === "pending" && query.state.dataUpdateCount < 40 ? 3000 : false;
+      const data = query.state.data as { status?: string; payment?: { status?: string } } | undefined;
+      // Keep checking while the stay awaits a decision or the card payment has
+      // not been recorded yet (the payment confirmation can arrive a few seconds
+      // after the visitor lands back on the site).
+      const settling =
+        data?.status === "pending" ||
+        (data?.status === "confirmed" && data?.payment?.status !== "paid");
+      return settling && query.state.dataUpdateCount < 40 ? 3000 : false;
     },
   });
 }

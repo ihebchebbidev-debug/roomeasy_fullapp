@@ -1279,6 +1279,10 @@ export function BookingsDeskPanel() {
         type={type}
         value={(filters[key] as string | undefined) ?? ""}
         onChange={(e) => setFilters((prev) => ({ ...prev, [key]: e.target.value || undefined }))}
+        // Enter applies the filters, so a pasted reference searches straight away.
+        onKeyDown={(e) => {
+          if (e.key === "Enter") setApplied({ ...filters, [key]: e.currentTarget.value.trim() || undefined });
+        }}
       />
     </div>
   );
@@ -1287,6 +1291,7 @@ export function BookingsDeskPanel() {
     <Shell>
       <Card>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {field("search", T("Booking reference"))}
           {field("guest", copy.bkGuest)}
           {field("host", copy.bkHost)}
           {field("listing", copy.bkListing)}

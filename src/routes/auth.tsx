@@ -2,7 +2,8 @@ import { privateRouteMeta } from "@/i18n/privateRouteMeta";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Eye, EyeOff, Loader2, Lock, Mail, Phone, UserRound } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getAccessToken } from "@/api/http/client";
 import { toast } from "sonner";
 
 import wallpaper from "@/assets/auth-wallpaper.jpg";
@@ -30,6 +31,8 @@ const TURNSTILE_SITE_KEY =
 function safeRedirect(value: unknown): string | undefined {
   return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : undefined;
 }
+
+const SIGNUP_PHOTO_STEP_KEY = "roomeasy:signup-photo-step";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -73,7 +76,27 @@ function AuthPage() {
   const [otp, setOtp] = useState("");
   const [welcome, setWelcome] = useState<string | null>(null);
   const [signUpToken, setSignUpToken] = useState<string | null>(null);
-  const [newAccount, setNewAccount] = useState<{ name: string; to: "/" | "/admin" | "/host" | "/trips" } | null>(null);
+  const [newAccount, setNewAccountState] = useState<{ name: string; to: "/" | "/admin" | "/host" | "/trips" } | null>(null);
+  // The optional photo step survives a page refresh: the new member lands back
+  // on it instead of the sign-in form, so a chosen photo is not silently lost.
+  const setNewAccount = (value: { name: string; to: "/" | "/admin" | "/host" | "/trips" } | null) => {
+    setNewAccountState(value);
+    try {
+      if (value) window.sessionStorage.setItem(SIGNUP_PHOTO_STEP_KEY, JSON.stringify(value));
+      else window.sessionStorage.removeItem(SIGNUP_PHOTO_STEP_KEY);
+    } catch {
+      /* storage unavailable: the step simply does not resume */
+    }
+  };
+  useEffect(() => {
+    try {
+      const saved = window.sessionStorage.getItem(SIGNUP_PHOTO_STEP_KEY);
+      if (saved && getAccessToken()) setNewAccountState(JSON.parse(saved));
+      else if (saved) window.sessionStorage.removeItem(SIGNUP_PHOTO_STEP_KEY);
+    } catch {
+      /* ignore malformed or blocked storage */
+    }
+  }, []);
   const [photoPreview, setPhotoPreview] = useState<string>();
   const [photoPending, setPhotoPending] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
@@ -230,6 +253,11 @@ function AuthPage() {
         return;
       }
       setPlatform((state) => ({ session: state.session ? { ...state.session, ...(account.avatarUrl ? { avatarUrl: account.avatarUrl } : {}) } : null }));
+    }
+    try {
+      window.sessionStorage.removeItem(SIGNUP_PHOTO_STEP_KEY);
+    } catch {
+      /* ignore */
     }
     enterApp(newAccount.name, newAccount.to);
   }

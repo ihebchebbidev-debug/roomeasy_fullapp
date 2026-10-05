@@ -61,3 +61,12 @@
 - [x] Wizard "steps left" counts steps still ahead
 - [x] Trip/host dates shown in the site language
 - [x] Wi-Fi no longer pre-selected in new listings
+
+## New-client QA fixes (Oct 5)
+- [ ] 1. Booking status consistency (awaiting approval vs Confirmed, receipt "Not paid", instant booking)
+- [ ] 2. Booking message thread linked to reservation
+- [ ] 3. Phone keeps country code after profile save
+- [ ] 4. Sign-up profile photo persists
+- [ ] 5. Identity document required before first publish
+- [ ] 6. Admin approvals count + reservation search exact match
+- [ ] 7. Host Statistics section shows statistics

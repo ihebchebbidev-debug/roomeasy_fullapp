@@ -65,6 +65,16 @@ function BookingConfirmation() {
   }
 
   const property = properties.find((p) => p.id === booking.propertyId);
+  // Right after the card step the payment record can lag a few seconds behind;
+  // show an honest "confirming" state until it lands instead of a premature status.
+  const fromCheckout =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("redirect_status") === "succeeded";
+  const settling =
+    fromCheckout &&
+    booking.payment.status !== "paid" &&
+    // Instant-book stays are charged at once, so anything short of "paid" is
+    // still settling; request-to-book stays legitimately sit on a card hold.
+    (booking.status === "confirmed" || (booking.status === "pending" && property?.instantBook === true));
   const location = property ? cityName(property, locale) : undefined;
 
   return (
@@ -79,8 +89,8 @@ function BookingConfirmation() {
             <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/10">
               <CheckCircle2 className="size-8 text-emerald-600" aria-hidden />
             </span>
-            <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">{booking.status === "pending" ? c.pendingTitle : c.confirmTitle}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{booking.status === "pending" ? c.pendingSubtitle : c.confirmSubtitle}</p>
+            <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">{settling ? c.settlingTitle : booking.status === "pending" ? c.pendingTitle : c.confirmTitle}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{settling ? c.settlingSubtitle : booking.status === "pending" ? c.pendingSubtitle : c.confirmSubtitle}</p>
             <p className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm">
               <span className="text-muted-foreground">{c.reference}</span>
               <span className="font-mono font-semibold tracking-wide">{booking.reference}</span>

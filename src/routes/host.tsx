@@ -51,7 +51,8 @@ import { toISODate } from "@/lib/pricing";
 
 export const Route = createFileRoute("/host")({
   validateSearch: (search: Record<string, unknown>) => ({
-    section: typeof search["section"] === "string" && ["overview", "requests", "listings", "calendar", "stats", "payouts", "reviews", "team"].includes(search["section"])
+    // "statistics" is the spelled-out name people type or share for the stats tab.
+    section: search["section"] === "statistics" ? "stats" as const : typeof search["section"] === "string" && ["overview", "requests", "listings", "calendar", "stats", "payouts", "reviews", "team"].includes(search["section"])
       ? search["section"] as "overview" | "requests" | "listings" | "calendar" | "stats" | "payouts" | "reviews" | "team"
       : "overview" as const,
     // Stripe sends the host back here after the hosted onboarding.

@@ -14,14 +14,19 @@ export async function openConversation(
   bookingId?: string,
 ): Promise<boolean> {
   const existing = getPlatform().threads.find((thread) => thread.propertyId === propertyId);
-  if (existing) return true;
+  // An existing conversation is reused, but it is re-pointed at this booking
+  // when the guest opens it from a reservation it is not yet linked to.
+  if (existing && (!bookingId || existing.bookingId === bookingId || !backendEnabled)) return true;
 
   if (backendEnabled) {
     const created = await remote.openThread(propertyId, bookingId);
     if (!created) return false;
     const thread = toThread(created);
     setPlatform((state) => ({
-      threads: [thread, ...state.threads.filter((row) => row.id !== thread.id)],
+      threads: [
+        existing ? { ...thread, messages: existing.messages, unread: existing.unread } : thread,
+        ...state.threads.filter((row) => row.id !== thread.id),
+      ],
     }));
     return true;
   }

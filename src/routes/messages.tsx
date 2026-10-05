@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAllProperties } from "@/hooks/useAllProperties";
 import { useEnsureStays } from "@/hooks/useEnsureStays";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { backendEnabled, refreshThreads, remote, serverOffline } from "@/api/backend";
+import { backendEnabled, refreshBookings, refreshThreads, remote, serverOffline } from "@/api/backend";
 import { setPlatform, usePlatform } from "@/hooks/usePlatform";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { pickCopy } from "@/i18n/copy";
@@ -109,6 +109,15 @@ function MessagesPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<HTMLUListElement>(null);
   const active = threads.find((thread) => thread.id === activeId);
+  // A conversation can point at a booking made after the account data was
+  // loaded (e.g. booked minutes ago); fetch the reservations once more then.
+  const missingBookingId = active?.bookingId && !bookings.some((item) => item.id === active.bookingId) ? active.bookingId : null;
+  const refreshedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!missingBookingId || refreshedFor.current === missingBookingId) return;
+    refreshedFor.current = missingBookingId;
+    void refreshBookings();
+  }, [missingBookingId]);
   const property = allProperties.find((item) => item.id === active?.propertyId);
   // Prefer the reservation the conversation is actually linked to; names are
   // ambiguous when the same guest has two stays at one listing.
@@ -263,7 +272,7 @@ function MessagesPage() {
                 <Button variant="ghost" onClick={() => openThread(thread.id)} className={cn("relative h-auto w-full justify-start rounded-none border-b border-border/70 px-4 py-4 text-left transition-colors", selected && "bg-primary/10 hover:bg-primary/10")}>
                   <span className="grid w-full grid-cols-[auto_minmax(0,1fr)] gap-3 whitespace-normal">
                     {selected ? <span className="absolute inset-y-3 left-0 w-0.5 rounded-r-full bg-primary" /> : null}<span className="relative block size-10 shrink-0"><UserAvatar name={thread.withName} src={thread.withAvatar} className="size-10" />{thread.unread > 0 ? <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-surface bg-primary" /> : null}</span>
-                    <span className="min-w-0"><span className="flex items-baseline justify-between gap-2"><strong className="truncate text-sm">{thread.withName}</strong><span className="shrink-0 text-[10px] font-normal text-muted-foreground">{formatClock(last?.sentAt) || last?.time}</span></span><span className="mt-1 block truncate text-[11px] font-semibold text-primary">{copy.inquiry} {listing?.name}</span><span className="mt-1 block truncate text-xs font-normal text-muted-foreground">{last?.text}</span></span>
+                    <span className="min-w-0"><span className="flex items-baseline justify-between gap-2"><strong className="truncate text-sm">{thread.withName}</strong><span className="shrink-0 text-[10px] font-normal text-muted-foreground">{formatClock(last?.sentAt) || last?.time}</span></span><span className="mt-1 block truncate text-[11px] font-semibold text-primary">{thread.bookingId ? `${copy.reservation} ·` : copy.inquiry} {listing?.name}</span><span className="mt-1 block truncate text-xs font-normal text-muted-foreground">{last?.text}</span></span>
                   </span>
                 </Button>
               </li>;

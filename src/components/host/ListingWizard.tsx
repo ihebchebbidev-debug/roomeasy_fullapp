@@ -223,7 +223,13 @@ export function ListingWizard({
     try {
       // A member who has never hosted becomes a host on their first save,
       // otherwise the server refuses a listing they may not own.
-      if (backendEnabled && session && session.role === "guest" && !identityFiled && !identityDone) {
+      // Hosts who signed up straight as hosts have no document on file either,
+      // so any new stay published without one asks for it first.
+      const noDocument =
+        session?.verificationStatus !== "pending" && session?.verificationStatus !== "verified";
+      const needsIdentity =
+        session?.role === "guest" || (mode === "create" && publish && noDocument && session?.role !== "admin");
+      if (backendEnabled && session && needsIdentity && !identityFiled && !identityDone) {
         setIdentityAsk({ publish });
         setSaving(false);
         return;

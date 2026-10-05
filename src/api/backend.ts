@@ -440,6 +440,20 @@ export async function syncAccountLocale(saved?: string | null, next: SiteLocale 
   }
 }
 
+/** Reloads trips and host reservations, e.g. so a booking made this session is known to the inbox. */
+export async function refreshBookings(): Promise<void> {
+  if (!backendEnabled || !getAccessToken()) return;
+  const [guestBookings, hostBookings] = await Promise.all([
+    runRemote(() => hostBookingsApi.mine(), "Your trips could not be loaded."),
+    runRemote(() => hostBookingsApi.list(), "Reservations could not be loaded."),
+  ]);
+  if (!guestBookings && !hostBookings) return;
+  const rows = [...(guestBookings ?? []), ...(hostBookings ?? [])].filter(
+    (row, index, all) => all.findIndex((other) => other["id"] === row["id"]) === index,
+  );
+  setPlatform({ bookings: (rows as unknown as ServerBooking[]).map(toBooking) });
+}
+
 export async function hydrateAccount(): Promise<void> {
   if (!backendEnabled || !getAccessToken()) return;
 

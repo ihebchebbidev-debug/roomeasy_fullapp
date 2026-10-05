@@ -267,7 +267,7 @@ function ProfilePage() {
               onSubmit={async (e) => {
                 e.preventDefault();
                 if (!session) return;
-                const account = await remote.saveProfile({ fullName: name, phone: phone || null });
+                const account = await remote.saveProfile({ fullName: name, phone: withCountryCode(phone, session.phone) || null });
                 if (!account) return;
                 const { phone: _oldPhone, ...rest } = session;
                 setPlatform({
@@ -871,4 +871,18 @@ function PasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
       </DialogContent>
     </Dialog>
   );
+}
+
+/**
+ * Keeps the international prefix when someone retypes only the local number
+ * (e.g. "612345700" after signing up with "+33 612345699"): the previous
+ * number's country code is reused, and a national leading 0 is dropped.
+ */
+function withCountryCode(input: string, previous?: string | null): string {
+  const value = input.trim();
+  if (!value || value.startsWith("+")) return value;
+  if (value.startsWith("00")) return `+${value.slice(2)}`;
+  const prefix = previous?.trim().match(/^\+\d{1,3}(?=[\s-])/)?.[0];
+  if (!prefix) return value;
+  return `${prefix} ${value.replace(/^0+/, "")}`;
 }
