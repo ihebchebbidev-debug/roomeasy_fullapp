@@ -1511,7 +1511,7 @@ export function BookingsDeskPanel() {
             {copy.bkClear}
           </Button>
           <span className="self-center text-sm text-muted-foreground">
-            {rows.length} {copy.bkResults}{rows.length >= 100 ? ` · ${T("showing the latest 100 — use the filters to narrow down")}` : ""}
+            {rows.length} {copy.bkResults}
           </span>
         </div>
       </Card>

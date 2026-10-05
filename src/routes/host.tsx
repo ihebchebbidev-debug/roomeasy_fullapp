@@ -175,75 +175,50 @@ function HostPage() {
           {requests.length === 0 ? <EmptyState icon={Inbox} title={t.app.host.noRequests} size="compact" /> : null}
           <Paged rows={bookings} filters={[{ value: "pending", label: t.app.status.pending, test: (b) => b.status === "pending" }, { value: "confirmed", label: t.app.status.confirmed, test: (b) => b.status === "confirmed" }, { value: "cancelled", label: t.app.status.cancelled, test: (b) => String(b.status).includes("cancel") || b.status === "declined" }]} text={(x) => `${rowText(x)} ${properties.find((p) => p.id === x.propertyId)?.name ?? ""}`}>{(__rows) => __rows.map((booking) => {
             const property = properties.find((p) => p.id === booking.propertyId);
+            const isPending = booking.status === "pending";
+            const isConfirmed = booking.status === "confirmed";
+            const policy = property?.cancellationPolicy ?? "moderate";
+            const days = Math.ceil((new Date(booking.from).getTime() - Date.now()) / 86_400_000);
+            const refund = Math.round(booking.totalUsd * refundShare(policy, days));
+            const statusLabel = (t.app.status as Record<string, string>)[String(booking.status)] ?? String(booking.status);
             return (
               <Panel key={booking.id}>
                 <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold">{property?.name}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-semibold">{property?.name}</p>
+                      <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", isPending ? "bg-accent text-accent-foreground" : isConfirmed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>{statusLabel}</span>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {booking.guestName} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)} · {format(booking.totalUsd, { from: booking.currency })}
                     </p>
+                    {isConfirmed ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {cancellationLabel(policy, cc)} · {cc.refundDue}: {format(refund)}
+                      </p>
+                    ) : null}
                     {booking.message ? (
                       <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm whitespace-pre-line break-words">“{booking.message}”</p>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        void decide(booking, "confirmed");
-                      }}
-                    >
-                      <Check className="size-4" aria-hidden />{t.app.host.accept}
+                  {isPending ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" onClick={() => { void decide(booking, "confirmed"); }}>
+                        <Check className="size-4" aria-hidden />{t.app.host.accept}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => { void decide(booking, "declined"); }}>
+                        <X className="size-4" aria-hidden />{t.app.host.decline}
+                      </Button>
+                    </div>
+                  ) : isConfirmed && days > 0 ? (
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => { void cancel(booking); }}>
+                      <X className="size-4" aria-hidden />{cc.cancelBooking}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        void decide(booking, "declined");
-                      }}
-                    >
-                      <X className="size-4" aria-hidden />{t.app.host.decline}
-                    </Button>
-                  </div>
+                  ) : null}
                 </div>
               </Panel>
             );
           })}</Paged>
-
-          {bookings
-            .filter((booking) => booking.status === "confirmed")
-            .map((booking) => {
-              const property = properties.find((p) => p.id === booking.propertyId);
-              const policy = property?.cancellationPolicy ?? "moderate";
-              const days = Math.ceil((new Date(booking.from).getTime() - Date.now()) / 86_400_000);
-              const refund = Math.round(booking.totalUsd * refundShare(policy, days));
-              return (
-                <Panel key={booking.id}>
-                  <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">{property?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {booking.guestName} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)} · {format(booking.totalUsd, { from: booking.currency })}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {cancellationLabel(policy, cc)} · {cc.refundDue}: {format(refund)}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive"
-                      onClick={() => {
-                        void cancel(booking);
-                      }}
-                    >
-                      <X className="size-4" aria-hidden />{cc.cancelBooking}
-                    </Button>
-                  </div>
-                </Panel>
-              );
-            })}
         </section> : null}
 
         {isReady && section === "listings" ? <section className="space-y-5">

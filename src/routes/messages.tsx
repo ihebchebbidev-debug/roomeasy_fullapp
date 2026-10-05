@@ -92,7 +92,7 @@ export const Route = createFileRoute("/messages")({
 function MessagesPage() {
   const { locale, t } = useLanguage();
   const { format } = useCurrency();
-  const { threads, bookings, accountDataStatus } = usePlatform();
+  const { threads, bookings, accountDataStatus, session } = usePlatform();
   const allProperties = useAllProperties();
   // Loads the stays the conversations point at, even outside the first page.
   useEnsureStays(threads.map((thread) => thread.propertyId));
@@ -128,9 +128,11 @@ function MessagesPage() {
   const property = allProperties.find((item) => item.id === active?.propertyId);
   // Prefer the reservation the conversation is actually linked to; names are
   // ambiguous when the same guest has two stays at one listing.
+  // Fallbacks only match a stay of the people in this conversation, never
+  // another guest's reservation on the same listing.
   const booking = (active?.bookingId ? bookings.find((item) => item.id === active.bookingId) : undefined)
     ?? bookings.find((item) => item.propertyId === active?.propertyId && item.guestName === active?.withName.replace(" (host)", ""))
-    ?? bookings.find((item) => item.propertyId === active?.propertyId);
+    ?? (active?.bookingId ? undefined : bookings.find((item) => item.propertyId === active?.propertyId && item.guestName === session?.name));
   const copy = pickCopy(locale, {
     en: {
       inbox: "Inbox", conversations: "Conversations", search: "Search guest or listing", inquiry: "Inquiry for", today: "Today", yesterday: "Yesterday", details: "Stay details", reservation: "Reservation", checkIn: "Check-in", checkOut: "Check-out", guests: "Guests", nights: "nights", payout: "Host payout", status: "Status", confirmed: "Confirmed", property: "Listing", view: "View listing", placeholder: "Write a message…", info: "Details", select: "Select a conversation", response: "Usually responds within an hour", send: "Send message", attach: "Attach file", noResults: "No conversations found", newLabel: "New",
