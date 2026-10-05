@@ -984,8 +984,13 @@ export function ListingWizard({
                     </p>
                   </div>
                 </div>
-                {draft.equipment.length ? (
+                {draft.equipment.length || draft.amenities.length ? (
                   <div className="mt-4 flex flex-wrap gap-1.5">
+                    {draft.amenities.filter((a) => !AMENITY_EQUIPMENT[a as AmenityId]).map((a) => (
+                      <Badge key={`a-${a}`} variant="secondary" className="rounded-full font-normal">
+                        {amenityName(a as AmenityId, locale)}
+                      </Badge>
+                    ))}
                     {draft.equipment.slice(0, 12).map((id) => {
                       const item = findEquipment(id);
                       return item ? (

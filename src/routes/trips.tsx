@@ -88,10 +88,14 @@ function TripsPage() {
   const isUpcoming = (b: (typeof bookings)[number]) =>
     b.status === "pending" || (b.status === "confirmed" && localCalendarDate(b.to) > today);
   const isCancelled = (b: (typeof bookings)[number]) => b.status === "cancelled" || b.status === "declined";
-  const upcoming = bookings.filter(isUpcoming);
-  const past = bookings.filter((b) => !isUpcoming(b) && !isCancelled(b));
+  // A checkout the guest left before paying was never a real trip: keep it out of every tab.
+  const isAbandoned = (b: (typeof bookings)[number]) =>
+    isCancelled(b) && b.payment?.status !== "paid" && b.payment?.status !== "refunded";
+  const visible = bookings.filter((b) => !isAbandoned(b));
+  const upcoming = visible.filter(isUpcoming);
+  const past = visible.filter((b) => !isUpcoming(b) && !isCancelled(b));
   // Cancelled and declined trips get their own tab so they never seem to vanish.
-  const cancelled = bookings.filter(isCancelled);
+  const cancelled = visible.filter(isCancelled);
   const cancelledLabel = CANCELLED_TAB[locale] ?? CANCELLED_TAB["en"]!;
 
   return (

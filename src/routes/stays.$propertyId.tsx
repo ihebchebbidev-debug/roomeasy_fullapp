@@ -972,7 +972,7 @@ function ListingDetail() {
             <div className="flex flex-wrap items-baseline gap-3">
               <Star className="size-6 translate-y-1 fill-primary text-primary" aria-hidden />
               <h2 className="font-display text-2xl font-semibold">
-                {displayedRating.toFixed(2)} · {displayedReviewCount} {t.detail.reviews}
+                {displayedReviewCount > 0 && displayedRating > 0 ? `${displayedRating.toFixed(2)} · ` : ""}{displayedReviewCount} {t.detail.reviews}
               </h2>
             </div>
 

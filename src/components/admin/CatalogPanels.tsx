@@ -146,7 +146,7 @@ export function AmenitiesPanel() {
             >
               <option value="" disabled>{T("Choose a group…")}</option>
               {data.groups.map((g) => (
-                <option key={g} value={g}>{g}</option>
+                <option key={g} value={g}>{T(g)}</option>
               ))}
             </select>
           </div>
@@ -175,7 +175,7 @@ export function AmenitiesPanel() {
               <span className="min-w-40 flex-1">
                 {item.label.en} <span className="text-muted-foreground">/ {item.label.fr}</span>
               </span>
-              <Badge variant="secondary">{item.group}</Badge>
+              <Badge variant="secondary">{T(item.group)}</Badge>
               {item.paid ? <Badge variant="outline">{T("Paid")}</Badge> : null}
               <label className="flex items-center gap-2 text-xs">
                 <Switch

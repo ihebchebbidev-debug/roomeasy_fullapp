@@ -184,7 +184,8 @@ function ProfilePage() {
           <div className="px-5 pb-6 sm:px-8 sm:pb-8">
             {/* relative z-10: the cover is positioned, so without it the name painted underneath the photo. */}
             <div className="relative z-10 -mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:gap-6">
-              <div className="relative shrink-0">
+              <div className="shrink-0">
+                <div className="relative w-fit">
                 <UserAvatar name={session?.name ?? p.title} src={session?.avatarUrl} className="size-24 border-4 border-card shadow-sm sm:size-28" />
                 <Button
                   type="button"
@@ -197,6 +198,7 @@ function ProfilePage() {
                 >
                   <Camera className="size-4" aria-hidden />
                 </Button>
+                </div>
                 <p className="mt-2 max-w-[8rem] truncate text-center text-sm font-medium text-foreground sm:max-w-[9rem]">
                   {session?.name ?? p.title}
                 </p>

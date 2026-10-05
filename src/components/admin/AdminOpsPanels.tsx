@@ -251,7 +251,11 @@ export function VerificationPanel() {
   const decide = (row: VerificationDto, status: "verified" | "rejected") =>
     run(
       () => adminOpsApi.setVerification(row.userId, status, notes[row.userId]?.trim() || undefined),
-      reload,
+      () => {
+        reload();
+        // Tell the sidebar to recount pending ID checks right away.
+        window.dispatchEvent(new Event("admin:todo-refresh"));
+      },
       copy.saved,
       copy.failed,
     );

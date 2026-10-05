@@ -189,16 +189,22 @@ function AdminPage() {
     let active = true;
     const load = async () => {
       const count = async (p: Promise<unknown[]>) => { try { return (await p).length; } catch { return 0; } };
+      // Deleted accounts are hidden from the ID-check list, so they must not be counted either.
+      const countLive = async (p: Promise<{ email: string }[]>) => {
+        try { return (await p).filter((r) => !r.email.endsWith("@deleted.invalid")).length; } catch { return 0; }
+      };
       const [support, reports, verifications] = await Promise.all([
         me.capabilities.includes("support.manage") ? count(adminOpsApi.tickets("open")) : 0,
         me.capabilities.includes("listings.moderate") ? count(adminOpsApi.listingReports("open")) : 0,
-        me.capabilities.includes("users.read") ? count(adminOpsApi.verifications("pending")) : 0,
+        me.capabilities.includes("users.read") ? countLive(adminOpsApi.verifications("pending")) : 0,
       ]);
       if (active) setTodo({ support, reports, verifications });
     };
     void load();
     const timer = window.setInterval(load, 60_000);
-    return () => { active = false; window.clearInterval(timer); };
+    const onRefresh = () => void load();
+    window.addEventListener("admin:todo-refresh", onRefresh);
+    return () => { active = false; window.clearInterval(timer); window.removeEventListener("admin:todo-refresh", onRefresh); };
   }, [me, section]);
 
   // Listings waiting for approval are not in the public catalogue yet, so the
