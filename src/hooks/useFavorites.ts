@@ -5,6 +5,7 @@ import { getAccessToken } from "@/api/http/client";
 import { useSession } from "@/hooks/usePlatform";
 
 const STORAGE_KEY = "nestara.favorites";
+const SYNC_EVENT = "nestara:favorites-changed";
 
 function readLocal(): string[] {
   try {
@@ -43,6 +44,13 @@ export function useFavorites() {
     };
   }, [signedIn, session?.id]);
 
+  // Keep every mounted copy (e.g. the nav badge) in step with changes made elsewhere.
+  useEffect(() => {
+    const onChange = (e: Event) => setFavorites((e as CustomEvent<string[]>).detail);
+    window.addEventListener(SYNC_EVENT, onChange);
+    return () => window.removeEventListener(SYNC_EVENT, onChange);
+  }, []);
+
   const toggle = useCallback(
     (id: string) => {
       // Decide from the current list now: a state updater runs later, so
@@ -50,6 +58,7 @@ export function useFavorites() {
       const added = !favorites.includes(id);
       const next = added ? [...favorites, id] : favorites.filter((f) => f !== id);
       setFavorites(next);
+      window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: next }));
       if (!signedIn) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       if (signedIn) {
         void (async () => {

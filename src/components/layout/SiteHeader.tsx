@@ -7,6 +7,7 @@ import { BrandLogo } from "@/components/layout/BrandLogo";
 import { LanguageSelector } from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 
 type NavItem = { to: string; label: string; icon?: LucideIcon };
@@ -16,6 +17,7 @@ export function SiteHeader() {
   const { t, locale } = useLanguage();
   const { session, threads } = usePlatform();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { favorites } = useFavorites();
   const unread = threads.reduce((sum, thread) => sum + thread.unread, 0);
 
   // Only hosts see the host area, only admins the back office.
@@ -38,11 +40,12 @@ export function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
-      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+    <>
+    <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none">
+      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
           <Link to="/" aria-label={t.brand} className="flex min-w-0 items-center">
-            <BrandLogo className="h-12" />
+            <BrandLogo className="h-14 sm:h-12" />
           </Link>
           <nav className="hidden items-center gap-5 lg:flex">
             {nav.map((item) => (
@@ -66,12 +69,16 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <CurrencySelector />
-          <LanguageSelector />
+          <div className="hidden items-center gap-2 lg:flex">
+            <CurrencySelector />
+            <LanguageSelector />
+          </div>
           <AccountMenu />
         </div>
       </div>
+    </header>
 
+      {/* Outside the header: its backdrop blur would otherwise pin this bar to the top. */}
       <nav
         aria-label={{ en: "Mobile navigation", fr: "Navigation mobile", es: "Navegación móvil", de: "Mobile Navigation", pt: "Navegação móvel" }[locale]}
         className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border bg-surface/95 px-2 pt-1.5 pb-[calc(0.4rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(15_23_42/0.08)] backdrop-blur-xl lg:hidden"
@@ -91,15 +98,18 @@ export function SiteHeader() {
           >
             {Icon ? <Icon className={cn("size-5", active && "stroke-[2.5]")} aria-hidden /> : null}
             <span className="w-full truncate text-center">{item.label}</span>
-            {item.to === "/messages" && unread > 0 ? (
-              <span className="absolute top-0.5 left-[calc(50%+0.35rem)] grid min-w-4 place-items-center rounded-full bg-lime px-1 text-[9px] leading-4 font-bold text-lime-foreground">
-                {unread}
-              </span>
-            ) : null}
+            {(() => {
+              const count = item.to === "/messages" ? unread : item.to === "/favourites" ? favorites.length : 0;
+              return count > 0 ? (
+                <span className="absolute top-0.5 left-[calc(50%+0.35rem)] grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] leading-4 font-bold text-destructive-foreground ring-2 ring-surface">
+                  {count > 9 ? "9+" : count}
+                </span>
+              ) : null;
+            })()}
           </Link>
           );
         })}
       </nav>
-    </header>
+    </>
   );
 }
