@@ -567,7 +567,7 @@ function ListingDetail() {
           ],
         ] as const)
       : []),
-    ...(property.host?.verified ? ([[Sparkles, t.detail.superhost, d.cleanText]] as const) : []),
+    ...(property.host?.verified && (property.reviewCount ?? 0) > 0 && property.rating >= 4.5 ? ([[Sparkles, t.detail.superhost, d.cleanText]] as const) : []),
   ];
 
   // Only real reviews returned by the service are shown; none are invented.
@@ -763,7 +763,7 @@ function ListingDetail() {
                   {countLabel(property.guests, t.listings.guests)} ·{" "}
                   {property.rooms != null ? `${countLabel(property.rooms, lc.rooms)} · ` : ""}
                   {countLabel(property.beds, t.listings.beds)} ·{" "}
-                  {property.baths} {t.listings.baths} · {property.area} m²
+                  {countLabel(property.baths, t.listings.baths)} · {property.area} m²
                 </p>
               </header>
 

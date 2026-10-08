@@ -26,7 +26,9 @@ export function LocationPicker({
   country = "",
   onChange,
   invalid,
+  focus,
 }: {
+  focus?: Coords | null;
   value: Coords | null;
   address: string;
   city?: string;
@@ -43,6 +45,12 @@ export function LocationPicker({
     if (value) setCenter((cur) => (Math.abs(cur.lat - value.lat) > 0.05 || Math.abs(cur.lng - value.lng) > 0.05 ? { ...value, zoom: 13 } : cur));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueKey]);
+
+  const focusKey = focus ? `${focus.lat},${focus.lng}` : "";
+  useEffect(() => {
+    if (focus) setCenter({ ...focus, zoom: 13 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusKey]);
 
   const [street, setStreet] = useState("");
   const [hits, setHits] = useState<{ label: string; lat: number; lng: number }[]>([]);

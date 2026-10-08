@@ -69,6 +69,7 @@ export function ListingWizard({
   // A step shows a check only after the host has actually passed it with "Next".
   const [passed, setPassed] = useState<Set<ListingStep>>(() => new Set(mode === "edit" ? listingSteps : []));
   const [touched, setTouched] = useState(false);
+  const [cityFocus, setCityFocus] = useState<{ lat: number; lng: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<{ draft: ListingDraft; published: boolean; approved: boolean } | null>(null);
   // An identity document is required before a member can host for the first time.
@@ -530,6 +531,12 @@ export function ListingWizard({
         </p>
 
         <div key={step} className="mt-6 animate-fade-in rounded-lg border border-border bg-card p-5 shadow-lift sm:p-8">
+          {touched && errors.size > 0 ? (
+            <p role="alert" className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+              {c.required}
+              {errors.has("city") || errors.has("country") ? ` — ${c.country} / ${c.city}` : ""}
+            </p>
+          ) : null}
           {step === "basics" ? (
             <div className="space-y-5">
               <Field label={c.title} error={showError("title")}>
@@ -597,9 +604,10 @@ export function ListingWizard({
                   countryInvalid={Boolean(showError("country"))}
                   cityInvalid={Boolean(showError("city"))}
                   onCountry={(country) => patchLocation({ country })}
-                  onCity={(city, coords) =>
-                    patchLocation(coords ? { city, lat: coords.lat, lng: coords.lng } : { city })
-                  }
+                  onCity={(city, coords) => {
+                    patchLocation({ city, lat: null, lng: null });
+                    setCityFocus(coords ?? null);
+                  }}
                 />
                 <Field label={c.postal}>
                   <Input value={draft.location.postal} onChange={(e) => patchLocation({ postal: e.target.value })} placeholder={c.postalPh} maxLength={16} />
@@ -608,8 +616,9 @@ export function ListingWizard({
                   <Input value={draft.location.neighbourhood} onChange={(e) => patchLocation({ neighbourhood: e.target.value })} placeholder={c.neighbourhoodPh} />
                 </Field>
               </div>
-              {draft.location.city ? (
+              {(
                 <LocationPicker
+                  focus={cityFocus}
                   city={draft.location.city}
                   country={draft.location.country}
                   value={draft.location.lat != null && draft.location.lng != null ? { lat: draft.location.lat, lng: draft.location.lng } : null}
@@ -617,7 +626,7 @@ export function ListingWizard({
                   onChange={(p) => patchLocation({ lat: p.lat, lng: p.lng })}
                   invalid={Boolean(showError("coords"))}
                 />
-              ) : null}
+              )}
               {showError("coords") ? (
                 <p className="text-sm font-medium text-destructive">
                   {c.mapPinRequired}
