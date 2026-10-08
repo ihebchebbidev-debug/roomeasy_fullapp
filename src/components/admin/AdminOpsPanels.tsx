@@ -1852,7 +1852,7 @@ export function FinancePanel() {
               <StatTile label={copy.finRevenue} value={perCurrency("revenueUsd")} hint={`${sum("bookings")} ${copy.finBookings.toLowerCase()}`} />
               <StatTile label={copy.finCommission} value={perCurrency("commissionUsd")} hint={single && rev > 0 ? `${Math.round((com / rev) * 100)}%` : undefined} tone="primary" />
               <StatTile label={copy.finHostNet} value={perCurrency("hostNetUsd")} />
-              <StatTile label={copy.finRefunded} value={perCurrency("refundedUsd")} tone={sum("refundedUsd") > 0 ? "danger" : "default"} />
+              <StatTile label={copy.finRefunded} value={perCurrency("refundedUsd")} hint={copy.finRefundedHint} tone={sum("refundedUsd") > 0 ? "danger" : "default"} />
             </div>
             {currencies.map((currency) => (
               <ChartPanel key={currency} title={`${copy.finAccounting} · ${currency}`} subtitle={copy.finRevenue + " · " + copy.finCommission + " · " + copy.finHostNet}>

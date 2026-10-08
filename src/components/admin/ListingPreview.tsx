@@ -42,7 +42,7 @@ export function ListingPreview({ property, listing }: { property: Property; list
           <Badge variant={listing.approved ? "outline" : "default"}>{t.app.host[listing.status]}</Badge>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
             <Star className="size-3.5 fill-current" aria-hidden />
-            {property.rating.toFixed(1)}
+            {(property.reviewCount ?? 0) > 0 && property.rating > 0 ? property.rating.toFixed(1) : (({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New")}
             {property.reviewCount ? (
               <span className="text-muted-foreground">
                 · {property.reviewCount} {t.detail.reviews}
