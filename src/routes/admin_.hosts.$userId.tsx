@@ -213,6 +213,7 @@ function AdminHostProfile() {
                   </div>
                 ))
               )}
+              {data.documents.length > 0 ? (
               <div className="space-y-2 border-t border-border pt-4">
                 <Textarea
                   rows={2}
@@ -230,6 +231,7 @@ function AdminHostProfile() {
                   </Button>
                 </div>
               </div>
+              ) : null}
             </section>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

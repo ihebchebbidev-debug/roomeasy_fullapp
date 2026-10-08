@@ -8,6 +8,7 @@ import { categoryLabel } from "@/i18n/categories";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { useCurrency } from "@/i18n/CurrencyProvider";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useAdminT } from "@/i18n/adminAutoCopy";
 import { useListingCopy } from "@/i18n/listingCopy";
 import { cancellationLabel } from "@/lib/cancellation";
 import { cityName, propertyPhotos, type Property } from "@/models/property";
@@ -18,6 +19,7 @@ import { cityName, propertyPhotos, type Property } from "@/models/property";
  */
 export function ListingPreview({ property, listing }: { property: Property; listing: HostListing }) {
   const { t, locale } = useLanguage();
+  const T = useAdminT();
   const { format } = useCurrency();
   const lc = useListingCopy();
   const cc = useClientCopy();
@@ -39,7 +41,7 @@ export function ListingPreview({ property, listing }: { property: Property; list
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{categoryLabel(property.category, locale)}</Badge>
-          <Badge variant={listing.approved ? "outline" : "default"}>{t.app.host[listing.status]}</Badge>
+          <Badge variant={listing.approved ? "outline" : "default"}>{!listing.approved && listing.status === "published" ? T("Awaiting review") : t.app.host[listing.status]}</Badge>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
             <Star className="size-3.5 fill-current" aria-hidden />
             {(property.reviewCount ?? 0) > 0 && property.rating > 0 ? property.rating.toFixed(1) : (({ en: "New", fr: "Nouveau", es: "Nuevo", de: "Neu", pt: "Novo" } as Record<string, string>)[locale] ?? "New")}
