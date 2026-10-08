@@ -48,8 +48,8 @@ export function SearchBar() {
 
   const [where, setWhere] = useState("");
   const [range, setRange] = useState<DateRange | undefined>();
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(1);
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
   const [rooms, setRooms] = useState(1);
   const [dateOpen, setDateOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);

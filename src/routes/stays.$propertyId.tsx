@@ -277,8 +277,8 @@ function ListingDetail() {
     }
     setRange(next);
   };
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(1); // match the search widget's default of 3 guests (2 adults + 1 child)
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0); // start at 1 guest; the guest adjusts the numbers
   const [serverQuote, setServerQuote] = useState<{ key: string; quote: Quote } | null>(null);
   const quoteFrom = range?.from ? toISODate(range.from) : "";
   const quoteTo = range?.to ? toISODate(range.to) : "";

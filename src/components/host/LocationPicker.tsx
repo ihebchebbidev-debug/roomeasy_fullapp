@@ -38,13 +38,30 @@ export function LocationPicker({
 }) {
   const { locale } = useLanguage();
   const c = copy[locale] ?? copy.en;
-  const [center, setCenter] = useState(() => (value ? { ...value, zoom: 16 } : { lat: 36.8065, lng: 10.1815, zoom: 5 }));
+  const [center, setCenter] = useState(() => (value ? { ...value, zoom: 16 } : { lat: 46.6, lng: 2.4, zoom: 5 }));
   const [busy, setBusy] = useState(false);
   const valueKey = value ? `${value.lat},${value.lng}` : "";
   useEffect(() => {
     if (value) setCenter((cur) => (Math.abs(cur.lat - value.lat) > 0.05 || Math.abs(cur.lng - value.lng) > 0.05 ? { ...value, zoom: 13 } : cur));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueKey]);
+
+  // On first open with no pin, offer to centre the map on the host's own
+  // location (browser permission prompt); otherwise it stays on France.
+  useEffect(() => {
+    if (value || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCenter((cur) => {
+          if (cur.zoom > 5) return cur; // user already searched/focused somewhere
+          return { lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 12 };
+        });
+      },
+      () => { /* denied or unavailable — keep the France default */ },
+      { timeout: 8000, maximumAge: 600000 },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const focusKey = focus ? `${focus.lat},${focus.lng}` : "";
   useEffect(() => {

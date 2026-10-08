@@ -70,3 +70,10 @@
 - [ ] 5. Identity document required before first publish
 - [ ] 6. Admin approvals count + reservation search exact match
 - [ ] 7. Host Statistics section shows statistics
+
+## QA round (Oct 8, new test accounts)
+- [x] "Complete payment" resumes the same unpaid booking instead of creating a new one
+- [x] Messages panel shows "Total due" (not "Total paid") for unpaid bookings
+- [x] Email confirmation link still confirms when opened a second time
+- [ ] Reset code email in French for English accounts — code is correct; live server needs redeploy with latest backend
+- [ ] Checkout default guests (3) — waiting on owner's choice

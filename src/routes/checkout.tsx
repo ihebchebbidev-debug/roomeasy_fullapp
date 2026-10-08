@@ -47,6 +47,9 @@ type CheckoutSearch = {
   to: string | undefined;
   nights: number | undefined;
   guests: number | undefined;
+  /** Set by "Complete payment": pay this unpaid booking instead of creating a new one. */
+  bookingId?: string;
+  bookingRef?: string;
 };
 
 export const Route = createFileRoute("/checkout")({
@@ -56,6 +59,8 @@ export const Route = createFileRoute("/checkout")({
     to: typeof search["to"] === "string" ? search["to"] : undefined,
     nights: Number(search["nights"]) > 0 ? Number(search["nights"]) : undefined,
     guests: Number(search["guests"]) > 0 ? Number(search["guests"]) : undefined,
+    ...(typeof search["bookingId"] === "string" && search["bookingId"] ? { bookingId: search["bookingId"] } : {}),
+    ...(typeof search["bookingRef"] === "string" && search["bookingRef"] ? { bookingRef: search["bookingRef"] } : {}),
   }),
   head: ({ match }) => ({
     meta: privatePageMeta(...Object.values(privateRouteMeta["checkout"][localeOf(match) ?? "en"]) as [string, string]),
@@ -134,7 +139,7 @@ function CheckoutPage() {
 
   const from = search.from ?? addDays(localToday(), 14);
   const to = search.to ?? addDays(from, search.nights ?? 2);
-  const guests = search.guests ?? 3; // match the search widget's default (2 adults + 1 child)
+  const guests = search.guests ?? 1; // match the search widget's default (1 adult)
 
   const [name, setName] = useState(session?.name ?? "");
   const [email, setEmail] = useState(session?.email ?? "");
@@ -199,6 +204,19 @@ function CheckoutPage() {
     if (payConfig) {
       setPreparing(true);
       try {
+        // "Complete payment" from My trips: resume the existing unpaid booking so
+        // the guest keeps the same reference instead of getting a new one.
+        if (search.bookingId && search.bookingRef) {
+          const resumed = await paymentsApi.createIntent(search.bookingRef).catch((caught: unknown) => {
+            // The hold expired or the booking changed: fall back to a fresh booking below.
+            if (caught instanceof ApiError && caught.code === "CONFLICT") return null;
+            throw caught;
+          });
+          if (resumed?.clientSecret) {
+            setStripeStage({ clientSecret: resumed.clientSecret, bookingId: search.bookingId });
+            return;
+          }
+        }
         const booking = await createBooking.mutateAsync({
           propertyId: property.id,
           from,

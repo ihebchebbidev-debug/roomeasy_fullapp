@@ -236,7 +236,7 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                 <Button asChild size="sm" className="w-full sm:w-auto">
                   <Link
                     to="/checkout"
-                    search={{ propertyId: booking.propertyId, from: booking.from, to: booking.to, nights: booking.nights, guests: booking.guests }}
+                    search={{ propertyId: booking.propertyId, from: booking.from, to: booking.to, nights: booking.nights, guests: booking.guests, bookingId: booking.id, ...(booking.reference ? { bookingRef: booking.reference } : {}) }}
                   >
                     {COMPLETE_PAYMENT[locale] ?? COMPLETE_PAYMENT["en"]}
                   </Link>

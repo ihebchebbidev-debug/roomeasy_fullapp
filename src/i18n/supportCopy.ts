@@ -293,7 +293,7 @@ const de: typeof en = {
   reasonUnavailable: "Nicht wirklich verfügbar",
   reasonSafety: "Sicherheitsbedenken",
   reasonOther: "Anderes",
-  reportDetails: "Details (optional)",
+  reportDetails: "Angaben (optional)",
   reportDetailsPlaceholder: "Alles, was uns bei der Prüfung hilft.",
   reportSend: "Meldung senden",
   reportSent: "Danke — unsere Moderation hat Ihre Meldung erhalten.",
