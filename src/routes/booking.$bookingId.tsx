@@ -20,6 +20,7 @@ import { openConversation } from "@/lib/conversation";
 import { useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { downloadApiFile } from "@/api/http/adminOps.http";
 import { FileDown } from "lucide-react";
+import { ExactLocation } from "@/components/listing/ExactLocation";
 
 export const Route = createFileRoute("/booking/$bookingId")({
   head: ({ match }) => ({
@@ -141,6 +142,10 @@ function BookingConfirmation() {
               />
             </div>
           </section>
+        ) : null}
+
+        {booking.status !== "cancelled" && booking.status !== "declined" ? (
+          <ExactLocation bookingId={booking.id} paid={booking.payment.status === "paid"} />
         ) : null}
 
         <BookingReceipt
