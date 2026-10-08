@@ -39,7 +39,7 @@ export const de: DeepPartial<Dictionary> = {
     night: "Nacht",
     guests: "Gäste",
     beds: "Betten",
-    baths: "Bäder",
+    baths: "Badezimmer",
     save: "Zu Favoriten hinzufügen",
     saved: "Gespeichert",
     favouriteAdded: "Zu Ihren Favoriten hinzugefügt",

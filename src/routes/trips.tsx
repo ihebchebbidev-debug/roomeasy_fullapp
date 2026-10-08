@@ -77,6 +77,14 @@ const CANCELLED_TAB: Record<string, string> = {
   pt: "Cancelados",
 };
 
+const COMPLETE_PAYMENT: Record<string, string> = {
+  en: "Complete payment",
+  fr: "Finaliser le paiement",
+  es: "Completar el pago",
+  de: "Zahlung abschließen",
+  pt: "Concluir pagamento",
+};
+
 function TripsPage() {
   const { t, locale } = useLanguage();
   const { bookings, accountDataStatus } = usePlatform();
@@ -224,6 +232,16 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
                 <Receipt className="size-3.5" aria-hidden />{t.app.trips.receipt}
               </Button>
               )}
+              {booking.status === "pending" && !["paid", "authorized", "refunded"].includes(booking.payment?.status ?? "") && localCalendarDate(booking.from) > localCalendarDate() ? (
+                <Button asChild size="sm" className="w-full sm:w-auto">
+                  <Link
+                    to="/checkout"
+                    search={{ propertyId: booking.propertyId, from: booking.from, to: booking.to, nights: booking.nights, guests: booking.guests }}
+                  >
+                    {COMPLETE_PAYMENT[locale] ?? COMPLETE_PAYMENT["en"]}
+                  </Link>
+                </Button>
+              ) : null}
               {["pending", "confirmed"].includes(booking.status) ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>

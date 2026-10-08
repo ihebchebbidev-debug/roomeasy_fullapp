@@ -130,9 +130,14 @@ function MessagesPage() {
   // ambiguous when the same guest has two stays at one listing.
   // Fallbacks only match a stay of the people in this conversation, never
   // another guest's reservation on the same listing.
-  const booking = (active?.bookingId ? bookings.find((item) => item.id === active.bookingId) : undefined)
+  const linkedBooking = (active?.bookingId ? bookings.find((item) => item.id === active.bookingId) : undefined)
     ?? bookings.find((item) => item.propertyId === active?.propertyId && item.guestName === active?.withName.replace(" (host)", ""))
     ?? (active?.bookingId ? undefined : bookings.find((item) => item.propertyId === active?.propertyId && item.guestName === session?.name));
+  // A thread often starts on an unpaid attempt that is later cancelled when the
+  // guest pays again; show that guest's live stay for the same place instead.
+  const booking = linkedBooking && linkedBooking.status === "cancelled"
+    ? bookings.find((item) => item.id !== linkedBooking.id && item.propertyId === linkedBooking.propertyId && item.guestName === linkedBooking.guestName && item.status !== "cancelled") ?? linkedBooking
+    : linkedBooking;
   const copy = pickCopy(locale, {
     en: {
       inbox: "Inbox", conversations: "Conversations", search: "Search guest or listing", inquiry: "Inquiry for", today: "Today", yesterday: "Yesterday", details: "Stay details", reservation: "Reservation", checkIn: "Check-in", checkOut: "Check-out", guests: "Guests", nights: "nights", payout: "Host payout", status: "Status", confirmed: "Confirmed", property: "Listing", view: "View listing", placeholder: "Write a message…", info: "Details", select: "Select a conversation", response: "Usually responds within an hour", send: "Send message", attach: "Attach file", noResults: "No conversations found", newLabel: "New",
