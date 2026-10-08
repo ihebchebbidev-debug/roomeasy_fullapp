@@ -194,7 +194,7 @@ function HostPage() {
                     </p>
                     {isConfirmed ? (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {cancellationLabel(policy, cc)} · {cc.refundDue}: {format(refund)}
+                        {cancellationLabel(policy, cc)} · {cc.refundDue}: {format(refund, { from: booking.currency })}
                       </p>
                     ) : null}
                     {booking.message ? (
