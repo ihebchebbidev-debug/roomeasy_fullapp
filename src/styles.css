@@ -241,6 +241,11 @@
 .leaflet-container {
   font-family: var(--font-sans);
   background: var(--color-secondary);
+  /* Trap Leaflet's internal z-indexes (up to 1000) inside the map so
+     dropdowns, popovers, dialogs and menus always render above any map. */
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
 }
 
 /* De-saturate the basemap so it reads as quiet ice-grey, letting the
