@@ -197,7 +197,8 @@ function TripCard({ booking, locale }: { booking: Booking; locale: string }) {
             </p>
           </div>
           <div className="flex flex-col gap-4 border-t border-border pt-4 lg:items-end lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
-            <p className="font-display text-xl font-bold tabular-nums">{booking.payment?.status === "paid"
+            {/* "authorized" = card held while the host decides; the guest has paid, not "not paid". */}
+            <p className="font-display text-xl font-bold tabular-nums">{booking.payment?.status === "paid" || booking.payment?.status === "authorized"
               ? format(booking.totalUsd, { from: booking.currency })
               : booking.payment?.status === "refunded"
                 ? `${c.refunded} · ${format(booking.totalUsd, { from: booking.currency })}`

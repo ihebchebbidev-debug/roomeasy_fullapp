@@ -1,3 +1,4 @@
+import { BackOfficeGate } from "@/components/admin/BackOfficeGate";
 import { BackLink } from "@/components/layout/BackLink";
 import { Paged, rowText } from "@/components/admin/ListControls";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/admin_/hosts/$userId")({
   head: ({ match }) => ({
     meta: privatePageMeta(...Object.values(adminPageMeta.member[localeOf(match) ?? "en"]) as [string, string]),
   }),
-  component: AdminHostProfile,
+  component: AdminHostProfileGated,
 });
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -343,5 +344,13 @@ function AdminHostProfile() {
         )}
       </div>
     </main>
+  );
+}
+
+function AdminHostProfileGated() {
+  return (
+    <BackOfficeGate>
+      <AdminHostProfile />
+    </BackOfficeGate>
   );
 }

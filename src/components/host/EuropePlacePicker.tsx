@@ -53,6 +53,9 @@ export const cityName = (raw: string) =>
 
 type CityRow = { name: string; lat: number; lng: number };
 const cityCache = new Map<string, CityRow[]>();
+/** Coordinates of every place in a country, including names hidden from the list
+ * because they double as a region (e.g. "Paris" is also a département). */
+const coordCache = new Map<string, Map<string, { lat: number; lng: number }>>();
 
 async function loadCities(code: string): Promise<CityRow[]> {
   const hit = cityCache.get(code);
@@ -62,13 +65,22 @@ async function loadCities(code: string): Promise<CityRow[]> {
   // The dataset mixes regions/departments in with towns: hide them.
   const regions = new Set((State.getStatesOfCountry(code) ?? []).map((st) => norm(st.name)));
   const rows: CityRow[] = [];
+  const coords = new Map<string, { lat: number; lng: number }>();
+  for (const st of State.getStatesOfCountry(code) ?? []) {
+    const lat = Number(st.latitude), lng = Number(st.longitude);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && !coords.has(norm(st.name))) coords.set(norm(st.name), { lat, lng });
+  }
   for (const c of City.getCitiesOfCountry(code) ?? []) {
+    const lat = Number(c.latitude), lng = Number(c.longitude);
+    // Real towns win over a region of the same name.
+    if (Number.isFinite(lat) && Number.isFinite(lng)) coords.set(norm(c.name), { lat, lng });
     if (seen.has(c.name) || regions.has(norm(c.name)) || ADMIN_AREA.test(c.name)) continue;
     seen.add(c.name);
     rows.push({ name: c.name, lat: Number(c.latitude), lng: Number(c.longitude) });
   }
   rows.sort((a, b) => a.name.localeCompare(b.name));
   cityCache.set(code, rows);
+  coordCache.set(code, coords);
   return rows;
 }
 
@@ -230,8 +242,12 @@ export function EuropePlacePicker({
           value={city}
           options={cityOptions}
           onPick={(name) => {
-            const row = cities.find((c) => c.name === name);
-            onCity(name, row && Number.isFinite(row.lat) ? { lat: row.lat, lng: row.lng } : null);
+            const row = cities.find((c) => norm(c.name) === norm(name));
+            const coords =
+              row && Number.isFinite(row.lat) && Number.isFinite(row.lng)
+                ? { lat: row.lat, lng: row.lng }
+                : (code ? coordCache.get(code)?.get(norm(name)) : undefined) ?? null;
+            onCity(name, coords);
           }}
           disabled={!code}
           placeholder={code ? t.pick : t.countryFirst}

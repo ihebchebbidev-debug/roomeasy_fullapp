@@ -22,6 +22,14 @@ import { downloadApiFile } from "@/api/http/adminOps.http";
 import { FileDown } from "lucide-react";
 import { ExactLocation } from "@/components/listing/ExactLocation";
 
+const UNPAID_COPY: Record<string, { title: string; subtitle: string; cta: string }> = {
+  en: { title: "Payment not completed", subtitle: "Your reservation is saved but not paid yet. Pay to secure these dates.", cta: "Complete payment" },
+  fr: { title: "Paiement non finalisé", subtitle: "Votre réservation est enregistrée mais pas encore payée. Payez pour bloquer ces dates.", cta: "Finaliser le paiement" },
+  es: { title: "Pago no completado", subtitle: "Tu reserva está guardada pero aún no pagada. Paga para asegurar estas fechas.", cta: "Completar el pago" },
+  de: { title: "Zahlung nicht abgeschlossen", subtitle: "Deine Buchung ist gespeichert, aber noch nicht bezahlt. Bezahle, um diese Daten zu sichern.", cta: "Zahlung abschließen" },
+  pt: { title: "Pagamento não concluído", subtitle: "A sua reserva está guardada mas ainda não paga. Pague para garantir estas datas.", cta: "Concluir pagamento" },
+};
+
 export const Route = createFileRoute("/booking/$bookingId")({
   head: ({ match }) => ({
     meta: privatePageMeta(...Object.values(privateRouteMeta["booking.$bookingId"][localeOf(match) ?? "en"]) as [string, string]),
@@ -77,6 +85,12 @@ function BookingConfirmation() {
     // still settling; request-to-book stays legitimately sit on a card hold.
     (booking.status === "confirmed" || (booking.status === "pending" && property?.instantBook === true));
   const location = property ? cityName(property, locale) : undefined;
+  // A request the guest left before paying must not claim the payment arrived.
+  const unpaid =
+    !settling &&
+    booking.status === "pending" &&
+    !["paid", "authorized", "refunded"].includes(booking.payment?.status ?? "");
+  const u = UNPAID_COPY[locale] ?? UNPAID_COPY["en"]!;
 
   return (
     <AppShell>
@@ -87,15 +101,27 @@ function BookingConfirmation() {
             aria-hidden
           />
           <div className="relative">
-            <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/10">
-              <CheckCircle2 className="size-8 text-emerald-600" aria-hidden />
+            <span className={`mx-auto flex size-14 items-center justify-center rounded-full ${unpaid ? "bg-amber-500/10" : "bg-emerald-500/10"}`}>
+              {unpaid ? <Clock className="size-8 text-amber-600" aria-hidden /> : <CheckCircle2 className="size-8 text-emerald-600" aria-hidden />}
             </span>
-            <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">{settling ? c.settlingTitle : booking.status === "pending" ? c.pendingTitle : c.confirmTitle}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{settling ? c.settlingSubtitle : booking.status === "pending" ? c.pendingSubtitle : c.confirmSubtitle}</p>
+            <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">{settling ? c.settlingTitle : unpaid ? u.title : booking.status === "pending" ? c.pendingTitle : c.confirmTitle}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{settling ? c.settlingSubtitle : unpaid ? u.subtitle : booking.status === "pending" ? c.pendingSubtitle : c.confirmSubtitle}</p>
             <p className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm">
               <span className="text-muted-foreground">{c.reference}</span>
               <span className="font-mono font-semibold tracking-wide">{booking.reference}</span>
             </p>
+            {unpaid ? (
+              <div className="mt-5">
+                <Button asChild>
+                  <Link
+                    to="/checkout"
+                    search={{ propertyId: booking.propertyId, from: booking.from, to: booking.to, nights: booking.nights, guests: booking.guests, bookingId: booking.id, ...(booking.reference ? { bookingRef: booking.reference } : {}) }}
+                  >
+                    {u.cta}
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
           </div>
         </section>
 

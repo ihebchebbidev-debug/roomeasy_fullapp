@@ -1,3 +1,4 @@
+import { BackOfficeGate } from "@/components/admin/BackOfficeGate";
 import { BackLink } from "@/components/layout/BackLink";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Check, RotateCcw, ShieldOff, X } from "lucide-react";
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/admin_/listings/$listingId")({
   head: ({ match }) => ({
     meta: privatePageMeta(...Object.values(adminPageMeta.listing[localeOf(match) ?? "en"]) as [string, string]),
   }),
-  component: AdminListingDetail,
+  component: AdminListingDetailGated,
 });
 
 function AdminListingDetail() {
@@ -172,5 +173,13 @@ function AdminListingDetail() {
         )}
       </div>
     </main>
+  );
+}
+
+function AdminListingDetailGated() {
+  return (
+    <BackOfficeGate>
+      <AdminListingDetail />
+    </BackOfficeGate>
   );
 }

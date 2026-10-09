@@ -1,3 +1,4 @@
+import { BackOfficeGate } from "@/components/admin/BackOfficeGate";
 import { BackLink } from "@/components/layout/BackLink";
 import { translateAdmin } from "@/i18n/adminAutoCopy";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/admin_/tickets/$ticketId")({
   head: ({ match }) => ({
     meta: privatePageMeta(...Object.values(adminPageMeta.ticket[localeOf(match) ?? "en"]) as [string, string]),
   }),
-  component: AdminTicketDetail,
+  component: AdminTicketDetailGated,
 });
 
 function AdminTicketDetail() {
@@ -268,5 +269,13 @@ function AdminTicketDetail() {
         )}
       </div>
     </main>
+  );
+}
+
+function AdminTicketDetailGated() {
+  return (
+    <BackOfficeGate>
+      <AdminTicketDetail />
+    </BackOfficeGate>
   );
 }

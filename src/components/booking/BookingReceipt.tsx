@@ -108,7 +108,11 @@ export function BookingReceipt({
         <Line label={t.app.checkout.taxes} value={format(booking.price.taxes)} />
         <div className="flex items-center justify-between border-t border-border pt-4">
           <dt className="font-semibold">
-            {booking.payment.status === "paid" ? c.totalPaid : refused ? c.notPaid : c.totalSettling}
+            {booking.payment.status === "paid"
+              ? c.totalPaid
+              : refused || !["authorized", "refunded"].includes(booking.payment?.status ?? "")
+                ? c.notPaid
+                : c.totalSettling}
           </dt>
           <dd className="font-display text-2xl font-bold">{format(booking.price.total)}</dd>
         </div>

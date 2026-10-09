@@ -65,12 +65,19 @@ function CardForm({ returnUrl, totalLabel, defaults }: { returnUrl: string; tota
     if (!stripe || !elements) return;
     setBusy(true);
     setError(null);
-    const result = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: returnUrl },
-    });
-    if (result.error) {
-      setError(result.error.message ?? c.stripeFailed);
+    try {
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: returnUrl },
+      });
+      if (result.error) {
+        setError(result.error.message ?? c.stripeFailed);
+        setBusy(false);
+        return;
+      }
+    } catch {
+      // Network drops or Stripe.js failures reject instead of returning an error.
+      setError(c.stripeFailed);
       setBusy(false);
       return;
     }

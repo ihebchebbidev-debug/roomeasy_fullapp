@@ -132,9 +132,10 @@ function CheckoutPage() {
   // choose is worse than showing "not found".
   const property = properties.find((p) => p.id === search.propertyId) ?? null;
   // Amounts are in the listing's currency; the guest is charged in it.
-  const listingCurrency = property?.currency ?? "EUR";
-  const format = (amount: number, options?: { decimals?: boolean }) => formatDisplay(amount, { ...options, from: listingCurrency });
-  const formatCharged = (amount: number) => formatChargedIn(amount, listingCurrency);
+  // The server quote states its own currency; prefer it over the cached listing.
+  const listingCurrency = () => quoteQuery.data?.currency ?? property?.currency ?? "EUR";
+  const format = (amount: number, options?: { decimals?: boolean }) => formatDisplay(amount, { ...options, from: listingCurrency() });
+  const formatCharged = (amount: number) => formatChargedIn(amount, listingCurrency());
   const propertyMissing = !property && !loadingStay && properties.length > 0;
 
   const from = search.from ?? addDays(localToday(), 14);
@@ -496,7 +497,7 @@ function CheckoutPage() {
               type="submit"
               size="lg"
               className="w-full"
-              disabled={!payConfig || createBooking.isPending || preparing || !quote || availability.data?.available === false}
+              disabled={!payConfig || createBooking.isPending || preparing || !quote || availability.data?.available !== true}
             >
               {createBooking.isPending || preparing ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden />
