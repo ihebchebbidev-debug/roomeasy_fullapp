@@ -30,7 +30,9 @@ type Props = {
 export function HostOverview(props: Props) {
   const { locale, t } = useLanguage();
   const x = useExtra();
-  const { format } = useCurrency();
+  const { format, convert } = useCurrency();
+  // Bookings can be priced in different listing currencies: bring each to EUR before adding them up.
+  const eur = (booking: Booking) => (booking.currency && booking.currency !== "EUR" ? convert(booking.totalUsd, booking.currency, "EUR") ?? booking.totalUsd : booking.totalUsd);
   const c = getHostOverviewCopy(locale);
   const now = new Date();
   const today = isoDay(now);
@@ -42,10 +44,10 @@ export function HostOverview(props: Props) {
   const pending = props.bookings.filter((booking) => booking.status === "pending").sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
   const confirmed = props.bookings.filter((booking) => booking.status === "confirmed");
   const isEarnedBooking = (booking: Booking) => booking.status === "completed" || (booking.status === "confirmed" && booking.to <= today);
-  const earned = props.bookings.filter(isEarnedBooking).reduce((sum, booking) => sum + booking.totalUsd, 0);
-  const upcomingRevenue = confirmed.filter((booking) => booking.to > today).reduce((sum, booking) => sum + booking.totalUsd, 0);
-  const recentRevenue = props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to >= isoDay(thirtyDaysAgo) && booking.to <= today).reduce((sum, booking) => sum + booking.totalUsd, 0);
-  const previousRevenue = props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to >= isoDay(sixtyDaysAgo) && booking.to < isoDay(thirtyDaysAgo)).reduce((sum, booking) => sum + booking.totalUsd, 0);
+  const earned = props.bookings.filter(isEarnedBooking).reduce((sum, booking) => sum + eur(booking), 0);
+  const upcomingRevenue = confirmed.filter((booking) => booking.to > today).reduce((sum, booking) => sum + eur(booking), 0);
+  const recentRevenue = props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to >= isoDay(thirtyDaysAgo) && booking.to <= today).reduce((sum, booking) => sum + eur(booking), 0);
+  const previousRevenue = props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to >= isoDay(sixtyDaysAgo) && booking.to < isoDay(thirtyDaysAgo)).reduce((sum, booking) => sum + eur(booking), 0);
   const recentRequests = props.bookings.filter((booking) => booking.createdAt && new Date(booking.createdAt) >= thirtyDaysAgo).length;
   const previousRequests = props.bookings.filter((booking) => booking.createdAt && new Date(booking.createdAt) >= sixtyDaysAgo && new Date(booking.createdAt) < thirtyDaysAgo).length;
   const nextOccupancy = occupancyForRange(props.bookings, props.listings, today, inThirtyDays);
@@ -85,8 +87,8 @@ export function HostOverview(props: Props) {
     const isFuture = date > new Date(now.getFullYear(), now.getMonth(), 1);
     return {
       month: date.toLocaleDateString(locale, { month: "short" }),
-      earned: isFuture ? 0 : props.bookings.filter((booking) => booking.status === "completed" && booking.to.slice(0, 7) === key).reduce((sum, booking) => sum + booking.totalUsd, 0),
-      forecast: props.bookings.filter((booking) => booking.status === "confirmed" && booking.from > today && booking.from.slice(0, 7) === key).reduce((sum, booking) => sum + booking.totalUsd, 0),
+      earned: isFuture ? 0 : props.bookings.filter((booking) => isEarnedBooking(booking) && booking.to.slice(0, 7) === key).reduce((sum, booking) => sum + eur(booking), 0),
+      forecast: props.bookings.filter((booking) => booking.status === "confirmed" && booking.to > today && (booking.from > today ? booking.from : today).slice(0, 7) === key).reduce((sum, booking) => sum + eur(booking), 0),
     };
   });
   const chartConfig: ChartConfig = { earned: { label: c.actual, color: "var(--chart-1)" }, forecast: { label: c.forecast, color: "var(--chart-3)" } };
@@ -108,7 +110,7 @@ export function HostOverview(props: Props) {
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <OverviewStat icon={Wallet} label={t.app.host.revenue} value={format(earned)} subvalue={`${c.upcomingRevenue}: ${format(upcomingRevenue)}`} delta={percentageDifference(recentRevenue, previousRevenue)} comparison={c.previousPeriod} noData={c.noPreviousData} />
       <OverviewStat icon={CalendarRange} label={t.app.host.requests} value={String(pending.length)} subvalue={interpolate(c.requestsReceived, { count: recentRequests })} delta={percentageDifference(recentRequests, previousRequests)} comparison={c.previousPeriod} noData={c.noPreviousData} />
-      <OverviewStat icon={CalendarCheck} label={t.app.host.occupancy} value={`${nextOccupancy.rate}%`} subvalue={interpolate(c.nightsBooked, { booked: nextOccupancy.booked, available: nextOccupancy.available })} delta={previousOccupancy.available ? percentageDifference(nextOccupancy.rate, previousOccupancy.rate) : null} comparison={c.occupancyComparison} noData={c.noPreviousData} />
+      <OverviewStat icon={CalendarCheck} label={t.app.host.occupancy} value={`${nextOccupancy.rate}%`} subvalue={interpolate(c.nightsBooked, { booked: nextOccupancy.booked, available: nextOccupancy.available })} delta={previousOccupancy.available ? nextOccupancy.rate - previousOccupancy.rate : null} unit={c.points} comparison={c.occupancyComparison} noData={c.noPreviousData} />
       <OverviewStat icon={BadgeCheck} label={t.app.host.avgRating} value={avgRating ? avgRating.toFixed(1) : c.newRating} subvalue={interpolate(c.reviewsCount, { count: props.reviews.length })} delta={previousReviews.length ? percentageDifference(recentAverage, previousAverage) : null} comparison={c.previousPeriod} noData={c.noPreviousData} />
     </div>
 
@@ -132,7 +134,7 @@ export function HostOverview(props: Props) {
 
     <div className="grid gap-5 lg:grid-cols-2">
       <OverviewPanel><PanelHeading title={c.recentReviews} action={<Button asChild size="sm" variant="ghost"><Link to="/host" search={{ section: "reviews" }}>{c.viewAll}</Link></Button>} />{sortedReviews.length ? <div className="mt-4 divide-y divide-border">{sortedReviews.map((review) => <div key={review.id} className="py-3 first:pt-0"><div className="flex justify-between gap-3"><p className="font-semibold">{review.author}</p><span className="shrink-0 text-sm font-semibold">★ {review.rating.toFixed(1)}</span></div><p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{review.text}</p>{!review.reply ? <Button asChild size="sm" variant="outline" className="mt-3"><Link to="/host" search={{ section: "reviews" }}>{c.review}</Link></Button> : null}</div>)}</div> : <p className="mt-4 text-sm text-muted-foreground">{c.noReviews}</p>}</OverviewPanel>
-      <OverviewPanel><PanelHeading title={c.recentMessages} action={<Button asChild size="sm" variant="ghost"><Link to="/messages">{c.viewAll}</Link></Button>} />{sortedThreads.length ? <div className="mt-4 divide-y divide-border">{sortedThreads.map((thread) => { const latest = thread.messages.at(-1); const needsReply = threadNeedsReply(thread); return <Link key={thread.id} to="/messages" className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-3 first:pt-0"><div className="min-w-0"><p className="truncate font-semibold">{thread.withName}</p><p className="truncate text-sm text-muted-foreground">{latest?.text ?? "—"}</p>{needsReply ? <p className="mt-1 text-xs font-medium text-primary">{c.replyNeeded}</p> : null}</div>{thread.unread ? <span className="mt-1 size-2.5 shrink-0 rounded-full bg-primary" aria-label={interpolate(c.unread, { count: thread.unread })} /> : null}</Link>; })}</div> : <p className="mt-4 text-sm text-muted-foreground">{c.noMessages}</p>}</OverviewPanel>
+      <OverviewPanel><PanelHeading title={c.recentMessages} action={<Button asChild size="sm" variant="ghost"><Link to="/messages">{c.viewAll}</Link></Button>} />{sortedThreads.length ? <div className="mt-4 divide-y divide-border">{sortedThreads.map((thread) => { const latest = thread.messages.at(-1); const needsReply = threadNeedsReply(thread); return <Link key={thread.id} to="/messages" className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-3 first:pt-0"><div className="min-w-0"><p className="truncate font-semibold">{thread.withName}</p><p className="truncate text-sm text-muted-foreground">{latest?.text?.trim() || (latest?.attachmentUrl ? `📷 ${c.photo}` : "—")}</p>{needsReply ? <p className="mt-1 text-xs font-medium text-primary">{c.replyNeeded}</p> : null}</div>{thread.unread ? <span className="mt-1 size-2.5 shrink-0 rounded-full bg-primary" aria-label={interpolate(c.unread, { count: thread.unread })} /> : null}</Link>; })}</div> : <p className="mt-4 text-sm text-muted-foreground">{c.noMessages}</p>}</OverviewPanel>
     </div>
   </section>;
 }
@@ -152,8 +154,8 @@ function PanelHeading({ title, subtitle, action }: { title: string; subtitle?: s
   return <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3"><div className="min-w-0"><h2 className="font-display text-lg font-bold">{title}</h2>{subtitle ? <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p> : null}</div>{action}</div>;
 }
 
-function OverviewStat({ icon: Icon, label, value, subvalue, delta, comparison, noData }: { icon: typeof Wallet; label: string; value: string; subvalue?: string; delta?: number | null; comparison: string; noData?: string }) {
+function OverviewStat({ icon: Icon, label, value, subvalue, delta, comparison, noData, unit = "%" }: { icon: typeof Wallet; label: string; value: string; subvalue?: string; delta?: number | null; comparison: string; noData?: string; unit?: string }) {
   const up = typeof delta === "number" && delta >= 0;
   const flat = delta === 0;
-  return <div className="min-w-0 rounded-lg border border-border bg-card p-5 shadow-sm"><div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3"><p className="min-w-0 text-xs font-semibold text-muted-foreground">{label}</p><span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/8 text-primary"><Icon className="size-4" /></span></div><p className="mt-3 min-w-0 break-words font-display text-2xl font-bold leading-tight tabular-nums [overflow-wrap:anywhere]">{value}</p>{subvalue ? <p className="mt-1 break-words text-xs text-muted-foreground">{subvalue}</p> : null}<div className="mt-3 flex items-start gap-1 text-[11px] text-muted-foreground">{typeof delta === "number" ? <><span className={cn("inline-flex shrink-0 items-center font-semibold", flat ? "text-muted-foreground" : up ? "text-primary" : "text-destructive")}>{flat ? null : up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}{Math.abs(delta)}%</span><span>{comparison}</span></> : <span>{noData ?? comparison}</span>}</div></div>;
+  return <div className="min-w-0 rounded-lg border border-border bg-card p-5 shadow-sm"><div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3"><p className="min-w-0 text-xs font-semibold text-muted-foreground">{label}</p><span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/8 text-primary"><Icon className="size-4" /></span></div><p className="mt-3 min-w-0 break-words font-display text-2xl font-bold leading-tight tabular-nums [overflow-wrap:anywhere]">{value}</p>{subvalue ? <p className="mt-1 break-words text-xs text-muted-foreground">{subvalue}</p> : null}<div className="mt-3 flex items-start gap-1 text-[11px] text-muted-foreground">{typeof delta === "number" ? <><span className={cn("inline-flex shrink-0 items-center font-semibold", flat ? "text-muted-foreground" : up ? "text-primary" : "text-destructive")}>{flat ? null : up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}{Math.abs(delta)}{unit}</span><span>{comparison}</span></> : <span>{noData ?? comparison}</span>}</div></div>;
 }

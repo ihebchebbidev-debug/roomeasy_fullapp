@@ -97,7 +97,7 @@ function Combo({
   value, options, onPick, disabled, placeholder, t, invalid, loading,
 }: {
   value: string;
-  options: { key: string; label: string }[];
+  options: { key: string; label: string; featured?: boolean }[];
   onPick: (key: string) => void;
   disabled?: boolean;
   placeholder: string;
@@ -139,7 +139,7 @@ function Combo({
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
             >
               <Check className={cn("size-4", o.key === value ? "opacity-100" : "opacity-0")} aria-hidden />
-              {o.label}
+              {o.featured ? <span aria-hidden className="mr-1 text-primary">★</span> : null}{o.label}
             </button>
           ))}
         </div>
@@ -218,7 +218,7 @@ export function EuropePlacePicker({
       .sort((a, b) => Number(b.featured) - Number(a.featured) || a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
     const top = new Set(mine.map((c) => norm(c.name)));
     return [
-      ...mine.map((c) => ({ key: cityName(c.name), label: c.featured ? `★ ${cityName(c.name)}` : cityName(c.name) })),
+      ...mine.map((c) => ({ key: cityName(c.name), label: cityName(c.name), featured: Boolean(c.featured) })),
       ...cities.filter((c) => !top.has(norm(c.name))).map((c) => ({ key: c.name, label: c.name })),
     ];
   }, [cities, managed, country, code, countries]);

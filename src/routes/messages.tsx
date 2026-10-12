@@ -229,13 +229,17 @@ function MessagesPage() {
       return;
     }
     const sentAt = new Date().toISOString();
-    setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: [...thread.messages, { id: localId, from: "me", text: "", attachmentUrl: dataUrl, sentAt, time: formatClock(sentAt) }] } : thread) }));
+    // Whatever the user already typed travels with the photo as one message.
+    const caption = draft.trim();
+    setDraft("");
+    setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: [...thread.messages, { id: localId, from: "me", text: caption, attachmentUrl: dataUrl, sentAt, time: formatClock(sentAt) }] } : thread) }));
     // `remote.sendMessage` already surfaces the server's own reason (e.g. "too
     // large") as a toast, so a failure here should just roll back the
     // optimistic bubble instead of hiding that message behind a generic one.
-    const saved = await remote.sendMessage(active.id, "", dataUrl);
+    const saved = await remote.sendMessage(active.id, caption, dataUrl);
     if (backendEnabled && !serverOffline() && !saved) {
       setPlatform((state) => ({ threads: state.threads.map((thread) => thread.id === active.id ? { ...thread, messages: thread.messages.filter((message) => message.id !== localId) } : thread) }));
+      setDraft(caption);
     }
     setSending(false);
     if (fileRef.current) fileRef.current.value = "";
