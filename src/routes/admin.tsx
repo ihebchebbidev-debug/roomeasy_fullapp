@@ -319,7 +319,10 @@ function AdminPage() {
     { label: t.app.admin.approvals, value: metric(pending.length), tone: "amber" as const, to: "approvals" },
     { label: t.app.admin.users, value: metric(adminOverview?.users.total ?? users.length), tone: "primary" as const, to: "users" },
     { label: t.app.admin.host, value: metric(hostsCount), tone: "emerald" as const, to: "users" },
-    { label: t.app.admin.payouts, value: metric(format(payoutsTotal)), tone: "primary" as const, to: "payouts" },
+    // The payouts section is only offered to roles the server allows to read it.
+    ...(can("finance.read")
+      ? [{ label: t.app.admin.payouts, value: metric(format(payoutsTotal)), tone: "primary" as const, to: "payouts" }]
+      : []),
   ];
 
   // The back office is for administrators and the delegated roles the server
@@ -348,7 +351,7 @@ function AdminPage() {
 
     // Reservations list and reservation actions share one tab.
     ...(can("bookings.read") || can("bookings.manage") || can("finance.manage") ? [{ value: "bookings", label: ac.tabBookings, icon: CalendarDays, group: "finance" as const }] : []),
-    { value: "payouts", label: t.app.admin.payouts, icon: Wallet, group: "finance" },
+    ...(can("finance.read") ? [{ value: "payouts", label: t.app.admin.payouts, icon: Wallet, group: "finance" as const }] : []),
     ...(can("finance.read") ? [{ value: "commissions", label: ac.tabCommissions, icon: Percent, group: "finance" as const }] : []),
     ...(can("finance.read") ? [{ value: "finance", label: ac.tabFinance, icon: Wallet, group: "finance" as const }] : []),
 
