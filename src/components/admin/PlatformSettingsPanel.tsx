@@ -106,6 +106,11 @@ export function PlatformSettingsPanel() {
   }
 
   async function saveFees() {
+    const values = [fees.commissionRate, fees.serviceFeeRate, fees.taxRate, fees.weekend, fees.longStay, fees.lastMinute].map((v) => Number(v));
+    if (values.some((v) => !Number.isFinite(v) || v < 0 || v > 100)) {
+      toast.error(T("Each percentage must be between 0 and 100.", "Chaque pourcentage doit être compris entre 0 et 100."));
+      return;
+    }
     setBusy("fees");
     try {
       await settingsApi.saveAdmin({

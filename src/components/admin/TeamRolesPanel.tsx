@@ -51,6 +51,11 @@ export function TeamRolesPanel({ canGrantAdmin }: { canGrantAdmin: boolean }) {
   });
 
   async function toggle(row: AdminMemberRow, role: GrantableRole, has: boolean) {
+    if (has) {
+      const label = roleOptions.find((o) => o.role === role)?.label ?? role;
+      const who = (row as { name?: string | null; email?: string | null }).name ?? (row as { email?: string | null }).email ?? "";
+      if (!window.confirm(`${c.revoke} — ${label}${who ? ` · ${who}` : ""}?`)) return;
+    }
     try {
       const result = has ? await adminTeamApi.revokeRole(row.id, role) : await adminTeamApi.grantRole(row.id, role);
       if (has && result && result.removed === false) {

@@ -198,7 +198,7 @@ function AdminHostProfile() {
                        <div><dt className="text-xs text-muted-foreground uppercase">{T("Sent on")}</dt><dd className="font-medium">{new Date(doc.createdAt).toLocaleString()}</dd></div>
                        <div><dt className="text-xs text-muted-foreground uppercase">{T("Decided on")}</dt><dd className="font-medium">{doc.decidedAt ? new Date(doc.decidedAt).toLocaleString() : "—"}</dd></div>
                     </dl>
-                     {doc.notes ? <p className="rounded-md bg-muted p-3 text-sm"><span className="font-medium">{T("Note")}: </span>{doc.notes}</p> : null}
+                     {doc.notes && data.host.verificationStatus !== "verified" ? <p className="rounded-md bg-muted p-3 text-sm"><span className="font-medium">{T("Note")}: </span>{doc.notes}</p> : null}
                     {doc.documentFiles && doc.documentFiles.length > 0 ? (
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         {doc.documentFiles.map((file, i) => (

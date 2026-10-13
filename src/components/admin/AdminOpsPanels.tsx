@@ -1437,13 +1437,9 @@ export function BookingsDeskPanel() {
 
   const open = async (booking: AdminBookingDto) => {
     setSelected(booking);
-    setConversation(null);
-    try {
-      setConversation(await adminOpsApi.bookingConversation(booking.id));
-    } catch {
-      // The server only opens guest/host messages from a support ticket (privacy rule).
-      setConversation({ threadId: null, guestName: null, hostName: null, messages: [], locked: true } as BookingConversationDto & { locked: boolean });
-    }
+    // The server only opens guest/host messages from a support ticket (privacy rule),
+    // so don't request them here — show the locked notice directly.
+    setConversation({ threadId: null, guestName: null, hostName: null, messages: [], locked: true } as BookingConversationDto & { locked: boolean });
   };
 
   const field = (key: keyof AdminBookingFilters, label: string, type = "text") => (
