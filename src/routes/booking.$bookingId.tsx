@@ -235,6 +235,15 @@ function BookingConfirmation() {
               <FileDown className="size-4" aria-hidden />
               {sp.invoicePdf}
             </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link
+                to="/support"
+                search={{ bookingId: booking.id, ...(booking.reference ? { ref: booking.reference } : {}) }}
+              >
+                <LifeBuoy className="size-4" aria-hidden />
+                {t.app.profile.contactSupport}
+              </Link>
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/help">{c.helpCenter}</Link>
             </Button>

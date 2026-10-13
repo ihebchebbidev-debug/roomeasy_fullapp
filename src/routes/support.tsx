@@ -15,7 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSupportCopy } from "@/i18n/supportCopy";
 import { useSession } from "@/hooks/usePlatform";
 
+type SupportSearch = { bookingId?: string; ref?: string };
+
 export const Route = createFileRoute("/support")({
+  validateSearch: (s: Record<string, unknown>): SupportSearch => ({
+    ...(typeof s["bookingId"] === "string" && s["bookingId"] ? { bookingId: s["bookingId"] } : {}),
+    ...(typeof s["ref"] === "string" && s["ref"] ? { ref: s["ref"] } : {}),
+  }),
   head: ({ match }) => ({
     meta: privatePageMeta(...Object.values(privateRouteMeta["support"][localeOf(match) ?? "en"]) as [string, string]),
   }),
@@ -26,9 +32,12 @@ function SupportPage() {
   const signInReturn = useSignInReturn();
   const c = useSupportCopy();
   const session = useSession();
+  // Opened from a booking page: the ticket is linked to that booking so the
+  // support team can act on the stay (change, cancel, refund).
+  const { bookingId, ref } = Route.useSearch();
   const [tickets, setTickets] = useState<MemberTicket[]>([]);
   const [active, setActive] = useState<MemberTicket | null>(null);
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(ref ? `${ref} — ` : "");
   const [category, setCategory] = useState<MemberTicket["category"]>("booking");
   const [body, setBody] = useState("");
   const [reply, setReply] = useState("");
@@ -69,7 +78,7 @@ function SupportPage() {
   async function submit() {
     setBusy(true);
     try {
-      await supportApi.openTicket({ subject: subject.trim(), category, body: body.trim() });
+      await supportApi.openTicket({ subject: subject.trim(), category, body: body.trim(), ...(bookingId ? { bookingId } : {}) });
       toast.success(c.sent);
       setSubject("");
       setBody("");

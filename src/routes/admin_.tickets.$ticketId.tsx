@@ -202,6 +202,7 @@ function AdminTicketDetail() {
                       toast.error(copy.notLinkedBooking);
                       return;
                     }
+                    if (!window.confirm(`${copy.cancelStay} (100% refund)?`)) return;
                     void run(
                       () =>
                         adminOpsApi.ticketAction(ticket.id, {
@@ -224,6 +225,7 @@ function AdminTicketDetail() {
                       toast.error(copy.notLinkedMember);
                       return;
                     }
+                    if (!window.confirm(`${copy.suspendMember} (30 days)?`)) return;
                     void run(
                       () =>
                         adminOpsApi.ticketAction(ticket.id, {
