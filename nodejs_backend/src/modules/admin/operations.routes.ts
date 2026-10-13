@@ -5,6 +5,7 @@ import { apiError } from "@/core/errors.js";
 import { asyncHandler, created, ok } from "@/core/http.js";
 import { validateBody, validateParams, validateQuery } from "@/core/validate.js";
 import { sendXlsx } from "@/core/xlsx.js";
+import { queryOne } from "@/db/query.js";
 import { currentUser } from "@/middleware/auth.js";
 import { hasCapability, requireCapability, type Capability } from "@/middleware/permissions.js";
 import { adminInsights, adminReports, setListingSuspended, setUserSuspended } from "@/modules/admin/admin.repository.js";
@@ -47,6 +48,15 @@ import {
  * desk and the notification queue. Mounted inside `adminRouter`, so the
  * administrator-role check has already run.
  */
+
+/** Every amount on a booking row is in that booking's own currency (EUR by default). */
+async function bookingCurrency(bookingId: string): Promise<string> {
+  const row = await queryOne<{ currency: string }>(`SELECT currency FROM booking WHERE id::text = $1 OR reference = $1 LIMIT 1`, [bookingId], {
+    label: "admin.bookingCurrency",
+  });
+  return (row?.currency ?? "EUR").trim();
+}
+
 export const adminOperationsRouter = Router();
 
 const pagination = z.object({
@@ -345,6 +355,7 @@ adminOperationsRouter.post(
     );
     const admin = currentUser(req);
     const booking = await refundBooking({ bookingId, amountUsd, reason, adminId: admin.userId });
+    const currency = await bookingCurrency(bookingId);
     await recordModeration({
       adminId: admin.userId,
       action: "booking_refunded",
@@ -358,8 +369,8 @@ adminOperationsRouter.post(
         recipientId: booking.guestId,
         recipientEmail: booking.guestEmail,
         template: "booking_refunded",
-        subject: `A refund of ${amountUsd} USD has been issued`,
-        body: `We refunded ${amountUsd} USD on booking ${booking.reference}. Reason: ${reason}`,
+        subject: `A refund of ${amountUsd} ${currency} has been issued`,
+        body: `We refunded ${amountUsd} ${currency} on booking ${booking.reference}. Reason: ${reason}`,
         payload: { bookingId, amountUsd },
       });
     }
@@ -585,7 +596,7 @@ adminOperationsRouter.post(
           refundPercent: input.refundPercent,
           adminId: admin.userId,
         });
-        note = `Reservation cancelled, ${result.refundUsd} USD refunded — ${input.reason}`;
+        note = `Reservation cancelled, ${result.refundUsd} ${await bookingCurrency(ticket.bookingId)} refunded — ${input.reason}`;
       } else {
         await refundBooking({
           bookingId: ticket.bookingId,
@@ -593,7 +604,7 @@ adminOperationsRouter.post(
           reason: input.reason,
           adminId: admin.userId,
         });
-        note = `Refund of ${input.amountUsd} USD issued — ${input.reason}`;
+        note = `Refund of ${input.amountUsd} ${await bookingCurrency(ticket.bookingId)} issued — ${input.reason}`;
       }
     }
 

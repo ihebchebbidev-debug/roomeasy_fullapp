@@ -37,7 +37,8 @@ function SupportPage() {
   const { bookingId, ref } = Route.useSearch();
   const [tickets, setTickets] = useState<MemberTicket[]>([]);
   const [active, setActive] = useState<MemberTicket | null>(null);
-  const [subject, setSubject] = useState(ref ? `${ref} — ` : "");
+  // Prefill with the bare reference so an untouched title never ends in a dangling dash.
+  const [subject, setSubject] = useState(ref ?? "");
   const [category, setCategory] = useState<MemberTicket["category"]>("booking");
   const [body, setBody] = useState("");
   const [reply, setReply] = useState("");

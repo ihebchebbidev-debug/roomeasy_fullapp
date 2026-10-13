@@ -126,7 +126,7 @@ export async function refundBooking(input: {
   const remaining = booking.totalUsd - booking.refundedUsd;
   if (input.amountUsd > remaining + 0.001) {
     throw apiError("VALIDATION_FAILED", {
-      message: `At most ${remaining.toFixed(2)} USD can still be refunded on this booking.`,
+      message: `At most ${remaining.toFixed(2)} (in the booking currency) can still be refunded on this booking.`,
     });
   }
 
