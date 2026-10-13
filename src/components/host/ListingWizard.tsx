@@ -76,6 +76,8 @@ export function ListingWizard({
   const [identityAsk, setIdentityAsk] = useState<{ publish: boolean } | null>(null);
   const [idKind, setIdKind] = useState<"passport" | "id_card" | "driving_licence" | "residence_permit">("passport");
   const [idNumber, setIdNumber] = useState("");
+  const [idNumberTouched, setIdNumberTouched] = useState(false);
+  const idNumberInvalid = idNumberTouched && idNumber.trim().length < 4;
   const [idFiles, setIdFiles] = useState<string[]>([]);
   const [identityFiled, setIdentityFiled] = useState(false);
   // Description step: free-form host notes + the wording the assistant returns.
@@ -249,8 +251,9 @@ export function ListingWizard({
 
   /** Files the identity document, upgrades the account, then resumes the save. */
   async function submitIdentity() {
+    setIdNumberTouched(true);
     if (idNumber.trim().length < 4) {
-      toast.error(c.idMissing);
+      document.getElementById("identity-number")?.focus();
       return;
     }
     const pending = identityAsk;
@@ -319,8 +322,16 @@ export function ListingWizard({
               id="identity-number"
               value={idNumber}
               onChange={(e) => setIdNumber(e.target.value)}
+              onBlur={() => setIdNumberTouched(true)}
+              aria-invalid={idNumberInvalid}
+              aria-describedby={idNumberInvalid ? "identity-number-error" : undefined}
               placeholder={c.idNumberPlaceholder}
             />
+            {idNumberInvalid ? (
+              <p id="identity-number-error" role="alert" className="text-sm text-destructive">
+                {c.idMissing}
+              </p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label>{c.idFiles}</Label>
