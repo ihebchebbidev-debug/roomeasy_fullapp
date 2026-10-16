@@ -298,7 +298,7 @@ type ServerBooking = {
   guests: number;
   status: Booking["status"];
   message: string | null;
-  price: { total: number; totalUsd?: number; currency?: string };
+  price: { total: number; totalUsd?: number; currency?: string; subtotal?: number; cleaningFee?: number };
   currency?: string;
   payment?: { method?: "card"; brand: string; last4: string; status: string; reference: string } | null;
   propertyName?: string | null;
@@ -321,6 +321,9 @@ export function toBooking(dto: ServerBooking): Booking {
     guests: dto.guests,
     totalUsd: dto.price?.totalUsd ?? dto.price?.total ?? 0,
     currency: (dto.currency ?? dto.price?.currency ?? "EUR").trim(),
+    ...(typeof dto.price?.subtotal === "number"
+      ? { hostShareUsd: dto.price.subtotal + (dto.price.cleaningFee ?? 0) }
+      : {}),
     status: dto.status,
     reference: dto.reference,
     ...(dto.guest?.email ? { guestEmail: dto.guest.email } : {}),

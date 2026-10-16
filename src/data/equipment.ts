@@ -24,6 +24,9 @@ export type EquipmentItem = {
   group: EquipmentGroup;
   en: string;
   fr: string;
+  es?: string;
+  de?: string;
+  pt?: string;
   /** Charged as an extra rather than included in the nightly rate. */
   paid?: boolean;
 };
@@ -137,9 +140,10 @@ export function equipmentGroupLabel(group: EquipmentGroup, locale: Locale): stri
   return groupLabels[locale]?.[group] ?? groupLabels.en[group] ?? String(group).replace(/[-_]/g, " ");
 }
 
-/** Localised item name; every locale except French falls back to English. */
+/** Localised item name; falls back to English when a translation is missing. */
 export function equipmentLabel(item: EquipmentItem, locale: Locale): string {
-  return locale === "fr" ? item.fr : item.en;
+  if (locale === "en") return item.en;
+  return (item as Record<string, unknown>)[locale] as string || item.en;
 }
 
 const byId = new Map(equipmentCatalogue.map((item) => [item.id, item]));
@@ -158,13 +162,28 @@ export function setEquipmentCatalogue(items: EquipmentItem[]) {
 }
 
 let loading: Promise<void> | null = null;
-export function loadEquipmentFromApi(fetcher: () => Promise<{ id: string; group: string; label: { en: string; fr: string }; paid: boolean; active: boolean }[]>) {
+export function loadEquipmentFromApi(fetcher: () => Promise<{ id: string; group: string; label: { en: string; fr: string; es?: string; de?: string; pt?: string }; paid: boolean; active: boolean }[]>) {
   loading ??= fetcher()
     .then((rows) =>
       setEquipmentCatalogue(
         rows
           .filter((row) => row.active)
-          .map((row) => ({ id: row.id, group: row.group as EquipmentGroup, en: row.label.en, fr: row.label.fr, paid: row.paid })),
+          .map((row) => {
+            const bundled = byId.get(row.id);
+            // The server echoes English for empty translations; prefer the bundled one then.
+            const pick = (value: string | undefined, fallback: string | undefined) =>
+              value && value !== row.label.en ? value : fallback || value || row.label.en;
+            return {
+              id: row.id,
+              group: row.group as EquipmentGroup,
+              en: row.label.en,
+              fr: row.label.fr,
+              es: pick(row.label.es, bundled?.es),
+              de: pick(row.label.de, bundled?.de),
+              pt: pick(row.label.pt, bundled?.pt),
+              paid: row.paid,
+            };
+          }),
       ),
     )
     .catch(() => {
@@ -202,12 +221,12 @@ export function equipmentByGroup(items: EquipmentItem[]): { group: EquipmentGrou
     .filter((entry) => entry.items.length > 0);
 }
 
-/** Free-text search across both label languages, for the host dashboard box. */
+/** Free-text search across every label language, for the host dashboard box. */
 export function searchEquipment(query: string): EquipmentItem[] {
   const needle = query.trim().toLocaleLowerCase();
   if (!needle) return equipmentCatalogue;
   return equipmentCatalogue.filter(
     (item) =>
-      item.en.toLocaleLowerCase().includes(needle) || item.fr.toLocaleLowerCase().includes(needle),
+      [item.en, item.fr, item.es, item.de, item.pt].some((label) => label?.toLocaleLowerCase().includes(needle)),
   );
 }

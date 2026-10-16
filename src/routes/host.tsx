@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { AccountShell } from "@/components/layout/AccountShell";
 import { PayoutsOnboarding } from "@/components/host/PayoutsOnboarding";
 import { HostOverview } from "@/components/host/overview/HostOverview";
+import { ConfirmDialogHost, confirmAction } from "@/components/admin/ConfirmDialogHost";
 import { SmartPricingPanel } from "@/components/host/SmartPricingPanel";
 import { Badge } from "@/components/ui/badge";
 import { DataState, EmptyState } from "@/components/ui/empty-state";
@@ -81,7 +82,7 @@ function HostPage() {
   const ownPropertyIds = new Set(listings.map((l) => l.propertyId));
   const bookings = allBookings.filter((b) => ownPropertyIds.has(b.propertyId));
 
-  const revenue = hostDashboard?.earnings.grossUsd ?? bookings.filter((b) => b.status === "confirmed" || b.status === "completed").reduce((sum, b) => sum + b.totalUsd, 0);
+  const revenue = hostDashboard?.earnings.grossUsd ?? bookings.filter((b) => b.status === "confirmed" || b.status === "completed").reduce((sum, b) => sum + (b.hostShareUsd ?? b.totalUsd), 0);
   const requests = bookings.filter((b) => b.status === "pending");
   const decided = bookings.filter((b) => b.status !== "pending");
   const confirmationRate = decided.length
@@ -122,6 +123,7 @@ function HostPage() {
   }
 
   async function decide(booking: Booking, decision: "confirmed" | "declined") {
+    if (decision === "declined" && !(await confirmAction(`${t.app.host.decline} — ${booking.guestName}?`, `${booking.from} → ${booking.to}`, t.app.host.decline))) return;
     const previous = booking.status;
     patchStatus(booking.id, decision);
     const saved = await remote.decideBooking(booking.id, decision);
@@ -190,7 +192,7 @@ function HostPage() {
                       <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", isPending ? "bg-accent text-accent-foreground" : isConfirmed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>{statusLabel}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {booking.guestName} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)} · {format(booking.totalUsd, { from: booking.currency })}
+                      {booking.guestName} · {shortDate(booking.from, locale)} → {shortDate(booking.to, locale)} · {format(booking.hostShareUsd ?? booking.totalUsd, { from: booking.currency })}
                     </p>
                     {isConfirmed ? (
                       <p className="mt-1 text-xs text-muted-foreground">
@@ -346,6 +348,7 @@ function HostPage() {
           <InviteForm />
         </section> : null}
       </div>
+      <ConfirmDialogHost />
     </AccountShell>
   );
 }

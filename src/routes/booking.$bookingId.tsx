@@ -183,7 +183,7 @@ function BookingConfirmation() {
         <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm" data-print-hide>
           <h2 className="font-display text-lg font-bold">{c.whatsNext}</h2>
           <ol className="mt-4 space-y-4">
-            {[c.next1, c.next2, c.next3].map((step, index) => (
+            {[booking.status === "pending" ? c.next1Pending : c.next1, c.next2, c.next3].map((step, index) => (
               <li key={step} className="flex gap-3 text-sm">
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                   {index + 1}

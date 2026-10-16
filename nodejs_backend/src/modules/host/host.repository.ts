@@ -160,10 +160,10 @@ export async function hostDashboard(hostId: string, window = 90): Promise<HostDa
             count(*) FILTER (WHERE b.status = 'completed')::text AS completed,
             count(*) FILTER (WHERE b.status IN ('cancelled', 'declined'))::text AS cancelled,
             coalesce(sum(
-              CASE WHEN b.status IN ('confirmed', 'completed') THEN b.total_usd
+              CASE WHEN b.status IN ('confirmed', 'completed') THEN b.subtotal + b.cleaning_fee
                    -- Late cancellation: the host keeps whatever was not refunded.
                    WHEN b.status = 'cancelled' AND pay.status IN ('paid', 'refunded')
-                     THEN greatest(b.total_usd - coalesce(pay.refunded_usd, 0), 0)
+                     THEN least(b.subtotal + b.cleaning_fee, greatest(b.total_usd - coalesce(pay.refunded_usd, 0), 0))
                    ELSE 0 END), 0)::text AS gross
        FROM booking b JOIN property p ON p.id = b.property_id
        LEFT JOIN LATERAL (
@@ -267,7 +267,7 @@ export async function hostEarningsByMonth(hostId: string, months = 12) {
   const rows = await query<{ month: string; bookings: string; gross: string; nights: string }>(
     `SELECT to_char(date_trunc('month', b.check_in), 'YYYY-MM') AS month,
             count(*)::text AS bookings,
-            coalesce(sum(b.total_usd), 0)::text AS gross,
+            coalesce(sum(b.subtotal + b.cleaning_fee), 0)::text AS gross,
             coalesce(sum(b.check_out - b.check_in), 0)::text AS nights
        FROM booking b JOIN property p ON p.id = b.property_id
       WHERE p.host_id = $1

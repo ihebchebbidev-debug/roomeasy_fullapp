@@ -3,301 +3,451 @@
     "id": "swimming-pool",
     "group": "general",
     "en": "Swimming pool",
-    "fr": "Piscine"
+    "fr": "Piscine",
+    "es": "Piscina",
+    "de": "Swimmingpool",
+    "pt": "Piscina"
   },
   {
     "id": "children-s-pool",
     "group": "general",
     "en": "Children's pool",
-    "fr": "Piscine pour enfants"
+    "fr": "Piscine pour enfants",
+    "es": "Piscina infantil",
+    "de": "Kinderbecken",
+    "pt": "Piscina infantil"
   },
   {
     "id": "garden",
     "group": "general",
     "en": "Garden",
-    "fr": "Jardin"
+    "fr": "Jardin",
+    "es": "Jardín",
+    "de": "Garten",
+    "pt": "Jardim"
   },
   {
     "id": "terrace",
     "group": "general",
     "en": "Terrace",
-    "fr": "Terrasse"
+    "fr": "Terrasse",
+    "es": "Terraza",
+    "de": "Terrasse",
+    "pt": "Terraço"
   },
   {
     "id": "sun-terrace",
     "group": "general",
     "en": "Sun terrace",
-    "fr": "Terrasse bien exposée"
+    "fr": "Terrasse bien exposée",
+    "es": "Terraza soleada",
+    "de": "Sonnenterrasse",
+    "pt": "Terraço ao sol"
   },
   {
     "id": "non-smoking-rooms",
     "group": "general",
     "en": "Non-smoking rooms",
-    "fr": "Chambres non-fumeurs"
+    "fr": "Chambres non-fumeurs",
+    "es": "Habitaciones para no fumadores",
+    "de": "Nichtraucherzimmer",
+    "pt": "Quartos para não fumadores"
   },
   {
     "id": "family-rooms",
     "group": "general",
     "en": "Family rooms",
-    "fr": "Chambres familiales"
+    "fr": "Chambres familiales",
+    "es": "Habitaciones familiares",
+    "de": "Familienzimmer",
+    "pt": "Quartos familiares"
   },
   {
     "id": "air-conditioning",
     "group": "general",
     "en": "Air conditioning",
-    "fr": "Climatisation"
+    "fr": "Climatisation",
+    "es": "Aire acondicionado",
+    "de": "Klimaanlage",
+    "pt": "Ar condicionado"
   },
   {
     "id": "heating",
     "group": "general",
     "en": "Heating",
-    "fr": "Chauffage"
+    "fr": "Chauffage",
+    "es": "Calefacción",
+    "de": "Heizung",
+    "pt": "Aquecimento"
   },
   {
     "id": "lift",
     "group": "general",
     "en": "Lift",
-    "fr": "Ascenseur"
+    "fr": "Ascenseur",
+    "es": "Ascensor",
+    "de": "Aufzug",
+    "pt": "Elevador"
   },
   {
     "id": "soundproof-rooms",
     "group": "general",
     "en": "Soundproof rooms",
-    "fr": "Chambres insonorisées"
+    "fr": "Chambres insonorisées",
+    "es": "Habitaciones insonorizadas",
+    "de": "Schallisolierte Zimmer",
+    "pt": "Quartos insonorizados"
   },
   {
     "id": "allergy-free-rooms",
     "group": "general",
     "en": "Allergy-free rooms",
-    "fr": "Chambres anti-allergie"
+    "fr": "Chambres anti-allergie",
+    "es": "Habitaciones antialérgicas",
+    "de": "Allergikerfreundliche Zimmer",
+    "pt": "Quartos antialérgicos"
   },
   {
     "id": "entirely-non-smoking-property",
     "group": "general",
     "en": "Entirely non-smoking property",
-    "fr": "Établissement entièrement non-fumeurs"
+    "fr": "Établissement entièrement non-fumeurs",
+    "es": "Alojamiento totalmente libre de humo",
+    "de": "Komplett rauchfreie Unterkunft",
+    "pt": "Alojamento totalmente para não fumadores"
   },
   {
     "id": "designated-smoking-area",
     "group": "general",
     "en": "Designated smoking area",
-    "fr": "Espace fumeurs"
+    "fr": "Espace fumeurs",
+    "es": "Zona para fumadores",
+    "de": "Raucherbereich",
+    "pt": "Área para fumadores"
   },
   {
     "id": "adults-only",
     "group": "general",
     "en": "Adults only",
-    "fr": "Réservé aux adultes"
+    "fr": "Réservé aux adultes",
+    "es": "Solo adultos",
+    "de": "Nur für Erwachsene",
+    "pt": "Só para adultos"
   },
   {
     "id": "outdoor-furniture",
     "group": "general",
     "en": "Outdoor furniture",
-    "fr": "Mobilier extérieur"
+    "fr": "Mobilier extérieur",
+    "es": "Mobiliario exterior",
+    "de": "Gartenmöbel",
+    "pt": "Mobiliário exterior"
   },
   {
     "id": "picnic-area",
     "group": "general",
     "en": "Picnic area",
-    "fr": "Aire de pique-nique"
+    "fr": "Aire de pique-nique",
+    "es": "Zona de pícnic",
+    "de": "Picknickbereich",
+    "pt": "Área de piquenique"
   },
   {
     "id": "indoor-fireplace",
     "group": "general",
     "en": "Indoor fireplace",
-    "fr": "Cheminée intérieure"
+    "fr": "Cheminée intérieure",
+    "es": "Chimenea interior",
+    "de": "Kamin (innen)",
+    "pt": "Lareira interior"
   },
   {
     "id": "outdoor-fireplace",
     "group": "general",
     "en": "Outdoor fireplace",
-    "fr": "Cheminée extérieure"
+    "fr": "Cheminée extérieure",
+    "es": "Chimenea exterior",
+    "de": "Feuerstelle im Freien",
+    "pt": "Lareira exterior"
   },
   {
     "id": "shared-kitchen",
     "group": "general",
     "en": "Shared kitchen",
-    "fr": "Cuisine commune"
+    "fr": "Cuisine commune",
+    "es": "Cocina compartida",
+    "de": "Gemeinschaftsküche",
+    "pt": "Cozinha partilhada"
   },
   {
     "id": "shared-lounge-tv-area",
     "group": "general",
     "en": "Shared lounge / TV area",
-    "fr": "Salon commun/salle de télévision"
+    "fr": "Salon commun/salle de télévision",
+    "es": "Salón compartido / zona de TV",
+    "de": "Gemeinschaftslounge / TV-Bereich",
+    "pt": "Sala comum / zona de TV"
   },
   {
     "id": "sun-loungers-or-beach-chairs",
     "group": "general",
     "en": "Sun loungers or beach chairs",
-    "fr": "Chaises longues ou de plage"
+    "fr": "Chaises longues ou de plage",
+    "es": "Tumbonas o sillas de playa",
+    "de": "Sonnenliegen oder Strandstühle",
+    "pt": "Espreguiçadeiras ou cadeiras de praia"
   },
   {
     "id": "sun-umbrellas",
     "group": "general",
     "en": "Sun umbrellas",
-    "fr": "Parasols"
+    "fr": "Parasols",
+    "es": "Sombrillas",
+    "de": "Sonnenschirme",
+    "pt": "Guarda-sóis"
   },
   {
     "id": "water-slide",
     "group": "general",
     "en": "Water slide",
-    "fr": "Toboggan aquatique"
+    "fr": "Toboggan aquatique",
+    "es": "Tobogán acuático",
+    "de": "Wasserrutsche",
+    "pt": "Escorrega aquático"
   },
   {
     "id": "beach",
     "group": "general",
     "en": "Beach",
-    "fr": "Plage"
+    "fr": "Plage",
+    "es": "Playa",
+    "de": "Strand",
+    "pt": "Praia"
   },
   {
     "id": "safe",
     "group": "general",
     "en": "Safe",
-    "fr": "Coffre-fort"
+    "fr": "Coffre-fort",
+    "es": "Caja fuerte",
+    "de": "Safe",
+    "pt": "Cofre"
   },
   {
     "id": "sauna",
     "group": "wellness",
     "en": "Sauna",
-    "fr": "Sauna"
+    "fr": "Sauna",
+    "es": "Sauna",
+    "de": "Sauna",
+    "pt": "Sauna"
   },
   {
     "id": "turkish-bath-hammam",
     "group": "wellness",
     "en": "Turkish bath / hammam",
-    "fr": "Hammam"
+    "fr": "Hammam",
+    "es": "Baño turco / hammam",
+    "de": "Türkisches Bad / Hamam",
+    "pt": "Banho turco / hammam"
   },
   {
     "id": "hot-tub-jacuzzi",
     "group": "wellness",
     "en": "Hot tub / jacuzzi",
-    "fr": "Bain à remous/jacuzzi"
+    "fr": "Bain à remous/jacuzzi",
+    "es": "Bañera de hidromasaje / jacuzzi",
+    "de": "Whirlpool / Jacuzzi",
+    "pt": "Banheira de hidromassagem / jacuzzi"
   },
   {
     "id": "steam-room",
     "group": "wellness",
     "en": "Steam room",
-    "fr": "Bain à vapeur"
+    "fr": "Bain à vapeur",
+    "es": "Baño de vapor",
+    "de": "Dampfbad",
+    "pt": "Banho de vapor"
   },
   {
     "id": "spa",
     "group": "wellness",
     "en": "Spa",
-    "fr": "Spa"
+    "fr": "Spa",
+    "es": "Spa",
+    "de": "Spa",
+    "pt": "Spa"
   },
   {
     "id": "spa-and-wellness-centre",
     "group": "wellness",
     "en": "Spa and wellness centre",
-    "fr": "Spa et centre de bien-être"
+    "fr": "Spa et centre de bien-être",
+    "es": "Spa y centro de bienestar",
+    "de": "Spa- und Wellnesscenter",
+    "pt": "Spa e centro de bem-estar"
   },
   {
     "id": "spa-relaxation-area",
     "group": "wellness",
     "en": "Spa / relaxation area",
-    "fr": "Coin spa/relaxation"
+    "fr": "Coin spa/relaxation",
+    "es": "Spa / zona de relax",
+    "de": "Spa / Ruhebereich",
+    "pt": "Spa / zona de relaxamento"
   },
   {
     "id": "foot-bath",
     "group": "wellness",
     "en": "Foot bath",
-    "fr": "Bain de pieds"
+    "fr": "Bain de pieds",
+    "es": "Baño de pies",
+    "de": "Fußbad",
+    "pt": "Banho de pés"
   },
   {
     "id": "spa-wellness-packages",
     "group": "wellness",
     "en": "Spa / wellness packages",
-    "fr": "Forfaits spa/bien-être"
+    "fr": "Forfaits spa/bien-être",
+    "es": "Paquetes de spa / bienestar",
+    "de": "Spa- / Wellnesspakete",
+    "pt": "Pacotes de spa / bem-estar"
   },
   {
     "id": "massage-chair",
     "group": "wellness",
     "en": "Massage chair",
-    "fr": "Fauteuil massant"
+    "fr": "Fauteuil massant",
+    "es": "Sillón de masaje",
+    "de": "Massagesessel",
+    "pt": "Cadeira de massagem"
   },
   {
     "id": "massages",
     "group": "wellness",
     "en": "Massages",
-    "fr": "Massages"
+    "fr": "Massages",
+    "es": "Masajes",
+    "de": "Massagen",
+    "pt": "Massagens"
   },
   {
     "id": "beauty-services",
     "group": "wellness",
     "en": "Beauty services",
-    "fr": "Services beauté"
+    "fr": "Services beauté",
+    "es": "Servicios de belleza",
+    "de": "Beauty-Services",
+    "pt": "Serviços de beleza"
   },
   {
     "id": "hair-or-beauty-salon",
     "group": "wellness",
     "en": "Hair or beauty salon",
-    "fr": "Salon de coiffure/institut de beauté"
+    "fr": "Salon de coiffure/institut de beauté",
+    "es": "Peluquería o salón de belleza",
+    "de": "Friseur- oder Kosmetiksalon",
+    "pt": "Cabeleireiro ou salão de beleza"
   },
   {
     "id": "solarium",
     "group": "wellness",
     "en": "Solarium",
-    "fr": "Solarium"
+    "fr": "Solarium",
+    "es": "Solárium",
+    "de": "Solarium",
+    "pt": "Solário"
   },
   {
     "id": "thermal-bath-onsen",
     "group": "wellness",
     "en": "Thermal bath / onsen",
-    "fr": "Bain thermal/onsen"
+    "fr": "Bain thermal/onsen",
+    "es": "Baño termal / onsen",
+    "de": "Thermalbad / Onsen",
+    "pt": "Banho termal / onsen"
   },
   {
     "id": "open-air-bath",
     "group": "wellness",
     "en": "Open-air bath",
-    "fr": "Bain en plein air"
+    "fr": "Bain en plein air",
+    "es": "Baño al aire libre",
+    "de": "Freiluftbad",
+    "pt": "Banho ao ar livre"
   },
   {
     "id": "public-bath",
     "group": "wellness",
     "en": "Public bath",
-    "fr": "Bain public"
+    "fr": "Bain public",
+    "es": "Baño público",
+    "de": "Öffentliches Bad",
+    "pt": "Banho público"
   },
   {
     "id": "fitness",
     "group": "wellness",
     "en": "Fitness",
-    "fr": "Fitness"
+    "fr": "Fitness",
+    "es": "Fitness",
+    "de": "Fitness",
+    "pt": "Fitness"
   },
   {
     "id": "fitness-centre",
     "group": "wellness",
     "en": "Fitness centre",
-    "fr": "Centre de remise en forme"
+    "fr": "Centre de remise en forme",
+    "es": "Gimnasio",
+    "de": "Fitnesscenter",
+    "pt": "Ginásio"
   },
   {
     "id": "fitness-classes",
     "group": "wellness",
     "en": "Fitness classes",
-    "fr": "Cours de fitness"
+    "fr": "Cours de fitness",
+    "es": "Clases de fitness",
+    "de": "Fitnesskurse",
+    "pt": "Aulas de fitness"
   },
   {
     "id": "yoga-classes",
     "group": "wellness",
     "en": "Yoga classes",
-    "fr": "Cours de yoga"
+    "fr": "Cours de yoga",
+    "es": "Clases de yoga",
+    "de": "Yogakurse",
+    "pt": "Aulas de ioga"
   },
   {
     "id": "personal-trainer",
     "group": "wellness",
     "en": "Personal trainer",
-    "fr": "Coach sportif personnel"
+    "fr": "Coach sportif personnel",
+    "es": "Entrenador personal",
+    "de": "Personal Trainer",
+    "pt": "Personal trainer"
   },
   {
     "id": "gym-spa-changing-rooms",
     "group": "wellness",
     "en": "Gym / spa changing rooms",
-    "fr": "Vestiaires salle de sport/spa"
+    "fr": "Vestiaires salle de sport/spa",
+    "es": "Vestuarios del gimnasio / spa",
+    "de": "Umkleideräume Fitness / Spa",
+    "pt": "Balneários do ginásio / spa"
   },
   {
     "id": "breakfast",
     "group": "food",
     "en": "Breakfast",
     "fr": "Petit-déjeuner",
+    "es": "Desayuno",
+    "de": "Frühstück",
+    "pt": "Pequeno-almoço",
     "paid": true
   },
   {
@@ -305,6 +455,9 @@
     "group": "food",
     "en": "Lunch",
     "fr": "Déjeuner",
+    "es": "Almuerzo",
+    "de": "Mittagessen",
+    "pt": "Almoço",
     "paid": true
   },
   {
@@ -312,67 +465,100 @@
     "group": "food",
     "en": "Dinner",
     "fr": "Dîner",
+    "es": "Cena",
+    "de": "Abendessen",
+    "pt": "Jantar",
     "paid": true
   },
   {
     "id": "bar",
     "group": "food",
     "en": "Bar",
-    "fr": "Bar"
+    "fr": "Bar",
+    "es": "Bar",
+    "de": "Bar",
+    "pt": "Bar"
   },
   {
     "id": "snack-bar",
     "group": "food",
     "en": "Snack bar",
-    "fr": "Snack-bar"
+    "fr": "Snack-bar",
+    "es": "Snack-bar",
+    "de": "Snackbar",
+    "pt": "Snack-bar"
   },
   {
     "id": "coffee-shop-on-site",
     "group": "food",
     "en": "Coffee shop on site",
-    "fr": "Café sur place"
+    "fr": "Café sur place",
+    "es": "Cafetería en el alojamiento",
+    "de": "Café in der Unterkunft",
+    "pt": "Café no local"
   },
   {
     "id": "restaurant",
     "group": "food",
     "en": "Restaurant",
-    "fr": "Restaurant"
+    "fr": "Restaurant",
+    "es": "Restaurante",
+    "de": "Restaurant",
+    "pt": "Restaurante"
   },
   {
     "id": "breakfast-in-the-room",
     "group": "food",
     "en": "Breakfast in the room",
-    "fr": "Petit-déjeuner en chambre"
+    "fr": "Petit-déjeuner en chambre",
+    "es": "Desayuno en la habitación",
+    "de": "Frühstück im Zimmer",
+    "pt": "Pequeno-almoço no quarto"
   },
   {
     "id": "room-service",
     "group": "food",
     "en": "Room service",
-    "fr": "Service d'étage"
+    "fr": "Service d'étage",
+    "es": "Servicio de habitaciones",
+    "de": "Zimmerservice",
+    "pt": "Serviço de quartos"
   },
   {
     "id": "kids-meals",
     "group": "food",
     "en": "Kids' meals",
-    "fr": "Menus enfants"
+    "fr": "Menus enfants",
+    "es": "Menús infantiles",
+    "de": "Kindermenüs",
+    "pt": "Refeições para crianças"
   },
   {
     "id": "buffet-with-kids-options",
     "group": "food",
     "en": "Buffet with kids' options",
-    "fr": "Buffet avec options enfants"
+    "fr": "Buffet avec options enfants",
+    "es": "Bufé con opciones para niños",
+    "de": "Buffet mit Kinderauswahl",
+    "pt": "Bufete com opções para crianças"
   },
   {
     "id": "special-diet-menus-on-request",
     "group": "food",
     "en": "Special diet menus (on request)",
-    "fr": "Menus pour régimes spéciaux (sur demande)"
+    "fr": "Menus pour régimes spéciaux (sur demande)",
+    "es": "Menús para dietas especiales (bajo petición)",
+    "de": "Spezielle Diätmenüs (auf Anfrage)",
+    "pt": "Menus para dietas especiais (a pedido)"
   },
   {
     "id": "wine-or-champagne",
     "group": "food",
     "en": "Wine or champagne",
     "fr": "Vin/champagne",
+    "es": "Vino o champán",
+    "de": "Wein oder Champagner",
+    "pt": "Vinho ou champanhe",
     "paid": true
   },
   {
@@ -380,343 +566,514 @@
     "group": "food",
     "en": "Fruit",
     "fr": "Fruits",
+    "es": "Fruta",
+    "de": "Obst",
+    "pt": "Fruta",
     "paid": true
   },
   {
     "id": "grocery-delivery",
     "group": "food",
     "en": "Grocery delivery",
-    "fr": "Livraison de courses"
+    "fr": "Livraison de courses",
+    "es": "Entrega de comestibles",
+    "de": "Lebensmittellieferung",
+    "pt": "Entrega de mercearias"
   },
   {
     "id": "packed-lunches",
     "group": "food",
     "en": "Packed lunches",
-    "fr": "Paniers-repas"
+    "fr": "Paniers-repas",
+    "es": "Picnics para llevar",
+    "de": "Lunchpakete",
+    "pt": "Lanches embalados"
   },
   {
     "id": "bbq-facilities",
     "group": "food",
     "en": "BBQ facilities",
-    "fr": "Installations pour barbecue"
+    "fr": "Installations pour barbecue",
+    "es": "Barbacoa",
+    "de": "Grillmöglichkeiten",
+    "pt": "Churrasqueira"
   },
   {
     "id": "vending-machine-drinks",
     "group": "food",
     "en": "Vending machine (drinks)",
-    "fr": "Distributeur automatique (boissons)"
+    "fr": "Distributeur automatique (boissons)",
+    "es": "Máquina expendedora (bebidas)",
+    "de": "Getränkeautomat",
+    "pt": "Máquina de venda (bebidas)"
   },
   {
     "id": "vending-machine-snacks",
     "group": "food",
     "en": "Vending machine (snacks)",
-    "fr": "Distributeur automatique (collations)"
+    "fr": "Distributeur automatique (collations)",
+    "es": "Máquina expendedora (aperitivos)",
+    "de": "Snackautomat",
+    "pt": "Máquina de venda (snacks)"
   },
   {
     "id": "meal-delivery-to-the-accommodation",
     "group": "food",
     "en": "Meal delivery to the accommodation",
-    "fr": "Livraison de repas possible dans l'hébergement"
+    "fr": "Livraison de repas possible dans l'hébergement",
+    "es": "Entrega de comidas en el alojamiento",
+    "de": "Essenslieferung in die Unterkunft",
+    "pt": "Entrega de refeições no alojamento"
   },
   {
     "id": "takeaway-breakfast-containers",
     "group": "food",
     "en": "Takeaway breakfast containers",
-    "fr": "Récipients pour petit-déjeuner à emporter"
+    "fr": "Récipients pour petit-déjeuner à emporter",
+    "es": "Envases de desayuno para llevar",
+    "de": "Frühstück zum Mitnehmen",
+    "pt": "Embalagens de pequeno-almoço para levar"
   },
   {
     "id": "tennis-equipment",
     "group": "activities",
     "en": "Tennis equipment",
-    "fr": "Matériel de tennis"
+    "fr": "Matériel de tennis",
+    "es": "Equipo de tenis",
+    "de": "Tennisausrüstung",
+    "pt": "Equipamento de ténis"
   },
   {
     "id": "tennis-court",
     "group": "activities",
     "en": "Tennis court",
-    "fr": "Court de tennis"
+    "fr": "Court de tennis",
+    "es": "Pista de tenis",
+    "de": "Tennisplatz",
+    "pt": "Campo de ténis"
   },
   {
     "id": "badminton-equipment",
     "group": "activities",
     "en": "Badminton equipment",
-    "fr": "Matériel de badminton"
+    "fr": "Matériel de badminton",
+    "es": "Equipo de bádminton",
+    "de": "Badmintonausrüstung",
+    "pt": "Equipamento de badminton"
   },
   {
     "id": "billiards",
     "group": "activities",
     "en": "Billiards",
-    "fr": "Billard"
+    "fr": "Billard",
+    "es": "Billar",
+    "de": "Billard",
+    "pt": "Bilhar"
   },
   {
     "id": "table-tennis",
     "group": "activities",
     "en": "Table tennis",
-    "fr": "Tennis de table"
+    "fr": "Tennis de table",
+    "es": "Ping-pong",
+    "de": "Tischtennis",
+    "pt": "Ténis de mesa"
   },
   {
     "id": "darts",
     "group": "activities",
     "en": "Darts",
-    "fr": "Fléchettes"
+    "fr": "Fléchettes",
+    "es": "Dardos",
+    "de": "Darts",
+    "pt": "Dardos"
   },
   {
     "id": "squash",
     "group": "activities",
     "en": "Squash",
-    "fr": "Squash"
+    "fr": "Squash",
+    "es": "Squash",
+    "de": "Squash",
+    "pt": "Squash"
   },
   {
     "id": "bowling",
     "group": "activities",
     "en": "Bowling",
-    "fr": "Bowling"
+    "fr": "Bowling",
+    "es": "Bolos",
+    "de": "Bowling",
+    "pt": "Bowling"
   },
   {
     "id": "mini-golf",
     "group": "activities",
     "en": "Mini golf",
-    "fr": "Minigolf"
+    "fr": "Minigolf",
+    "es": "Minigolf",
+    "de": "Minigolf",
+    "pt": "Minigolfe"
   },
   {
     "id": "golf-course-within-3-km",
     "group": "activities",
     "en": "Golf course (within 3 km)",
-    "fr": "Parcours de golf (à moins de 3 km)"
+    "fr": "Parcours de golf (à moins de 3 km)",
+    "es": "Campo de golf (a menos de 3 km)",
+    "de": "Golfplatz (im Umkreis von 3 km)",
+    "pt": "Campo de golfe (a menos de 3 km)"
   },
   {
     "id": "archery",
     "group": "activities",
     "en": "Archery",
-    "fr": "Tir à l'arc"
+    "fr": "Tir à l'arc",
+    "es": "Tiro con arco",
+    "de": "Bogenschießen",
+    "pt": "Tiro com arco"
   },
   {
     "id": "aerobics",
     "group": "activities",
     "en": "Aerobics",
-    "fr": "Aérobic"
+    "fr": "Aérobic",
+    "es": "Aeróbic",
+    "de": "Aerobic",
+    "pt": "Aeróbica"
   },
   {
     "id": "bingo",
     "group": "activities",
     "en": "Bingo",
-    "fr": "Bingo"
+    "fr": "Bingo",
+    "es": "Bingo",
+    "de": "Bingo",
+    "pt": "Bingo"
   },
   {
     "id": "karaoke",
     "group": "activities",
     "en": "Karaoke",
-    "fr": "Karaoké"
+    "fr": "Karaoké",
+    "es": "Karaoke",
+    "de": "Karaoke",
+    "pt": "Karaoke"
   },
   {
     "id": "water-park",
     "group": "activities",
     "en": "Water park",
-    "fr": "Parc aquatique"
+    "fr": "Parc aquatique",
+    "es": "Parque acuático",
+    "de": "Wasserpark",
+    "pt": "Parque aquático"
   },
   {
     "id": "water-sports-facilities-on-site",
     "group": "activities",
     "en": "Water sports facilities on site",
-    "fr": "Installations de sports nautiques sur place"
+    "fr": "Installations de sports nautiques sur place",
+    "es": "Instalaciones de deportes acuáticos",
+    "de": "Wassersportmöglichkeiten vor Ort",
+    "pt": "Instalações de desportos aquáticos no local"
   },
   {
     "id": "windsurfing",
     "group": "activities",
     "en": "Windsurfing",
-    "fr": "Planche à voile"
+    "fr": "Planche à voile",
+    "es": "Windsurf",
+    "de": "Windsurfen",
+    "pt": "Windsurf"
   },
   {
     "id": "diving",
     "group": "activities",
     "en": "Diving",
-    "fr": "Plongée sous-marine"
+    "fr": "Plongée sous-marine",
+    "es": "Buceo",
+    "de": "Tauchen",
+    "pt": "Mergulho"
   },
   {
     "id": "snorkelling",
     "group": "activities",
     "en": "Snorkelling",
-    "fr": "Plongée avec tuba"
+    "fr": "Plongée avec tuba",
+    "es": "Esnórquel",
+    "de": "Schnorcheln",
+    "pt": "Snorkeling"
   },
   {
     "id": "canoeing",
     "group": "activities",
     "en": "Canoeing",
-    "fr": "Canoë-kayak"
+    "fr": "Canoë-kayak",
+    "es": "Piragüismo",
+    "de": "Kanufahren",
+    "pt": "Canoagem"
   },
   {
     "id": "fishing",
     "group": "activities",
     "en": "Fishing",
-    "fr": "Pêche"
+    "fr": "Pêche",
+    "es": "Pesca",
+    "de": "Angeln",
+    "pt": "Pesca"
   },
   {
     "id": "horse-riding",
     "group": "activities",
     "en": "Horse riding",
-    "fr": "Équitation"
+    "fr": "Équitation",
+    "es": "Equitación",
+    "de": "Reiten",
+    "pt": "Equitação"
   },
   {
     "id": "cycling",
     "group": "activities",
     "en": "Cycling",
-    "fr": "Cyclisme"
+    "fr": "Cyclisme",
+    "es": "Ciclismo",
+    "de": "Radfahren",
+    "pt": "Ciclismo"
   },
   {
     "id": "hiking",
     "group": "activities",
     "en": "Hiking",
-    "fr": "Randonnée"
+    "fr": "Randonnée",
+    "es": "Senderismo",
+    "de": "Wandern",
+    "pt": "Caminhadas"
   },
   {
     "id": "skiing",
     "group": "activities",
     "en": "Skiing",
-    "fr": "Ski"
+    "fr": "Ski",
+    "es": "Esquí",
+    "de": "Skifahren",
+    "pt": "Esqui"
   },
   {
     "id": "walking-tours",
     "group": "activities",
     "en": "Walking tours",
-    "fr": "Balades à pied"
+    "fr": "Balades à pied",
+    "es": "Visitas a pie",
+    "de": "Stadtführungen zu Fuß",
+    "pt": "Visitas a pé"
   },
   {
     "id": "bike-tours",
     "group": "activities",
     "en": "Bike tours",
-    "fr": "Visites à vélo"
+    "fr": "Visites à vélo",
+    "es": "Rutas en bicicleta",
+    "de": "Fahrradtouren",
+    "pt": "Passeios de bicicleta"
   },
   {
     "id": "temporary-art-galleries",
     "group": "activities",
     "en": "Temporary art galleries",
-    "fr": "Galeries d'art temporaires"
+    "fr": "Galeries d'art temporaires",
+    "es": "Galerías de arte temporales",
+    "de": "Wechselnde Kunstausstellungen",
+    "pt": "Galerias de arte temporárias"
   },
   {
     "id": "bar-crawls",
     "group": "activities",
     "en": "Bar crawls",
-    "fr": "Tournées des bars"
+    "fr": "Tournées des bars",
+    "es": "Rutas de bares",
+    "de": "Kneipentouren",
+    "pt": "Roteiros de bares"
   },
   {
     "id": "stand-up-comedy",
     "group": "activities",
     "en": "Stand-up comedy",
-    "fr": "Spectacles d'humoristes"
+    "fr": "Spectacles d'humoristes",
+    "es": "Monólogos de humor",
+    "de": "Stand-up-Comedy",
+    "pt": "Stand-up comedy"
   },
   {
     "id": "movie-nights",
     "group": "activities",
     "en": "Movie nights",
-    "fr": "Soirées film"
+    "fr": "Soirées film",
+    "es": "Noches de cine",
+    "de": "Filmabende",
+    "pt": "Noites de cinema"
   },
   {
     "id": "themed-dinner-nights",
     "group": "activities",
     "en": "Themed dinner nights",
-    "fr": "Dîners à thème"
+    "fr": "Dîners à thème",
+    "es": "Cenas temáticas",
+    "de": "Themen-Dinnerabende",
+    "pt": "Jantares temáticos"
   },
   {
     "id": "happy-hour",
     "group": "activities",
     "en": "Happy hour",
-    "fr": "Happy hour"
+    "fr": "Happy hour",
+    "es": "Happy hour",
+    "de": "Happy Hour",
+    "pt": "Happy hour"
   },
   {
     "id": "local-culture-tour-or-class",
     "group": "activities",
     "en": "Local culture tour or class",
-    "fr": "Visite ou cours autour de la culture locale"
+    "fr": "Visite ou cours autour de la culture locale",
+    "es": "Visita o clase de cultura local",
+    "de": "Kulturtour oder -kurs",
+    "pt": "Visita ou aula de cultura local"
   },
   {
     "id": "cooking-class",
     "group": "activities",
     "en": "Cooking class",
-    "fr": "Cours de cuisine"
+    "fr": "Cours de cuisine",
+    "es": "Clase de cocina",
+    "de": "Kochkurs",
+    "pt": "Aula de culinária"
   },
   {
     "id": "live-music-performances",
     "group": "activities",
     "en": "Live music / performances",
-    "fr": "Concerts/Spectacles"
+    "fr": "Concerts/Spectacles",
+    "es": "Música en directo / espectáculos",
+    "de": "Livemusik / Aufführungen",
+    "pt": "Música ao vivo / espetáculos"
   },
   {
     "id": "live-sport-events-screening",
     "group": "activities",
     "en": "Live sport events screening",
-    "fr": "Diffusion d'événements sportifs"
+    "fr": "Diffusion d'événements sportifs",
+    "es": "Retransmisión de eventos deportivos",
+    "de": "Live-Übertragung von Sportevents",
+    "pt": "Transmissão de eventos desportivos"
   },
   {
     "id": "evening-entertainment",
     "group": "activities",
     "en": "Evening entertainment",
-    "fr": "Animations en soirée"
+    "fr": "Animations en soirée",
+    "es": "Animación nocturna",
+    "de": "Abendunterhaltung",
+    "pt": "Animação noturna"
   },
   {
     "id": "nightclub-dj",
     "group": "activities",
     "en": "Nightclub / DJ",
-    "fr": "Discothèque/DJ"
+    "fr": "Discothèque/DJ",
+    "es": "Discoteca / DJ",
+    "de": "Nachtclub / DJ",
+    "pt": "Discoteca / DJ"
   },
   {
     "id": "casino",
     "group": "activities",
     "en": "Casino",
-    "fr": "Casino"
+    "fr": "Casino",
+    "es": "Casino",
+    "de": "Casino",
+    "pt": "Casino"
   },
   {
     "id": "entertainment-team",
     "group": "activities",
     "en": "Entertainment team",
-    "fr": "Équipe d'animation"
+    "fr": "Équipe d'animation",
+    "es": "Equipo de animación",
+    "de": "Animationsteam",
+    "pt": "Equipa de animação"
   },
   {
     "id": "games-room",
     "group": "activities",
     "en": "Games room",
-    "fr": "Salle de jeux"
+    "fr": "Salle de jeux",
+    "es": "Sala de juegos",
+    "de": "Spielzimmer",
+    "pt": "Sala de jogos"
   },
   {
     "id": "chapel-shrine",
     "group": "general",
     "en": "Chapel / place of worship",
-    "fr": "Chapelle/lieu de culte"
+    "fr": "Chapelle/lieu de culte",
+    "es": "Capilla / lugar de culto",
+    "de": "Kapelle / Andachtsraum",
+    "pt": "Capela / local de culto"
   },
   {
     "id": "board-games-puzzles",
     "group": "activities",
     "en": "Board games / puzzles",
-    "fr": "Jeux de société/puzzles"
+    "fr": "Jeux de société/puzzles",
+    "es": "Juegos de mesa / puzles",
+    "de": "Brettspiele / Puzzles",
+    "pt": "Jogos de tabuleiro / puzzles"
   },
   {
     "id": "parking",
     "group": "transport",
     "en": "Parking",
-    "fr": "Parking"
+    "fr": "Parking",
+    "es": "Aparcamiento",
+    "de": "Parkplatz",
+    "pt": "Estacionamento"
   },
   {
     "id": "bicycle-parking",
     "group": "transport",
     "en": "Bicycle parking",
-    "fr": "Parking à vélos"
+    "fr": "Parking à vélos",
+    "es": "Aparcamiento para bicicletas",
+    "de": "Fahrradstellplatz",
+    "pt": "Estacionamento para bicicletas"
   },
   {
     "id": "bicycle-rental",
     "group": "transport",
     "en": "Bicycle rental",
-    "fr": "Location de vélos"
+    "fr": "Location de vélos",
+    "es": "Alquiler de bicicletas",
+    "de": "Fahrradverleih",
+    "pt": "Aluguer de bicicletas"
   },
   {
     "id": "car-rental",
     "group": "transport",
     "en": "Car rental",
-    "fr": "Location de voitures"
+    "fr": "Location de voitures",
+    "es": "Alquiler de coches",
+    "de": "Autovermietung",
+    "pt": "Aluguer de automóveis"
   },
   {
     "id": "airport-shuttle",
     "group": "transport",
     "en": "Airport shuttle",
     "fr": "Navette aéroport",
+    "es": "Traslado al aeropuerto",
+    "de": "Flughafentransfer",
+    "pt": "Transfer para o aeroporto",
     "paid": true
   },
   {
@@ -724,6 +1081,9 @@
     "group": "transport",
     "en": "Shuttle service",
     "fr": "Service de navette",
+    "es": "Servicio de traslado",
+    "de": "Shuttleservice",
+    "pt": "Serviço de transfer",
     "paid": true
   },
   {
@@ -731,73 +1091,109 @@
     "group": "transport",
     "en": "Public transport tickets",
     "fr": "Tickets de transports en commun",
+    "es": "Billetes de transporte público",
+    "de": "Tickets für öffentliche Verkehrsmittel",
+    "pt": "Bilhetes de transportes públicos",
     "paid": true
   },
   {
     "id": "24-hour-front-desk",
     "group": "services",
     "en": "24-hour front desk",
-    "fr": "Réception ouverte 24h/24"
+    "fr": "Réception ouverte 24h/24",
+    "es": "Recepción 24 horas",
+    "de": "24-Stunden-Rezeption",
+    "pt": "Receção 24 horas"
   },
   {
     "id": "private-check-in-check-out",
     "group": "services",
     "en": "Private check-in / check-out",
-    "fr": "Enregistrement/départ privé"
+    "fr": "Enregistrement/départ privé",
+    "es": "Check-in / check-out privado",
+    "de": "Privater Check-in / Check-out",
+    "pt": "Check-in / check-out privado"
   },
   {
     "id": "express-check-in-check-out",
     "group": "services",
     "en": "Express check-in / check-out",
-    "fr": "Enregistrement/règlement rapide"
+    "fr": "Enregistrement/règlement rapide",
+    "es": "Check-in / check-out exprés",
+    "de": "Express-Check-in / -Check-out",
+    "pt": "Check-in / check-out expresso"
   },
   {
     "id": "concierge-service",
     "group": "services",
     "en": "Concierge service",
-    "fr": "Service de concierge"
+    "fr": "Service de concierge",
+    "es": "Servicio de conserjería",
+    "de": "Conciergeservice",
+    "pt": "Serviço de concierge"
   },
   {
     "id": "tour-desk",
     "group": "services",
     "en": "Tour desk",
-    "fr": "Bureau d'excursions"
+    "fr": "Bureau d'excursions",
+    "es": "Mostrador de excursiones",
+    "de": "Tourenschalter",
+    "pt": "Balcão de excursões"
   },
   {
     "id": "currency-exchange",
     "group": "services",
     "en": "Currency exchange",
-    "fr": "Service de change"
+    "fr": "Service de change",
+    "es": "Cambio de divisas",
+    "de": "Geldwechsel",
+    "pt": "Câmbio de moeda"
   },
   {
     "id": "atm-on-site",
     "group": "services",
     "en": "ATM on site",
-    "fr": "Distributeur automatique de billets sur place"
+    "fr": "Distributeur automatique de billets sur place",
+    "es": "Cajero automático",
+    "de": "Geldautomat vor Ort",
+    "pt": "Multibanco no local"
   },
   {
     "id": "luggage-storage",
     "group": "services",
     "en": "Luggage storage",
-    "fr": "Bagagerie"
+    "fr": "Bagagerie",
+    "es": "Consigna de equipaje",
+    "de": "Gepäckaufbewahrung",
+    "pt": "Depósito de bagagem"
   },
   {
     "id": "lockers",
     "group": "services",
     "en": "Lockers",
-    "fr": "Casiers"
+    "fr": "Casiers",
+    "es": "Taquillas",
+    "de": "Schließfächer",
+    "pt": "Cacifos"
   },
   {
     "id": "invoice-provided-on-request",
     "group": "services",
     "en": "Invoice provided on request",
-    "fr": "Facture fournie sur demande"
+    "fr": "Facture fournie sur demande",
+    "es": "Factura bajo petición",
+    "de": "Rechnung auf Anfrage",
+    "pt": "Fatura disponível a pedido"
   },
   {
     "id": "dry-cleaning",
     "group": "services",
     "en": "Dry cleaning",
     "fr": "Nettoyage à sec",
+    "es": "Tintorería",
+    "de": "Chemische Reinigung",
+    "pt": "Limpeza a seco",
     "paid": true
   },
   {
@@ -805,6 +1201,9 @@
     "group": "services",
     "en": "Ironing service",
     "fr": "Service de repassage",
+    "es": "Servicio de planchado",
+    "de": "Bügelservice",
+    "pt": "Serviço de engomadoria",
     "paid": true
   },
   {
@@ -812,379 +1211,568 @@
     "group": "services",
     "en": "Laundry",
     "fr": "Blanchisserie/laverie",
+    "es": "Lavandería",
+    "de": "Wäscheservice",
+    "pt": "Lavandaria",
     "paid": true
   },
   {
     "id": "daily-housekeeping",
     "group": "services",
     "en": "Daily housekeeping",
-    "fr": "Service de ménage quotidien"
+    "fr": "Service de ménage quotidien",
+    "es": "Limpieza diaria",
+    "de": "Tägliche Zimmerreinigung",
+    "pt": "Limpeza diária"
   },
   {
     "id": "trouser-press",
     "group": "services",
     "en": "Trouser press",
-    "fr": "Presse à pantalons"
+    "fr": "Presse à pantalons",
+    "es": "Prensa para pantalones",
+    "de": "Hosenbügler",
+    "pt": "Prensa de calças"
   },
   {
     "id": "meeting-banquet-facilities",
     "group": "services",
     "en": "Meeting / banquet facilities",
-    "fr": "Salles de réunion/réception"
+    "fr": "Salles de réunion/réception",
+    "es": "Salas de reuniones / banquetes",
+    "de": "Tagungs- / Banketträume",
+    "pt": "Salas de reuniões / banquetes"
   },
   {
     "id": "business-centre",
     "group": "services",
     "en": "Business centre",
-    "fr": "Centre d'affaires"
+    "fr": "Centre d'affaires",
+    "es": "Centro de negocios",
+    "de": "Businesscenter",
+    "pt": "Centro de negócios"
   },
   {
     "id": "fax-photocopying",
     "group": "services",
     "en": "Fax / photocopying",
-    "fr": "Fax/photocopies"
+    "fr": "Fax/photocopies",
+    "es": "Fax / fotocopiadora",
+    "de": "Fax / Kopierer",
+    "pt": "Fax / fotocópias"
   },
   {
     "id": "mini-market-on-site",
     "group": "services",
     "en": "Mini-market on site",
-    "fr": "Supérette sur place"
+    "fr": "Supérette sur place",
+    "es": "Minimercado en el alojamiento",
+    "de": "Minimarkt vor Ort",
+    "pt": "Minimercado no local"
   },
   {
     "id": "cashless-payment-available",
     "group": "services",
     "en": "Cashless payment available",
-    "fr": "Paiement sans espèces disponible"
+    "fr": "Paiement sans espèces disponible",
+    "es": "Pago sin efectivo disponible",
+    "de": "Bargeldlose Zahlung möglich",
+    "pt": "Pagamento sem dinheiro disponível"
   },
   {
     "id": "mobile-app-for-room-service",
     "group": "services",
     "en": "Mobile app for room service",
-    "fr": "Application mobile pour utiliser le service d'étage"
+    "fr": "Application mobile pour utiliser le service d'étage",
+    "es": "App móvil para el servicio de habitaciones",
+    "de": "Mobile App für Zimmerservice",
+    "pt": "App móvel para serviço de quartos"
   },
   {
     "id": "kids-club",
     "group": "family",
     "en": "Kids' club",
-    "fr": "Club pour enfants"
+    "fr": "Club pour enfants",
+    "es": "Club infantil",
+    "de": "Kinderclub",
+    "pt": "Clube infantil"
   },
   {
     "id": "children-s-playground",
     "group": "family",
     "en": "Children's playground",
-    "fr": "Aire de jeux pour enfants"
+    "fr": "Aire de jeux pour enfants",
+    "es": "Parque infantil",
+    "de": "Kinderspielplatz",
+    "pt": "Parque infantil"
   },
   {
     "id": "indoor-play-area",
     "group": "family",
     "en": "Indoor play area",
-    "fr": "Aire de jeux intérieure"
+    "fr": "Aire de jeux intérieure",
+    "es": "Zona de juegos interior",
+    "de": "Indoor-Spielbereich",
+    "pt": "Zona de jogos interior"
   },
   {
     "id": "outdoor-play-equipment",
     "group": "family",
     "en": "Outdoor play equipment",
-    "fr": "Jeux de plein air pour enfants"
+    "fr": "Jeux de plein air pour enfants",
+    "es": "Juegos infantiles al aire libre",
+    "de": "Spielgeräte im Freien",
+    "pt": "Equipamento de recreio exterior"
   },
   {
     "id": "babysitting-child-services",
     "group": "family",
     "en": "Babysitting / child services",
     "fr": "Garde d'enfants",
+    "es": "Canguro / servicios para niños",
+    "de": "Babysitting / Kinderbetreuung",
+    "pt": "Babysitting / serviços para crianças",
     "paid": true
   },
   {
     "id": "baby-safety-gates",
     "group": "family",
     "en": "Baby safety gates",
-    "fr": "Barrières de sécurité pour bébés"
+    "fr": "Barrières de sécurité pour bébés",
+    "es": "Barreras de seguridad para bebés",
+    "de": "Kinderschutzgitter",
+    "pt": "Barreiras de segurança para bebés"
   },
   {
     "id": "strollers",
     "group": "family",
     "en": "Strollers",
-    "fr": "Poussettes"
+    "fr": "Poussettes",
+    "es": "Cochecitos",
+    "de": "Kinderwagen",
+    "pt": "Carrinhos de bebé"
   },
   {
     "id": "pet-basket",
     "group": "family",
     "en": "Pet basket",
-    "fr": "Panier pour animal de compagnie"
+    "fr": "Panier pour animal de compagnie",
+    "es": "Cesta para mascotas",
+    "de": "Haustierkorb",
+    "pt": "Cama para animais"
   },
   {
     "id": "pet-bowls",
     "group": "family",
     "en": "Pet bowls",
-    "fr": "Gamelles pour animaux de compagnie"
+    "fr": "Gamelles pour animaux de compagnie",
+    "es": "Comederos para mascotas",
+    "de": "Futternäpfe für Haustiere",
+    "pt": "Taças para animais"
   },
   {
     "id": "24-hour-security",
     "group": "safety",
     "en": "24-hour security",
-    "fr": "Sécurité 24h/24"
+    "fr": "Sécurité 24h/24",
+    "es": "Seguridad 24 horas",
+    "de": "24-Stunden-Sicherheitsdienst",
+    "pt": "Segurança 24 horas"
   },
   {
     "id": "security-alarm",
     "group": "safety",
     "en": "Security alarm",
-    "fr": "Alarme de sécurité"
+    "fr": "Alarme de sécurité",
+    "es": "Alarma de seguridad",
+    "de": "Alarmanlage",
+    "pt": "Alarme de segurança"
   },
   {
     "id": "smoke-alarms",
     "group": "safety",
     "en": "Smoke alarms",
-    "fr": "Détecteurs de fumée"
+    "fr": "Détecteurs de fumée",
+    "es": "Detectores de humo",
+    "de": "Rauchmelder",
+    "pt": "Detetores de fumo"
   },
   {
     "id": "carbon-monoxide-detector",
     "group": "safety",
     "en": "Carbon monoxide detector",
-    "fr": "Détecteur de monoxyde de carbone"
+    "fr": "Détecteur de monoxyde de carbone",
+    "es": "Detector de monóxido de carbono",
+    "de": "Kohlenmonoxidmelder",
+    "pt": "Detetor de monóxido de carbono"
   },
   {
     "id": "carbon-monoxide-sources",
     "group": "safety",
     "en": "Carbon monoxide sources",
-    "fr": "Sources de monoxyde de carbone"
+    "fr": "Sources de monoxyde de carbone",
+    "es": "Fuentes de monóxido de carbono",
+    "de": "Kohlenmonoxidquellen",
+    "pt": "Fontes de monóxido de carbono"
   },
   {
     "id": "fire-extinguishers",
     "group": "safety",
     "en": "Fire extinguishers",
-    "fr": "Extincteurs"
+    "fr": "Extincteurs",
+    "es": "Extintores",
+    "de": "Feuerlöscher",
+    "pt": "Extintores"
   },
   {
     "id": "cctv-in-common-areas",
     "group": "safety",
     "en": "CCTV in common areas",
-    "fr": "Caméras de surveillance dans les parties communes"
+    "fr": "Caméras de surveillance dans les parties communes",
+    "es": "Videovigilancia en zonas comunes",
+    "de": "Videoüberwachung in Gemeinschaftsbereichen",
+    "pt": "Videovigilância nas zonas comuns"
   },
   {
     "id": "cctv-outside-the-property",
     "group": "safety",
     "en": "CCTV outside the property",
-    "fr": "Caméras de surveillance à l'extérieur de l'établissement"
+    "fr": "Caméras de surveillance à l'extérieur de l'établissement",
+    "es": "Videovigilancia exterior",
+    "de": "Videoüberwachung außerhalb der Unterkunft",
+    "pt": "Videovigilância no exterior"
   },
   {
     "id": "facilities-for-disabled-guests",
     "group": "safety",
     "en": "Facilities for disabled guests",
-    "fr": "Équipements pour les personnes handicapées"
+    "fr": "Équipements pour les personnes handicapées",
+    "es": "Instalaciones para personas con discapacidad",
+    "de": "Einrichtungen für Gäste mit Behinderung",
+    "pt": "Instalações para hóspedes com deficiência"
   },
   {
     "id": "first-aid-kit-available",
     "group": "safety",
     "en": "First aid kit available",
-    "fr": "Trousse de secours disponible"
+    "fr": "Trousse de secours disponible",
+    "es": "Botiquín de primeros auxilios",
+    "de": "Erste-Hilfe-Set vorhanden",
+    "pt": "Kit de primeiros socorros disponível"
   },
   {
     "id": "health-professionals-available",
     "group": "safety",
     "en": "Health professionals available",
-    "fr": "Professionnels de santé disponibles"
+    "fr": "Professionnels de santé disponibles",
+    "es": "Profesionales sanitarios disponibles",
+    "de": "Medizinisches Fachpersonal verfügbar",
+    "pt": "Profissionais de saúde disponíveis"
   },
   {
     "id": "thermometers-provided-to-guests",
     "group": "safety",
     "en": "Thermometers provided to guests",
-    "fr": "Thermomètres fournis aux clients par l'établissement"
+    "fr": "Thermomètres fournis aux clients par l'établissement",
+    "es": "Termómetros para los huéspedes",
+    "de": "Thermometer für Gäste",
+    "pt": "Termómetros para os hóspedes"
   },
   {
     "id": "face-masks-available-for-guests",
     "group": "safety",
     "en": "Face masks available for guests",
-    "fr": "Masques à disposition des clients"
+    "fr": "Masques à disposition des clients",
+    "es": "Mascarillas para los huéspedes",
+    "de": "Gesichtsmasken für Gäste",
+    "pt": "Máscaras disponíveis para os hóspedes"
   },
   {
     "id": "hand-sanitiser-in-the-accommodation-and-common-areas",
     "group": "safety",
     "en": "Hand sanitiser in the accommodation and common areas",
-    "fr": "Gel hydroalcoolique dans l'hébergement et les pièces fréquentées"
+    "fr": "Gel hydroalcoolique dans l'hébergement et les pièces fréquentées",
+    "es": "Desinfectante de manos en el alojamiento y zonas comunes",
+    "de": "Handdesinfektion in der Unterkunft und in Gemeinschaftsbereichen",
+    "pt": "Desinfetante de mãos no alojamento e nas zonas comuns"
   },
   {
     "id": "physical-distancing-rules-followed",
     "group": "safety",
     "en": "Physical distancing rules followed",
-    "fr": "Respect des règles de distanciation physique"
+    "fr": "Respect des règles de distanciation physique",
+    "es": "Se respetan las normas de distancia física",
+    "de": "Abstandsregeln werden eingehalten",
+    "pt": "Regras de distanciamento físico respeitadas"
   },
   {
     "id": "physical-barriers-or-screens-between-staff-and-guests",
     "group": "safety",
     "en": "Physical barriers or screens between staff and guests",
-    "fr": "Barrières physiques ou écrans placés entre le personnel et les clients"
+    "fr": "Barrières physiques ou écrans placés entre le personnel et les clients",
+    "es": "Mamparas entre el personal y los huéspedes",
+    "de": "Trennwände zwischen Personal und Gästen",
+    "pt": "Barreiras físicas entre funcionários e hóspedes"
   },
   {
     "id": "staff-follow-local-authority-safety-protocols",
     "group": "safety",
     "en": "Staff follow local authority safety protocols",
-    "fr": "Le personnel respecte les protocoles de sécurité établis par les autorités locales"
+    "fr": "Le personnel respecte les protocoles de sécurité établis par les autorités locales",
+    "es": "El personal sigue los protocolos de seguridad locales",
+    "de": "Personal befolgt lokale Sicherheitsvorschriften",
+    "pt": "Funcionários seguem os protocolos de segurança locais"
   },
   {
     "id": "physical-distancing-in-dining-areas",
     "group": "safety",
     "en": "Physical distancing in dining areas",
-    "fr": "Distanciation physique dans les espaces repas"
+    "fr": "Distanciation physique dans les espaces repas",
+    "es": "Distancia física en los comedores",
+    "de": "Abstand in den Speisebereichen",
+    "pt": "Distanciamento físico nas zonas de refeição"
   },
   {
     "id": "accommodation-disinfected-between-stays",
     "group": "cleaning",
     "en": "Accommodation disinfected between stays",
-    "fr": "Hébergement désinfecté après chaque séjour"
+    "fr": "Hébergement désinfecté après chaque séjour",
+    "es": "Alojamiento desinfectado entre estancias",
+    "de": "Unterkunft wird zwischen Aufenthalten desinfiziert",
+    "pt": "Alojamento desinfetado entre estadias"
   },
   {
     "id": "accommodation-sealed-after-cleaning",
     "group": "cleaning",
     "en": "Accommodation sealed after cleaning",
-    "fr": "Hébergement fermé après le nettoyage"
+    "fr": "Hébergement fermé après le nettoyage",
+    "es": "Alojamiento precintado tras la limpieza",
+    "de": "Unterkunft wird nach der Reinigung versiegelt",
+    "pt": "Alojamento selado após a limpeza"
   },
   {
     "id": "cleaning-by-professional-cleaning-companies",
     "group": "cleaning",
     "en": "Cleaning by professional cleaning companies",
-    "fr": "Le ménage est effectué par des sociétés de nettoyage professionnelles"
+    "fr": "Le ménage est effectué par des sociétés de nettoyage professionnelles",
+    "es": "Limpieza por empresas profesionales",
+    "de": "Reinigung durch professionelle Reinigungsfirmen",
+    "pt": "Limpeza por empresas profissionais"
   },
   {
     "id": "linen-and-towels-washed-per-local-guidelines",
     "group": "cleaning",
     "en": "Linen and towels washed per local guidelines",
-    "fr": "Serviettes et linge de lit lavés selon les recommandations locales"
+    "fr": "Serviettes et linge de lit lavés selon les recommandations locales",
+    "es": "Ropa de cama y toallas lavadas según normas locales",
+    "de": "Bettwäsche und Handtücher nach lokalen Richtlinien gewaschen",
+    "pt": "Roupa de cama e toalhas lavadas segundo normas locais"
   },
   {
     "id": "guests-can-opt-out-of-cleaning-during-the-stay",
     "group": "cleaning",
     "en": "Guests can opt out of cleaning during the stay",
-    "fr": "Les clients peuvent refuser le service de nettoyage pendant leur séjour"
+    "fr": "Les clients peuvent refuser le service de nettoyage pendant leur séjour",
+    "es": "Los huéspedes pueden renunciar a la limpieza durante la estancia",
+    "de": "Gäste können auf Reinigung während des Aufenthalts verzichten",
+    "pt": "Os hóspedes podem dispensar a limpeza durante a estadia"
   },
   {
     "id": "tableware-and-cutlery-disinfected",
     "group": "cleaning",
     "en": "Tableware and cutlery disinfected",
-    "fr": "Vaisselle et couverts désinfectés"
+    "fr": "Vaisselle et couverts désinfectés",
+    "es": "Vajilla y cubiertos desinfectados",
+    "de": "Geschirr und Besteck desinfiziert",
+    "pt": "Louça e talheres desinfetados"
   },
   {
     "id": "delivered-food-sealed",
     "group": "cleaning",
     "en": "Delivered food sealed",
-    "fr": "Protection hermétique des plats livrés"
+    "fr": "Protection hermétique des plats livrés",
+    "es": "Comida entregada precintada",
+    "de": "Gelieferte Speisen versiegelt",
+    "pt": "Comida entregue selada"
   },
   {
     "id": "use-of-cleaning-products-effective-against-coronavirus",
     "group": "cleaning",
     "en": "Use of cleaning products effective against coronavirus",
-    "fr": "Utilisation de produits d'entretien efficaces contre le coronavirus"
+    "fr": "Utilisation de produits d'entretien efficaces contre le coronavirus",
+    "es": "Productos de limpieza eficaces contra el coronavirus",
+    "de": "Reinigungsmittel wirksam gegen Coronaviren",
+    "pt": "Produtos de limpeza eficazes contra o coronavírus"
   },
   {
     "id": "shared-items-such-as-menus-magazines-and-pens-removed",
     "group": "cleaning",
     "en": "Shared items such as menus, magazines and pens removed",
-    "fr": "Les accessoires partagés (menus, magazines, stylos) ont été retirés"
+    "fr": "Les accessoires partagés (menus, magazines, stylos) ont été retirés",
+    "es": "Retirados objetos compartidos como cartas, revistas y bolígrafos",
+    "de": "Gemeinsam genutzte Gegenstände wie Speisekarten, Zeitschriften und Stifte entfernt",
+    "pt": "Objetos partilhados como menus, revistas e canetas removidos"
   },
   {
     "id": "contactless-check-in-check-out",
     "group": "access",
     "en": "Contactless check-in / check-out",
-    "fr": "Enregistrement et départ sans contact"
+    "fr": "Enregistrement et départ sans contact",
+    "es": "Check-in / check-out sin contacto",
+    "de": "Kontaktloser Check-in / Check-out",
+    "pt": "Check-in / check-out sem contacto"
   },
   {
     "id": "check-in-kiosk-in-the-lobby",
     "group": "access",
     "en": "Check-in kiosk in the lobby",
-    "fr": "Borne d'enregistrement disponible dans le hall d'entrée"
+    "fr": "Borne d'enregistrement disponible dans le hall d'entrée",
+    "es": "Quiosco de check-in en el vestíbulo",
+    "de": "Check-in-Terminal in der Lobby",
+    "pt": "Quiosque de check-in no átrio"
   },
   {
     "id": "keys-in-a-key-box-at-the-property",
     "group": "access",
     "en": "Keys in a key box at the property",
-    "fr": "Clés disponibles dans une boîte à clés dans l'établissement"
+    "fr": "Clés disponibles dans une boîte à clés dans l'établissement",
+    "es": "Llaves en caja de seguridad en el alojamiento",
+    "de": "Schlüssel im Schlüsselsafe an der Unterkunft",
+    "pt": "Chaves num cofre de chaves no alojamento"
   },
   {
     "id": "keys-in-a-key-box-nearby",
     "group": "access",
     "en": "Keys in a key box nearby",
-    "fr": "Clés disponibles dans une boîte à clés à proximité"
+    "fr": "Clés disponibles dans une boîte à clés à proximité",
+    "es": "Llaves en caja de seguridad cercana",
+    "de": "Schlüssel im Schlüsselsafe in der Nähe",
+    "pt": "Chaves num cofre de chaves nas proximidades"
   },
   {
     "id": "unlock-the-accommodation-with-a-phone-via-bluetooth",
     "group": "access",
     "en": "Unlock the accommodation with a phone via Bluetooth",
-    "fr": "Ouverture du logement avec un smartphone par Bluetooth"
+    "fr": "Ouverture du logement avec un smartphone par Bluetooth",
+    "es": "Abrir el alojamiento con el móvil por Bluetooth",
+    "de": "Unterkunft per Smartphone über Bluetooth öffnen",
+    "pt": "Abrir o alojamento com o telemóvel por Bluetooth"
   },
   {
     "id": "unlock-the-accommodation-with-a-phone-via-the-internet",
     "group": "access",
     "en": "Unlock the accommodation with a phone via the internet",
-    "fr": "Ouverture du logement avec un smartphone via Internet"
+    "fr": "Ouverture du logement avec un smartphone via Internet",
+    "es": "Abrir el alojamiento con el móvil por internet",
+    "de": "Unterkunft per Smartphone über das Internet öffnen",
+    "pt": "Abrir o alojamento com o telemóvel pela internet"
   },
   {
     "id": "unlock-the-accommodation-with-a-private-code",
     "group": "access",
     "en": "Unlock the accommodation with a private code",
-    "fr": "Ouverture du logement avec un code confidentiel"
+    "fr": "Ouverture du logement avec un code confidentiel",
+    "es": "Abrir el alojamiento con un código privado",
+    "de": "Unterkunft mit privatem Code öffnen",
+    "pt": "Abrir o alojamento com um código privado"
   },
   {
     "id": "unlock-the-accommodation-by-scanning-a-qr-code",
     "group": "access",
     "en": "Unlock the accommodation by scanning a QR code",
-    "fr": "Ouverture du logement en scannant un code QR"
+    "fr": "Ouverture du logement en scannant un code QR",
+    "es": "Abrir el alojamiento escaneando un código QR",
+    "de": "Unterkunft per QR-Code öffnen",
+    "pt": "Abrir o alojamento lendo um código QR"
   },
   {
     "id": "unlock-the-accommodation-via-an-app",
     "group": "access",
     "en": "Unlock the accommodation via an app",
-    "fr": "Ouverture du logement via une application"
+    "fr": "Ouverture du logement via une application",
+    "es": "Abrir el alojamiento con una app",
+    "de": "Unterkunft per App öffnen",
+    "pt": "Abrir o alojamento através de uma app"
   },
   {
     "id": "access-the-property-via-bluetooth",
     "group": "access",
     "en": "Access the property via Bluetooth",
-    "fr": "Accès à l'établissement par Bluetooth"
+    "fr": "Accès à l'établissement par Bluetooth",
+    "es": "Acceso al alojamiento por Bluetooth",
+    "de": "Zugang zur Unterkunft über Bluetooth",
+    "pt": "Acesso ao alojamento por Bluetooth"
   },
   {
     "id": "access-the-property-via-the-internet",
     "group": "access",
     "en": "Access the property via the internet",
-    "fr": "Accès à l'établissement via Internet"
+    "fr": "Accès à l'établissement via Internet",
+    "es": "Acceso al alojamiento por internet",
+    "de": "Zugang zur Unterkunft über das Internet",
+    "pt": "Acesso ao alojamento pela internet"
   },
   {
     "id": "access-with-a-private-code",
     "group": "access",
     "en": "Access with a private code",
-    "fr": "Accès avec un code confidentiel"
+    "fr": "Accès avec un code confidentiel",
+    "es": "Acceso con código privado",
+    "de": "Zugang mit privatem Code",
+    "pt": "Acesso com código privado"
   },
   {
     "id": "access-by-scanning-a-qr-code",
     "group": "access",
     "en": "Access by scanning a QR code",
-    "fr": "Accès en scannant un code QR"
+    "fr": "Accès en scannant un code QR",
+    "es": "Acceso escaneando un código QR",
+    "de": "Zugang per QR-Code",
+    "pt": "Acesso lendo um código QR"
   },
   {
     "id": "access-via-a-downloadable-app",
     "group": "access",
     "en": "Access via a downloadable app",
-    "fr": "Accès via une application à télécharger"
+    "fr": "Accès via une application à télécharger",
+    "es": "Acceso mediante una app descargable",
+    "de": "Zugang über eine herunterladbare App",
+    "pt": "Acesso através de uma app descarregável"
   },
   {
     "id": "access-keys",
     "group": "access",
     "en": "Access keys",
-    "fr": "Clés d'accès"
+    "fr": "Clés d'accès",
+    "es": "Llaves de acceso",
+    "de": "Zugangsschlüssel",
+    "pt": "Chaves de acesso"
   },
   {
     "id": "access-cards",
     "group": "access",
     "en": "Access cards",
-    "fr": "Cartes d'accès"
+    "fr": "Cartes d'accès",
+    "es": "Tarjetas de acceso",
+    "de": "Zugangskarten",
+    "pt": "Cartões de acesso"
   },
   {
     "id": "guest-id-details-collected-online-before-the-stay",
     "group": "access",
     "en": "Guest ID details collected online before the stay",
-    "fr": "Informations d'identité collectées en ligne avant le séjour"
+    "fr": "Informations d'identité collectées en ligne avant le séjour",
+    "es": "Datos de identidad recogidos en línea antes de la estancia",
+    "de": "Ausweisdaten der Gäste vorab online erfasst",
+    "pt": "Dados de identificação recolhidos online antes da estadia"
   },
   {
     "id": "guest-health-screening",
     "group": "access",
     "en": "Guest health screening",
-    "fr": "Contrôle de l'état de santé des clients"
+    "fr": "Contrôle de l'état de santé des clients",
+    "es": "Control sanitario de los huéspedes",
+    "de": "Gesundheitscheck der Gäste",
+    "pt": "Rastreio de saúde dos hóspedes"
   }
 ]

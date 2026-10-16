@@ -44,6 +44,8 @@ export type Booking = {
   totalUsd: number;
   /** Booking currency (the listing's currency on the booking day). */
   currency?: string;
+  /** Host's share before commission: stay subtotal + cleaning fee (excludes guest service fee and taxes). */
+  hostShareUsd?: number;
   status: BookingStatus;
   reference?: string;
   guestEmail?: string;
