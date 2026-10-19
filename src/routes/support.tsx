@@ -65,7 +65,7 @@ function SupportPage() {
   }, [session, load]);
 
   const statusLabel = (status: MemberTicket["status"]) =>
-    ({ open: c.statusOpen, pending: c.statusPending, resolved: c.statusResolved, closed: c.statusClosed })[status];
+    ({ open: c.statusOpen, pending: c.statusPending, awaiting_reply: c.statusAwaitingReply, escalated: c.statusPending, resolved: c.statusResolved, closed: c.statusClosed })[status] ?? c.statusOpen;
 
   const categories: { value: MemberTicket["category"]; label: string }[] = [
     { value: "booking", label: c.catBooking },

@@ -12,6 +12,9 @@ export async function refundThroughStripe(bookingId: string, amountUsd: number):
   if (!payment || (!payment.intentId && !payment.chargeId)) return null;
 
   const stripe = requireStripe();
+  // A destination charge already sent the host's share to their Stripe account:
+  // pull that share back with the refund instead of the platform paying it all.
+  let destinationCharge = false;
 
   // Money still only held on the card was never taken: release the hold
   // instead of refunding a charge that does not exist.
@@ -27,6 +30,7 @@ export async function refundThroughStripe(bookingId: string, amountUsd: number):
       return null;
     }
     if (intent.status === "canceled") return null;
+    destinationCharge = Boolean(intent.transfer_data?.destination);
   }
 
   // Part of the money may already have been sent back (a partial refund, then
@@ -57,6 +61,7 @@ export async function refundThroughStripe(bookingId: string, amountUsd: number):
     {
       ...(payment.intentId ? { payment_intent: payment.intentId } : { charge: payment.chargeId as string }),
       amount: amountMinor,
+      ...(destinationCharge ? { reverse_transfer: true, refund_application_fee: true } : {}),
       metadata: { bookingId },
     },
     { idempotencyKey: `refund_${bookingId}_${remainingMinor}_${amountMinor}` },

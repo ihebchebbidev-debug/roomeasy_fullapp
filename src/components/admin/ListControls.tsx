@@ -209,15 +209,20 @@ export function ShowMore({ controls }: { controls: Pick<Controls, "visible" | "t
 }
 
 /** Render-prop version, safe to use after early returns. */
-export function Paged<T>({ rows, text, filters, suggest, children }: {
+export function Paged<T>({ rows, text, filters, suggest, onCount, children }: {
   rows: T[] | null | undefined;
   text: (row: T) => string;
   filters?: ListFilter<T>[];
   /** Per-row suggestion labels (e.g. listing name, city). */
   suggest?: (row: T) => string[];
+  /** Reports how many rows match the list's own search box and filters. */
+  onCount?: (count: number) => void;
   children: (rows: T[]) => ReactNode;
 }) {
   const controls = useListControls(rows, { text, filters });
+  useEffect(() => {
+    onCount?.(controls.total);
+  }, [controls.total, onCount]);
   const suggestions = suggest ? (rows ?? []).flatMap(suggest) : undefined;
   return (
     <>

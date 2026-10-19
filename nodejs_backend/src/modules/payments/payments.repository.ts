@@ -47,7 +47,8 @@ export async function payableBooking(idOrReference: string): Promise<PayableBook
             b.currency, b.total_usd, p.name AS property_name,
             hp.user_id AS host_id, hu.email AS host_email,
             COALESCE(b.commission_rate, hc.commission_rate, ps.commission_rate) AS commission_rate,
-            hp.stripe_account_id, hp.payouts_onboarded, p.instant_book,
+            hp.stripe_account_id,
+            (hp.stripe_charges_enabled AND hp.stripe_payouts_enabled) AS payouts_onboarded, p.instant_book,
             (b.status = 'pending'
               AND b.created_at < now() - ($2::int * interval '1 minute')
               AND NOT EXISTS (SELECT 1 FROM payment pay

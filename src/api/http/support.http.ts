@@ -19,7 +19,7 @@ export type MemberTicket = {
   reference: string;
   subject: string;
   category: "booking" | "payment" | "listing" | "account" | "dispute" | "other";
-  status: "open" | "pending" | "resolved" | "closed";
+  status: "open" | "pending" | "awaiting_reply" | "escalated" | "resolved" | "closed";
   resolution: string | null;
   lastActivityAt: string;
   createdAt: string;

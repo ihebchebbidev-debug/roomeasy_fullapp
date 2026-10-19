@@ -1006,17 +1006,33 @@ export type AdminReports = {
 };
 
 export async function adminReports(months = 12): Promise<AdminReports> {
+  // One row per calendar month, ending with the current one. Months without
+  // bookings come back as zeros, so "last N months" really is the last N
+  // calendar months (callers slice the tail of this series).
   const monthly = await query<{ month: string; bookings: string; revenue: string; commission: string }>(
-    `SELECT to_char(date_trunc('month', b.created_at), 'YYYY-MM') AS month,
-            count(*) AS bookings,
-            coalesce(sum(b.total_usd / nullif(b.fx_rate_to_eur, 0)) FILTER (WHERE b.status IN ('confirmed','completed')), 0) AS revenue,
-            coalesce(sum(ROUND(b.total_usd * COALESCE(b.commission_rate, hc.commission_rate, ps.commission_rate) / 100, 2) / nullif(b.fx_rate_to_eur, 0)) FILTER (WHERE b.status IN ('confirmed','completed')), 0) AS commission
-       FROM booking b
-       JOIN property p ON p.id = b.property_id
-       LEFT JOIN host_commission hc ON hc.host_id = p.host_id
-       CROSS JOIN platform_settings ps
-      WHERE b.created_at >= date_trunc('month', now()) - make_interval(months => $1)
-      GROUP BY 1 ORDER BY 1`,
+    `WITH span AS (
+        SELECT generate_series(
+                 date_trunc('month', now()) - make_interval(months => $1::int - 1),
+                 date_trunc('month', now()),
+                 interval '1 month') AS start
+      ), agg AS (
+        SELECT date_trunc('month', b.created_at) AS start,
+               count(*) AS bookings,
+               coalesce(sum(b.total_usd / nullif(b.fx_rate_to_eur, 0)) FILTER (WHERE b.status IN ('confirmed','completed')), 0) AS revenue,
+               coalesce(sum(ROUND(b.total_usd * COALESCE(b.commission_rate, hc.commission_rate, ps.commission_rate) / 100, 2) / nullif(b.fx_rate_to_eur, 0)) FILTER (WHERE b.status IN ('confirmed','completed')), 0) AS commission
+          FROM booking b
+          JOIN property p ON p.id = b.property_id
+          LEFT JOIN host_commission hc ON hc.host_id = p.host_id
+          CROSS JOIN platform_settings ps
+         WHERE b.created_at >= date_trunc('month', now()) - make_interval(months => $1::int - 1)
+         GROUP BY 1
+      )
+      SELECT to_char(s.start, 'YYYY-MM') AS month,
+             coalesce(a.bookings, 0) AS bookings,
+             coalesce(a.revenue, 0) AS revenue,
+             coalesce(a.commission, 0) AS commission
+        FROM span s LEFT JOIN agg a ON a.start = s.start
+       ORDER BY 1`,
     [months],
     { label: "admin.reports.monthly" },
   );

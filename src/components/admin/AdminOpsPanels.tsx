@@ -1,3 +1,4 @@
+import { useSupportCopy } from "@/i18n/supportCopy";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useRememberedState } from "@/hooks/useRememberedState";
 /**
@@ -124,6 +125,15 @@ async function run(action: () => Promise<unknown>, after: () => void, okText: st
 
 export function ListingReportsPanel() {
   const copy = useAdminCopy();
+  const supportCopy = useSupportCopy();
+  const reasonLabel: Record<string, string> = {
+    fraud: supportCopy.reasonFraud,
+    inappropriate: supportCopy.reasonInappropriate,
+    wrong_information: supportCopy.reasonWrongInformation,
+    unavailable: supportCopy.reasonUnavailable,
+    safety: supportCopy.reasonSafety,
+    other: supportCopy.reasonOther,
+  };
   const load = useCallback(() => adminOpsApi.listingReports("open"), []);
   const { data, loading, reload } = useRemoteList<ListingReportDto[]>(load, []);
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -161,7 +171,7 @@ export function ListingReportsPanel() {
                   />
                   <span className="truncate">
                     {copy.reportedBy} {report.reporterName ?? "—"} · {new Date(report.createdAt).toLocaleDateString()} ·{" "}
-                    {report.reason}
+                    {reasonLabel[report.reason] ?? report.reason}
                   </span>
                 </p>
               </div>
@@ -1418,6 +1428,9 @@ export function BookingsDeskPanel() {
     }
   };
 
+  // Rows matching the list's search box; null until the list has rendered.
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -1507,7 +1520,7 @@ export function BookingsDeskPanel() {
             {copy.bkClear}
           </Button>
           <span className="self-center text-sm text-muted-foreground">
-            {rows.length} {copy.bkResults}
+            {(() => { const n = loading || rows.length === 0 ? rows.length : (matchCount ?? rows.length); return `${n} ${n === 1 ? copy.bkResult : copy.bkResults}`; })()}
           </span>
         </div>
       </Card>
@@ -1518,7 +1531,7 @@ export function BookingsDeskPanel() {
         <Note text={copy.empty} />
       ) : (
         <div className="rounded-2xl border border-border bg-surface p-5">
-          <Paged rows={rows} text={rowText}>{(__rows) => (
+          <Paged rows={rows} text={rowText} onCount={setMatchCount}>{(__rows) => (
             <ul className="col-span-full divide-y divide-border border-y border-border">
               {__rows.map((row) => (
                 <li

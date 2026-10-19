@@ -77,3 +77,15 @@
 - [x] Email confirmation link still confirms when opened a second time
 - [ ] Reset code email in French for English accounts — code is correct; live server needs redeploy with latest backend
 - [ ] Checkout default guests (3) — waiting on owner's choice
+
+## Admin numbers + full browser QA (Oct 19)
+- [x] Monthly charts/comparison use real calendar months (zero months kept) — live after backend redeploy
+- [ ] Average basket / occupancy / top destinations show 0: no bookings on the live site since April 2026 (demo data is old) — needs demo data refresh on the live server
+- [ ] Listing photos broken on the live site (demo image host loremflickr returns errors) — needs photo data replaced
+- [x] Signed-in browser QA: admin sections + actions, new client sign-up → booking → cancel → support (Oct 19)
+- [x] Client support page: blank status after a team reply now reads "Reply received" (5 languages)
+- [x] Admin bookings count follows the current search results
+- [x] Reported listings show the reason in words, not codes
+- [x] Client QA: postal code search, distance sort, map, currency/language, report listing, password change
+- [ ] Host-side QA (accept/decline requests, calendar, payouts, team) — needs a host account with a booking request
+- [ ] Payout "mark as paid" and Settings connection tests — not run to avoid real money/emails; needs owner go-ahead

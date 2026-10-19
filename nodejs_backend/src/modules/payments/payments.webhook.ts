@@ -81,7 +81,11 @@ async function reverseIfBookingClosed(bookingId: string, intent: Stripe.PaymentI
       await stripe.paymentIntents.cancel(intent.id, { cancellation_reason: "abandoned" });
     } else if (intent.status === "succeeded") {
       await stripe.refunds.create(
-        { payment_intent: intent.id, reason: "requested_by_customer", metadata: { bookingId, cause: "booking_cancelled" } },
+        {
+          payment_intent: intent.id,
+          reason: "requested_by_customer",
+          ...(intent.transfer_data?.destination ? { reverse_transfer: true, refund_application_fee: true } : {}),
+          metadata: { bookingId, cause: "booking_cancelled" } },
         { idempotencyKey: `late-payment-refund-${intent.id}` },
       );
     }
