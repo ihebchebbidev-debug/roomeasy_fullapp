@@ -454,7 +454,7 @@ function AdminPage() {
           <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
             <SidebarBackdrop />
             <div className="relative flex h-16 shrink-0 items-center px-5">
-              <BrandLogo className="h-14 max-w-[11rem]" />
+              <BrandLogo linked className="h-14 max-w-[11rem]" />
             </div>
             {navigation()}
           </aside>
@@ -470,7 +470,7 @@ function AdminPage() {
                   <SidebarBackdrop />
                   <SheetHeader className="relative border-b border-sidebar-border bg-sidebar/35 px-4 py-3 pr-12 text-left backdrop-blur-sm">
                     <SheetTitle className="flex h-12 items-center">
-                      <BrandLogo className="h-14 max-w-[9rem]" />
+                      <BrandLogo linked className="h-14 max-w-[9rem]" />
                     </SheetTitle>
                     <SheetDescription className="sr-only">{t.app.admin.subtitle}</SheetDescription>
                   </SheetHeader>

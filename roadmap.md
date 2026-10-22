@@ -1,5 +1,27 @@
 # Roadmap — customer feedback
 
+## Navigation feedback (Oct 22)
+- [x] Repair signed-out List your property entry and preserve its return destination
+- [x] Hide My trips and private navigation from signed-out visitors
+- [x] Restore destination suggestions independent of loaded stays
+- [x] Link all RoomEasy logos to the main page
+- [x] Repeat regression checks
+- [x] Admin member page: Trips as a guest (and sibling lists) no longer malformed — search box moved outside the list
+- [x] Footer: private links swap to public pages for signed-out visitors
+
+## Broader regression audit (Oct 19)
+- [ ] Audit accounts, listings/search, reviews, messaging/support, and administrator actions beyond payouts
+- [ ] Reproduce actionable findings three times, repair verified cases, and repeat their tests
+- [ ] Record unverified findings separately from confirmed failures
+
+## Payout/refund regression audit (Oct 19)
+- [x] Cross-check additional payout/refund findings against callers; reproduce four failures three times in isolated tests
+- [x] Fix the four reproduced failures: missing Stripe configuration, invalid transfer amounts, charge-only destination refunds, unsafe refund-balance fallback
+- [x] Repeat payment-function regression tests three times; no real money moved
+- [ ] Live connected-account transfers/refunds — requires external backend deployment and a test-mode connected host
+
+Source-review findings still require dedicated integration reproduction (not claimed fixed): concurrent payout creation; payout service-fee/commission inconsistency; refund-adjusted payout eligibility; overlapping host acceptances; repeated intent allocation; cumulative refund event ordering and retry accounting. See `.lovable/payout-audit-2026-10-19.md` for evidence.
+
 ## Localization audit
 - [x] Audit every page and shared interface for untranslated text in English, French, Spanish, German, and Portuguese
 - [x] Fill missing translations and replace static interface text where found

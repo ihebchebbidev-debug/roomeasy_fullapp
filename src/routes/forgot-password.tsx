@@ -158,7 +158,7 @@ function ForgotPasswordPage() {
 
       <div className="w-full max-w-md motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]">
         <div className="flex flex-col items-center gap-4 text-navy-foreground">
-          <BrandLogo inverted className="h-12" />
+          <BrandLogo linked inverted className="h-12" />
           <Link
             to="/auth"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-navy-foreground/75 transition-colors hover:text-navy-foreground"

@@ -89,7 +89,7 @@ function ResetPasswordPage() {
 
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center gap-4 text-navy-foreground">
-          <BrandLogo inverted className="h-12" />
+          <BrandLogo linked inverted className="h-12" />
           <Link
             to="/auth"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-navy-foreground/75 transition-colors hover:text-navy-foreground"

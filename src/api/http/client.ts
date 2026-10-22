@@ -115,7 +115,7 @@ export async function requestWithMeta<T>(
   if (!response.ok) {
     // An expired or revoked token would otherwise keep failing every call in
     // the background: drop it so the app shows the signed-out state instead.
-    if (response.status === 401 && token && !path.startsWith("/accounts/login") && !path.startsWith("/accounts/signup")) {
+    if (response.status === 401 && token && getAccessToken() === token && !path.startsWith("/accounts/login") && !path.startsWith("/accounts/signup")) {
       setAccessToken(null);
       // Let the app wipe the signed-in account and its private data at once.
       if (typeof window !== "undefined") window.dispatchEvent(new Event("nestara:session-expired"));
@@ -133,8 +133,8 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
 /**
  * Loads every page of a list endpoint so admin screens never silently miss rows.
- * Pages through `offset` in steps of `pageSize` (the server caps a page at 100)
- * until a short page comes back; `maxRows` is only a safety stop.
+ * Advance by the rows actually returned and honor server pagination metadata;
+ * endpoints without metadata stop at a short page. `maxRows` is a hard cap.
  */
 export async function requestAll<T>(
   path: string,
@@ -144,14 +144,21 @@ export async function requestAll<T>(
 ): Promise<T[]> {
   const rows: T[] = [];
   let previousFirst = "";
-  for (let offset = 0; offset < maxRows; offset += pageSize) {
-    const page = await request<T[]>(path, { ...options, query: { ...(options.query ?? {}), limit: pageSize, offset } });
+  if (!Number.isFinite(pageSize) || pageSize < 1 || !Number.isFinite(maxRows) || maxRows < 1) return rows;
+  for (let offset = 0; offset < maxRows;) {
+    const limit = Math.min(Math.floor(pageSize), Math.floor(maxRows - rows.length));
+    if (limit < 1) break;
+    const { data: page, meta } = await requestWithMeta<T[]>(path, {
+      ...options, query: { ...(options.query ?? {}), limit, offset },
+    });
+    if (page.length === 0) break;
     // Safety: an endpoint that ignores `offset` would return the same page forever.
     const first = page.length ? JSON.stringify(page[0]) : "";
     if (offset > 0 && first === previousFirst) break;
     previousFirst = first;
-    rows.push(...page);
-    if (page.length < pageSize) break;
+    rows.push(...page.slice(0, limit));
+    offset += page.length;
+    if (meta ? !meta.hasMore : page.length < limit) break;
   }
   return rows;
 }

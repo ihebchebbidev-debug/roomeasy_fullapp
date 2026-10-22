@@ -8,9 +8,12 @@ import { BrandLogo } from "@/components/layout/BrandLogo";
 import { CurrencySelector } from "@/components/layout/CurrencySelector";
 import { LanguageSelector } from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { usePlatform } from "@/hooks/usePlatform";
 
 export function Footer() {
   const { t } = useLanguage();
+  // Private pages bounce signed-out visitors home, so give them public equivalents.
+  const signedIn = Boolean(usePlatform().session);
   const year = new Date().getFullYear();
 
   const columns = [
@@ -25,7 +28,7 @@ export function Footer() {
     {
       title: t.footer.company,
       items: [
-        { label: t.footer.about, to: "/host" as const },
+        { label: t.footer.about, to: signedIn ? ("/host" as const) : ("/help" as const) },
         { label: t.footer.careers, to: "/list-your-place" as const },
         { label: t.footer.press, to: "/help" as const },
       ],
@@ -34,8 +37,8 @@ export function Footer() {
       title: t.footer.support,
       items: [
         { label: t.footer.help, to: "/help" as const },
-        { label: t.footer.cancellation, to: "/trips" as const },
-        { label: t.footer.contact, to: "/messages" as const },
+        { label: t.footer.cancellation, to: signedIn ? ("/trips" as const) : ("/help" as const) },
+        { label: t.footer.contact, to: signedIn ? ("/messages" as const) : ("/support" as const) },
       ],
     },
   ];
@@ -73,7 +76,7 @@ export function Footer() {
 
         <div className="relative grid gap-12 lg:grid-cols-[1.3fr_repeat(3,0.7fr)]">
           <div className="min-w-0">
-            <BrandLogo inverted className="h-20" />
+            <BrandLogo linked inverted className="h-20" />
             <p className="mt-4 max-w-xs text-sm text-navy-muted">{t.footer.tagline}</p>
 
             {socials.length > 0 && (
@@ -158,9 +161,9 @@ export function Footer() {
             <Link to="/help" className="transition-colors hover:text-lime">
               {t.footer.help}
             </Link>
-            <span className="font-semibold text-primary">
+            <a href="https://bxbstudio.dev" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
               Developed by BxB Studio
-            </span>
+            </a>
           </div>
         </div>
       </div>

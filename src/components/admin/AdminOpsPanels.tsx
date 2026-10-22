@@ -936,8 +936,7 @@ export function AuditPanel() {
           <Button variant="ghost" size="sm" onClick={() => { setKind("all"); setAdmin("all"); setAction("all"); setFrom(""); setTo(""); }}>{T("Clear")}</Button>
         ) : null}
       </div>
-      <ul className="divide-y divide-border text-sm">
-        <Paged rows={rows} text={rowText}>{(__rows) => __rows.map((entry) => (
+      <Paged rows={rows} text={rowText}>{(__rows) => <ul className="divide-y divide-border text-sm">{__rows.map((entry) => (
           <li key={entry.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
             <span className="font-medium">{entry.action}</span>
             <span className="text-muted-foreground">
@@ -945,8 +944,7 @@ export function AuditPanel() {
               {entry.reason ? ` · ${entry.reason}` : ""}
             </span>
           </li>
-        ))}</Paged>
-      </ul>
+        ))}</ul>}</Paged>
     </Card>
   );
 }
@@ -1111,8 +1109,7 @@ export function NotificationsPanel() {
         <Note text={copy.empty} />
       ) : (
         <Card>
-          <ul className="divide-y divide-border text-sm">
-            <Paged rows={data} text={rowText}>{(__rows) => __rows.map((row) => (
+          <Paged rows={data} text={rowText}>{(__rows) => <ul className="divide-y divide-border text-sm">{__rows.map((row) => (
               <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{localizedSubject(locale, row.subject)}</span>
@@ -1140,8 +1137,7 @@ export function NotificationsPanel() {
                   ) : null}
                 </span>
               </li>
-            ))}</Paged>
-          </ul>
+            ))}</ul>}</Paged>
         </Card>
       )}
     </Shell>

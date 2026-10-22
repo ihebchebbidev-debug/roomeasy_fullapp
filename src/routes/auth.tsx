@@ -1,3 +1,4 @@
+import { authDestination } from "@/lib/publicNavigation";
 import { privateRouteMeta } from "@/i18n/privateRouteMeta";
 import { localeOf, privatePageMeta } from "@/lib/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -76,10 +77,10 @@ function AuthPage() {
   const [otp, setOtp] = useState("");
   const [welcome, setWelcome] = useState<string | null>(null);
   const [signUpToken, setSignUpToken] = useState<string | null>(null);
-  const [newAccount, setNewAccountState] = useState<{ name: string; to: "/" | "/admin" | "/host" | "/trips" } | null>(null);
+  const [newAccount, setNewAccountState] = useState<{ name: string; to: string } | null>(null);
   // The optional photo step survives a page refresh: the new member lands back
   // on it instead of the sign-in form, so a chosen photo is not silently lost.
-  const setNewAccount = (value: { name: string; to: "/" | "/admin" | "/host" | "/trips" } | null) => {
+  const setNewAccount = (value: { name: string; to: string } | null) => {
     setNewAccountState(value);
     try {
       if (value) window.sessionStorage.setItem(SIGNUP_PHOTO_STEP_KEY, JSON.stringify(value));
@@ -214,16 +215,7 @@ function AuthPage() {
       toast.success(
         created ? t.app.auth.created : interpolate(t.app.auth.signedIn, { name: session.name || safeName }),
       );
-      // Administrators go straight to the back office; everyone else lands on
-      // the landing page (or the public page they were on before signing in).
-      const isAdmin = session.role === "admin";
-      const allowed =
-        !created &&
-        !isAdmin &&
-        returnTo &&
-        !returnTo.startsWith("/list-your-place") &&
-        !returnTo.startsWith("/admin");
-      const destination = (isAdmin ? "/admin" : created ? "/" : ((allowed ? returnTo : "/") ?? "/")) as "/" | "/admin" | "/host" | "/trips";
+      const destination = authDestination(returnTo, session.role, created);
       if (created) setNewAccount({ name: session.name || safeName, to: destination });
       else enterApp(session.name || safeName, destination);
       return;
@@ -307,7 +299,7 @@ function AuthPage() {
 
       <div className="w-full max-w-md motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]">
         <div className="flex flex-col items-center gap-4 text-navy-foreground">
-          <BrandLogo inverted className="h-12" />
+          <BrandLogo linked inverted className="h-12" />
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-navy-foreground/75 transition-colors hover:text-navy-foreground"

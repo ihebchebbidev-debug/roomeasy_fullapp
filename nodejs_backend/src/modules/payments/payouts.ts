@@ -11,8 +11,8 @@ const logger = log("payouts");
  *
  * Call this BEFORE marking the payout as paid in our own tables, so a Stripe
  * failure never leaves the register claiming money left the platform. Returns
- * the Stripe transfer id, or null when Stripe is not configured at all (the
- * register then stays a bookkeeping-only record, as before).
+ * the Stripe transfer id; missing configuration or an invalid amount fails
+ * closed, so callers cannot mark an unsent transfer as paid.
  */
 export async function transferPayoutToHost(input: {
   payoutId: string;
@@ -20,9 +20,14 @@ export async function transferPayoutToHost(input: {
   amountUsd: number;
   /** Currency of the bookings in this payout; falls back to PAYMENT_CURRENCY. */
   currency?: string | null;
-}): Promise<string | null> {
-  if (!stripeEnabled()) return null;
-  if (input.amountUsd <= 0) return null;
+}): Promise<string> {
+  if (!stripeEnabled()) {
+    throw apiError("PAYOUT_NOT_READY", { message: "Stripe is not configured; this payout has not been sent." });
+  }
+  const amount = toMinorUnits(input.amountUsd);
+  if (!Number.isFinite(input.amountUsd) || !Number.isSafeInteger(amount) || amount <= 0) {
+    throw apiError("PAYOUT_NOT_READY", { message: "A payout must have a valid positive amount." });
+  }
   if (!input.hostId) {
     throw apiError("PAYOUT_NOT_READY", { message: "This payout is not attached to a host account." });
   }
@@ -37,7 +42,7 @@ export async function transferPayoutToHost(input: {
 
   const transfer = await requireStripe().transfers.create(
     {
-      amount: toMinorUnits(input.amountUsd),
+      amount,
       currency: (input.currency?.trim() || env.PAYMENT_CURRENCY).toLowerCase(),
       destination: account.accountId,
       description: `Payout ${input.payoutId}`,

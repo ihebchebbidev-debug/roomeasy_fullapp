@@ -133,11 +133,9 @@ function TripsPage() {
                 }
               />
             ) : (
-              <ul className="grid gap-5">
-                <Paged rows={list} text={(x) => `${rowText(x)} ${(x as { propertyName?: string }).propertyName ?? ""}`}>{(__rows) => __rows.map((booking) => (
+              <Paged rows={list} text={(x) => `${rowText(x)} ${(x as { propertyName?: string }).propertyName ?? ""}`}>{(__rows) => <ul className="grid gap-5">{__rows.map((booking) => (
                   <TripCard key={booking.id} booking={booking} locale={locale} />
-                ))}</Paged>
-              </ul>
+                ))}</ul>}</Paged>
             )}
           </TabsContent>
         ))}

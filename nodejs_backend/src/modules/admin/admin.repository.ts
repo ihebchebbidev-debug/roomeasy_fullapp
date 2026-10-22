@@ -971,9 +971,8 @@ export async function markPayoutPaid(payoutId: string): Promise<PayoutDto> {
     throw apiError("CONFLICT", { message: "This payout has already been marked as paid.", details: { payoutId } });
   }
 
-  // Send the money first: a Stripe failure must never leave the register
-  // claiming the host was paid. Returns null when Stripe is not configured,
-  // in which case the payout stays a bookkeeping-only record.
+  // Send the money first: missing Stripe configuration or a failed transfer
+  // must never leave the register claiming the host was paid.
   const transferId = await transferPayoutToHost({
     payoutId,
     hostId: current.host_id,

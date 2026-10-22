@@ -1,12 +1,11 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useLocation } from "@tanstack/react-router";
 import { canonical, localeOf, KEYWORDS, publicPageMeta } from "@/lib/seo";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { ListingWizard } from "@/components/host/ListingWizard";
-import { Button } from "@/components/ui/button";
 import { AccountShell } from "@/components/layout/AccountShell";
 import { useAllProperties } from "@/hooks/useAllProperties";
-import { usePlatform } from "@/hooks/usePlatform";
+import { getPlatform, usePlatform } from "@/hooks/usePlatform";
 import { useListingCopy } from "@/i18n/listingCopy";
 import { pageMeta } from "@/i18n/pageMeta";
 import {
@@ -33,10 +32,15 @@ export const Route = createFileRoute("/list-your-place")({
 
 function ListYourPlacePage() {
   const { edit } = Route.useSearch();
+  const navigate = useNavigate();
+  const href = useLocation({ select: (location) => location.href });
   
   const c = useListingCopy();
   const properties = useAllProperties();
   const { listings, session } = usePlatform();
+  useEffect(() => {
+    if (href.split("?")[0]?.endsWith("/list-your-place") && !session && !getPlatform().session) void navigate({ to: "/auth", search: { redirect: href }, replace: true });
+  }, [session, navigate, href]);
 
   const property = edit ? properties.find((item) => item.id === edit) : undefined;
   const listing = property ? listings.find((item) => item.propertyId === property.id) : undefined;
@@ -54,22 +58,8 @@ function ListYourPlacePage() {
   // The wizard shows its own success screen; navigation happens from there.
   function onSaved(_draft: ListingDraft, _published: boolean) {}
 
-  // A listing always belongs to an account, so ask for sign-in before any work is lost.
-  if (!session) {
-    return (
-      <AccountShell>
-        <div className="mx-auto max-w-xl rounded-2xl border border-border bg-surface p-8 text-center shadow-sm">
-          <h1 className="font-display text-2xl font-semibold sm:text-3xl">{c.signInRequired}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{c.signInRequiredHint}</p>
-          <Button asChild className="mt-6">
-            <Link to="/auth">
-              {c.signInRequired}
-            </Link>
-          </Button>
-        </div>
-      </AccountShell>
-    );
-  }
+  // Keep the public entry outside the private shell until signed in.
+  if (!session) return null;
 
   return (
     <AccountShell>

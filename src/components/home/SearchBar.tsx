@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { countLabel } from "@/i18n/countLabel";
-import { CalendarDays, Check, MapPin, Minus, Navigation, Plus, Search, Users, X } from "lucide-react";
+import { CalendarDays, Check, Minus, Navigation, Plus, Search, Users, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { DateRange } from "react-day-picker";
@@ -12,8 +12,7 @@ import { dateFnsLocale } from "@/i18n/dateLocale";
 import { useClientCopy } from "@/i18n/clientCopy";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
-import { cityName } from "@/data/properties";
-import { useAllProperties } from "@/hooks/useAllProperties";
+import { DestinationInput } from "@/components/home/DestinationInput";
 import { PRICE_CEILING } from "@/models/staySearch";
 
 function Field({
@@ -53,14 +52,7 @@ export function SearchBar() {
   const [rooms, setRooms] = useState(1);
   const [dateOpen, setDateOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);
-  const [whereOpen, setWhereOpen] = useState(false);
   const navigate = useNavigate();
-  const catalogue = useAllProperties();
-  const destinations = [...new Set(catalogue.map((property) => cityName(property, locale)))].sort();
-  const query = where.trim().toLowerCase();
-  const matchingDestinations = query
-    ? destinations.filter((destination) => destination.toLowerCase().includes(query))
-    : destinations;
 
   const dateLabel = range?.from
     ? `${format(range.from, "dd MMM yyyy", { locale: dateLocale })}${
@@ -96,39 +88,8 @@ export function SearchBar() {
     >
       <div className="relative">
         <Field icon={<Navigation className="size-4" aria-hidden />} label={t.search.where}>
-          <input
-            value={where}
-            onChange={(e) => setWhere(e.target.value)}
-            onFocus={() => setWhereOpen(true)}
-            onBlur={() => window.setTimeout(() => setWhereOpen(false), 120)}
-            placeholder={cc.wherePlaceholder}
-            aria-label={t.search.where}
-            autoComplete="off"
-            className="w-full bg-transparent text-sm font-semibold placeholder:text-muted-foreground/70 focus:outline-none"
-          />
+          <DestinationInput value={where} onChange={setWhere} placeholder={cc.wherePlaceholder} label={t.search.where} />
         </Field>
-
-        {whereOpen && matchingDestinations.length > 0 && (
-          <div className="absolute bottom-full left-0 z-50 mb-2 max-h-72 w-full min-w-[16rem] overflow-y-auto rounded-2xl border border-border/60 bg-surface p-1.5 shadow-[0_28px_70px_-28px_rgb(0_0_0/0.45)]">
-            {matchingDestinations.map((destination) => (
-              <button
-                key={destination}
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  setWhere(destination);
-                  setWhereOpen(false);
-                }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-secondary/70"
-              >
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary/60 text-muted-foreground">
-                  <MapPin className="size-4" aria-hidden />
-                </span>
-                <span className="truncate text-sm font-semibold">{destination}</span>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       <Popover open={dateOpen} onOpenChange={setDateOpen}>

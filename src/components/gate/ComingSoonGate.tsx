@@ -62,7 +62,7 @@ export function ComingSoonGate() {
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10 sm:px-10 lg:px-14">
         <header className="flex items-center justify-between">
-          <BrandLogo inverted className="h-11" />
+          <BrandLogo linked inverted className="h-11" />
           <span className="hidden font-mono text-[0.65rem] uppercase tracking-[0.28em] text-navy-foreground/55 sm:block">
             {copy.gateLaunch}
           </span>

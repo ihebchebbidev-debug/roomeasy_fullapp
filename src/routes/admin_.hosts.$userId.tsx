@@ -250,8 +250,7 @@ function AdminHostProfile() {
               {data.listings.length === 0 ? (
                  <EmptyState title={T("No listings yet.")} size="compact" />
               ) : (
-                <ul className="divide-y divide-border border border-border bg-surface">
-                  <Paged rows={data.listings} text={rowText}>{(__rows) => __rows.map((listing) => (
+                <Paged rows={data.listings} text={rowText}>{(__rows) => <ul className="divide-y divide-border border border-border bg-surface">{__rows.map((listing) => (
                     <li key={listing.listingId} className="flex flex-wrap items-center justify-between gap-3 p-4">
                       <div className="min-w-0">
                         <Link
@@ -270,8 +269,7 @@ function AdminHostProfile() {
                          {listing.approved ? null : <Badge variant="outline">{T("Awaiting review")}</Badge>}
                       </div>
                     </li>
-                  ))}</Paged>
-                </ul>
+                  ))}</ul>}</Paged>
               )}
             </Section>
 
@@ -279,8 +277,7 @@ function AdminHostProfile() {
               {data.bookings.length === 0 ? (
                  <EmptyState title={T("No bookings yet.")} size="compact" />
               ) : (
-                <ul className="divide-y divide-border border border-border bg-surface">
-                  <Paged rows={data.bookings} text={rowText}>{(__rows) => __rows.map((booking) => (
+                <Paged rows={data.bookings} text={rowText}>{(__rows) => <ul className="divide-y divide-border border border-border bg-surface">{__rows.map((booking) => (
                     <li key={booking.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                       <div className="min-w-0">
                         <p className="font-medium">
@@ -295,8 +292,7 @@ function AdminHostProfile() {
                         <span className="text-sm font-medium">{money(booking.totalUsd)}</span>
                       </div>
                     </li>
-                  ))}</Paged>
-                </ul>
+                  ))}</ul>}</Paged>
               )}
             </Section>
 
@@ -304,8 +300,7 @@ function AdminHostProfile() {
               {!data.trips || data.trips.length === 0 ? (
                  <EmptyState title={T("No stays booked as a guest.")} size="compact" />
               ) : (
-                <ul className="divide-y divide-border border border-border bg-surface">
-                  <Paged rows={data.trips} text={rowText}>{(__rows) => __rows.map((trip) => (
+                <Paged rows={data.trips} text={rowText}>{(__rows) => <ul className="divide-y divide-border border border-border bg-surface">{__rows.map((trip) => (
                     <li key={trip.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                       <div className="min-w-0">
                         <p className="font-medium">{trip.reference} · {trip.propertyName}</p>
@@ -316,8 +311,7 @@ function AdminHostProfile() {
                         <span className="text-sm font-medium">{money(trip.totalUsd)}</span>
                       </div>
                     </li>
-                  ))}</Paged>
-                </ul>
+                  ))}</ul>}</Paged>
               )}
             </Section>
 
@@ -325,8 +319,7 @@ function AdminHostProfile() {
               {data.reviews.length === 0 ? (
                  <EmptyState title={T("No reviews yet.")} size="compact" />
               ) : (
-                <ul className="divide-y divide-border border border-border bg-surface">
-                  <Paged rows={data.reviews} text={rowText}>{(__rows) => __rows.map((review) => (
+                <Paged rows={data.reviews} text={rowText}>{(__rows) => <ul className="divide-y divide-border border border-border bg-surface">{__rows.map((review) => (
                     <li key={review.id} className="space-y-1 p-4">
                       <p className="text-sm font-medium">
                         {review.rating.toFixed(1)} · {review.propertyName}
@@ -335,8 +328,7 @@ function AdminHostProfile() {
                       </p>
                       <p className="text-sm text-muted-foreground">{review.body}</p>
                     </li>
-                  ))}</Paged>
-                </ul>
+                  ))}</ul>}</Paged>
               )}
             </Section>
 

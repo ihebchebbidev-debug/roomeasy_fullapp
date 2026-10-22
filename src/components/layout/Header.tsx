@@ -9,6 +9,7 @@ import { LanguageSelector } from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { usePlatform } from "@/hooks/usePlatform";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { visibleNavigation } from "@/lib/publicNavigation";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
@@ -16,12 +17,12 @@ export function Header() {
   const { session } = usePlatform();
   const [open, setOpen] = useState(false);
 
-  const links = [
+  const links = visibleNavigation([
     { to: "/stays", label: t.nav.stays, icon: BedDouble },
-    { to: "/list-your-place", label: t.app.nav.host, icon: Home },
+    { to: "/list-your-place", label: { en: "List your property", fr: "Publier un logement", es: "Publica tu alojamiento", de: "Unterkunft anbieten", pt: "Publique o seu espaço" }[locale], icon: Home },
     { to: "/trips", label: t.app.nav.trips, icon: Luggage },
     { to: "/help", label: t.footer.help, icon: LifeBuoy },
-  ] as const;
+  ] as const, Boolean(session));
 
   const accountTo = session ? "/profile" : "/auth";
   const accountLabel = session ? session.name : t.app.auth.signIn;
@@ -66,7 +67,7 @@ export function Header() {
               <SheetTitle className="sr-only">{{ en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale]}</SheetTitle>
               <SheetDescription className="sr-only">{t.brand}</SheetDescription>
               <div className="flex items-center border-b border-border px-5 py-4">
-                <BrandLogo className="h-10" />
+                <BrandLogo linked className="h-10" />
               </div>
               <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
                 {links.map((l) => (

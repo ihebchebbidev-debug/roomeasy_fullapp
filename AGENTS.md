@@ -13,3 +13,7 @@
 - Host overview modules live under `src/components/host/overview/` so the large host route remains focused on section orchestration.
 - Every page rendered inside the shared account shell is private and redirects signed-out visitors to the landing page before showing account content.
 - Filter options and tags size to their own label (no fixed-column grids with truncation) — translated labels vary widely in length.
+- Keep external payment-service regression tests isolated with mocked configuration, persistence, and Stripe clients so tests never read credentials or move money; run them from `nodejs_backend` with Bun.
+
+- Use the shared DestinationInput for public destination searches; source options from public taxonomy with a geographic country fallback, not paginated stay results, so empty results do not remove suggestions.
+- BrandLogo placements must either have an existing home Link wrapper or opt into its linked prop; never nest links.

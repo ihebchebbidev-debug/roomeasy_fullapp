@@ -15,6 +15,7 @@ export async function refundThroughStripe(bookingId: string, amountUsd: number):
   // A destination charge already sent the host's share to their Stripe account:
   // pull that share back with the refund instead of the platform paying it all.
   let destinationCharge = false;
+  let chargeId = payment.chargeId;
 
   // Money still only held on the card was never taken: release the hold
   // instead of refunding a charge that does not exist.
@@ -31,25 +32,18 @@ export async function refundThroughStripe(bookingId: string, amountUsd: number):
     }
     if (intent.status === "canceled") return null;
     destinationCharge = Boolean(intent.transfer_data?.destination);
+    chargeId ??= typeof intent.latest_charge === "string" ? intent.latest_charge : intent.latest_charge?.id ?? null;
   }
 
   // Part of the money may already have been sent back (a partial refund, then
   // a cancellation). Stripe rejects a refund larger than what is left on the
   // charge, so only ever ask for the remaining amount.
-  let remainingMinor = toMinorUnits(payment.amountUsd);
-  try {
-    const chargeId =
-      payment.chargeId ??
-      (payment.intentId
-        ? ((await stripe.paymentIntents.retrieve(payment.intentId)).latest_charge as string | null)
-        : null);
-    if (chargeId) {
-      const charge = await stripe.charges.retrieve(chargeId);
-      remainingMinor = Math.max(0, (charge.amount_captured || charge.amount) - (charge.amount_refunded || 0));
-    }
-  } catch {
-    // Reading the charge is only an optimisation: fall back to the booking amount.
-  }
+  // Reading the charge is mandatory: guessing its balance or destination can
+  // charge the platform for the host's refund and record a refund that failed.
+  if (!chargeId) throw new Error("No captured Stripe charge is available for this refund.");
+  const charge = await stripe.charges.retrieve(chargeId);
+  destinationCharge ||= Boolean(charge.transfer_data?.destination);
+  const remainingMinor = Math.max(0, charge.amount_captured - charge.amount_refunded);
   if (remainingMinor <= 0) return null;
 
   const amountMinor = Math.min(toMinorUnits(amountUsd), remainingMinor);

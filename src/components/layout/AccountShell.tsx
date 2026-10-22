@@ -163,7 +163,7 @@ export function AccountShell({ children, title, subtitle, actions }: { children:
               <Button variant="ghost" size="icon" className="-ml-2 lg:hidden" onClick={() => setMobileNavOpen(true)} aria-label={copy.open}><Menu className="size-5" /></Button>
               <SheetContent side="left" className="flex w-[17rem] flex-col gap-0 overflow-hidden bg-sidebar p-0 sm:max-w-[17rem]">
                 <SidebarBackdrop />
-                <SheetHeader className="relative border-b border-sidebar-border bg-sidebar/35 px-5 py-3 text-left backdrop-blur-sm"><SheetTitle><BrandLogo className="h-14" /></SheetTitle><SheetDescription className="sr-only">{copy.workspace}</SheetDescription></SheetHeader>
+                <SheetHeader className="relative border-b border-sidebar-border bg-sidebar/35 px-5 py-3 text-left backdrop-blur-sm"><SheetTitle><BrandLogo linked className="h-14" /></SheetTitle><SheetDescription className="sr-only">{copy.workspace}</SheetDescription></SheetHeader>
                 <div className="relative min-h-0 flex-1 overflow-y-auto p-3"><p className="px-3 py-3 text-[10px] font-semibold uppercase text-muted-foreground">{copy.workspace}</p>{navigation(true)}<Button asChild className="mt-5 w-full"><Link to="/list-your-place" onClick={() => setMobileNavOpen(false)}><Plus className="size-4" />{copy.newListing}</Link></Button></div>
               </SheetContent>
             </Sheet>

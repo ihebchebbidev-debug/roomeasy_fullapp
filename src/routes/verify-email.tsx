@@ -61,7 +61,7 @@ function VerifyEmailPage() {
     <main className="flex min-h-screen items-center justify-center bg-background p-6">
       <div className="w-full max-w-md space-y-6 rounded-2xl border border-border bg-surface p-8 text-center shadow-sm">
         <div className="flex justify-center">
-          <BrandLogo />
+          <BrandLogo linked />
         </div>
         {state === "checking" ? (
           <Loader2 className="mx-auto size-10 animate-spin text-primary" aria-hidden />

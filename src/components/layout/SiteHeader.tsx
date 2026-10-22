@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useFavorites } from "@/hooks/useFavorites";
+import { visibleNavigation } from "@/lib/publicNavigation";
 import { cn } from "@/lib/utils";
 
 type NavItem = { to: string; label: string; icon?: LucideIcon };
@@ -24,16 +25,16 @@ export function SiteHeader() {
   const unread = threads.reduce((sum, thread) => sum + thread.unread, 0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuLabel = { en: "Menu", fr: "Menu", es: "Menú", de: "Menü", pt: "Menu" }[locale];
-  const sheetLinks = [
+  const sheetLinks = visibleNavigation([
     { to: "/stays", label: t.nav.stays, icon: BedDouble },
-    { to: "/list-your-place", label: t.app.nav.host, icon: Home },
+    { to: "/list-your-place", label: { en: "List your property", fr: "Publier un logement", es: "Publica tu alojamiento", de: "Unterkunft anbieten", pt: "Publique o seu espaço" }[locale], icon: Home },
     { to: "/trips", label: t.app.nav.trips, icon: Luggage },
     { to: "/help", label: t.footer.help, icon: LifeBuoy },
-  ] as const;
+  ] as const, Boolean(session));
 
   // Only hosts see the host area, only admins the back office.
   const role = session?.role;
-  const nav: NavItem[] = [
+  const nav: NavItem[] = visibleNavigation([
     { to: "/stays", label: t.nav.stays },
     { to: "/trips", label: t.app.nav.trips },
     { to: "/messages", label: t.app.nav.messages, icon: MessageSquare },
@@ -41,14 +42,14 @@ export function SiteHeader() {
       ? [{ to: "/host", label: t.app.nav.host, icon: LayoutDashboard }]
       : []),
     ...(role === "admin" ? [{ to: "/admin", label: t.app.nav.admin, icon: Shield }] : []),
-  ];
-  const mobileNav: NavItem[] = [
+  ], Boolean(session));
+  const mobileNav: NavItem[] = visibleNavigation([
     { to: "/stays", label: t.nav.stays, icon: House },
     { to: "/favourites", label: t.app.nav.favourites, icon: Heart },
     { to: "/trips", label: t.app.nav.trips, icon: Luggage },
     { to: "/messages", label: t.app.nav.messages, icon: MessageSquare },
     { to: session ? "/profile" : "/auth", label: t.app.nav.profile, icon: UserRound },
-  ];
+  ], Boolean(session));
 
   return (
     <>
@@ -101,7 +102,7 @@ export function SiteHeader() {
               <SheetTitle className="sr-only">{menuLabel}</SheetTitle>
               <SheetDescription className="sr-only">{t.brand}</SheetDescription>
               <div className="flex items-center border-b border-border px-5 py-4">
-                <BrandLogo className="h-10" />
+                <BrandLogo linked className="h-10" />
               </div>
               <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
                 {sheetLinks.map((l) => (
@@ -125,7 +126,7 @@ export function SiteHeader() {
       {/* Outside the header: its backdrop blur would otherwise pin this bar to the top. */}
       <nav
         aria-label={{ en: "Mobile navigation", fr: "Navigation mobile", es: "Navegación móvil", de: "Mobile Navigation", pt: "Navegação móvel" }[locale]}
-        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border bg-surface/95 px-2 pt-1.5 pb-[calc(0.4rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(15_23_42/0.08)] backdrop-blur-xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 flex justify-around border-t border-border bg-surface/95 px-2 pt-1.5 pb-[calc(0.4rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(15_23_42/0.08)] backdrop-blur-xl lg:hidden"
       >
         {mobileNav.map((item) => {
           const Icon = item.icon;
@@ -136,7 +137,7 @@ export function SiteHeader() {
             to={item.to}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md px-1 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors",
+              "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md px-1 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors",
               active ? "text-primary" : "hover:text-foreground",
             )}
           >

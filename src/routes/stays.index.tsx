@@ -27,7 +27,7 @@ import { Footer } from "@/components/layout/Footer";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
+import { DestinationInput } from "@/components/home/DestinationInput";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
@@ -151,16 +151,11 @@ function StaysPage() {
           </div>
 
           <div className="mt-8 grid gap-2 rounded-2xl border border-border bg-surface p-2 shadow-lg sm:grid-cols-[1.2fr_1fr_0.8fr_auto] sm:rounded-full">
-            <label className="flex min-w-0 items-center gap-3 rounded-xl px-4 py-3 hover:bg-secondary sm:rounded-full">
+            <div className="flex min-w-0 items-center gap-3 rounded-xl px-4 py-3 hover:bg-secondary sm:rounded-full">
               <MapPin className="size-4 shrink-0 text-primary" />
               <span className="sr-only">{t.search.where}</span>
-              <Input
-                value={search.where}
-                onChange={(event) => update({ where: event.target.value })}
-                placeholder={cc.wherePlaceholder}
-                className="h-auto border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-              />
-            </label>
+              <DestinationInput value={search.where} onChange={(where) => update({ where })} placeholder={cc.wherePlaceholder} label={t.search.where} />
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
