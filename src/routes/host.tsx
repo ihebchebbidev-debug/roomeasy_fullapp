@@ -240,17 +240,17 @@ function HostPage() {
 
         {isReady && section === "calendar" ? (listings.length === 0 ? (
           <EmptyState icon={CalendarRange} title={t.app.host.noCalendar} action={<Button asChild><Link to="/list-your-place">{t.app.host.newListing}</Link></Button>} />
-        ) : (<section className="grid gap-5 lg:grid-cols-2">
+        ) : (<section className="grid items-start gap-5 lg:grid-cols-2">
           <CalendarPanel />
-          <Panel>
+          <SmartPricingPanel stacked listings={listings.map((l) => ({ propertyId: l.propertyId, currency: l.currency, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
+          <Panel className="lg:col-span-2">
             <h2 className="font-display text-lg font-bold">{t.app.host.rateRules}</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
               <RateField id="longstay" label={t.app.host.longStay} value={rateRules.longStay} onChange={(v) => setPlatform({ rateRules: { ...rateRules, longStay: v } })} />
               <RateField id="lastminute" label={t.app.host.lastMinute} value={rateRules.lastMinute} onChange={(v) => setPlatform({ rateRules: { ...rateRules, lastMinute: v } })} />
             </div>
             <Button className="mt-5" onClick={() => { void remote.saveRateRules({ weekend: rateRules.weekend, longStay: rateRules.longStay, lastMinute: rateRules.lastMinute }); toast.success(t.app.host.ruleSaved); }}>{t.app.common.save}</Button>
           </Panel>
-          <SmartPricingPanel listings={listings.map((l) => ({ propertyId: l.propertyId, currency: l.currency, name: properties.find((p) => p.id === l.propertyId)?.name ?? l.propertyId }))} />
         </section>)) : null}
 
         {isReady && section === "stats" ? (listings.length === 0 ? (

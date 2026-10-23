@@ -10,8 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ruleSummary, useSmartPricingCopy } from "@/i18n/smartPricingCopy";
 import { defaultSmartPricingRules, type NightPriceResult, type SmartPricingRules } from "@/lib/smartPricingEngine";
+import { cn } from "@/lib/utils";
 
-type Props = { listings: { propertyId: string; name?: string; title?: string; currency?: string | undefined }[] };
+type Props = {
+  listings: { propertyId: string; name?: string; title?: string; currency?: string | undefined }[];
+  /** Narrow column (beside the calendar): rule sections sit on top of each other. */
+  stacked?: boolean;
+};
 
 
 function NumberField({ label, value, onChange, suffix }: { label: string; value: number; onChange: (v: number) => void; suffix?: string }) {
@@ -38,7 +43,7 @@ function RuleBlock({ title, enabled, onToggle, children }: { title: string; enab
   );
 }
 
-export function SmartPricingPanel({ listings }: Props) {
+export function SmartPricingPanel({ listings, stacked = false }: Props) {
   const c = useSmartPricingCopy();
   const [propertyId, setPropertyId] = useState(listings[0]?.propertyId ?? "");
   const [rules, setRules] = useState<SmartPricingRules>(defaultSmartPricingRules());
@@ -93,9 +98,9 @@ export function SmartPricingPanel({ listings }: Props) {
   if (!listings.length) return null;
 
   return (
-    <section className="rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6 lg:col-span-2">
+    <section className={cn("min-w-0 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6", !stacked && "lg:col-span-2")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h2 className="font-display text-lg font-bold">{c.title}</h2>
           <p className="text-sm text-muted-foreground">
             {c.intro}
@@ -103,7 +108,7 @@ export function SmartPricingPanel({ listings }: Props) {
           </p>
         </div>
         <select
-          className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+          className={cn("h-9 min-w-0 rounded-md border border-input bg-background px-2 text-sm", stacked ? "w-full" : "max-w-full")}
           value={propertyId}
           onChange={(e) => setPropertyId(e.target.value)}
           aria-label={c.listing}
@@ -116,7 +121,7 @@ export function SmartPricingPanel({ listings }: Props) {
         </select>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+      <div className={cn("mt-5 grid gap-4", !stacked && "lg:grid-cols-2")}>
         <RuleBlock title={c.weekend} enabled={rules.weekend.enabled} onToggle={(v) => set({ weekend: { ...rules.weekend, enabled: v } })}>
           <NumberField label={c.change} suffix="%" value={rules.weekend.percent} onChange={(v) => set({ weekend: { ...rules.weekend, percent: v } })} />
         </RuleBlock>
@@ -182,11 +187,19 @@ export function SmartPricingPanel({ listings }: Props) {
           const update = (patch: Partial<typeof period>) =>
             set({ seasonal: rules.seasonal.map((p, i) => (i === index ? { ...p, ...patch } : p)) });
           return (
-            <div key={period.id} className="mt-3 grid items-end gap-2 sm:grid-cols-[1fr_auto_auto_6rem_auto_auto]">
-              <Input value={period.label} onChange={(e) => update({ label: e.target.value })} aria-label={c.seasonName} className="h-9" />
-              <Input type="date" value={period.startDate} onChange={(e) => update({ startDate: e.target.value })} aria-label={c.from} className="h-9" />
-              <Input type="date" value={period.endDate} onChange={(e) => update({ endDate: e.target.value })} aria-label={c.to} className="h-9" />
-              <Input type="number" value={period.percent} onChange={(e) => update({ percent: Number(e.target.value) || 0 })} aria-label={c.change} className="h-9" />
+            <div
+              key={period.id}
+              className={cn(
+                "mt-3 gap-2",
+                stacked
+                  ? "flex flex-wrap items-center border-t border-border pt-3"
+                  : "grid items-end sm:grid-cols-[1fr_auto_auto_6rem_auto_auto]",
+              )}
+            >
+              <Input value={period.label} onChange={(e) => update({ label: e.target.value })} aria-label={c.seasonName} className={cn("h-9", stacked && "basis-full")} />
+              <Input type="date" value={period.startDate} onChange={(e) => update({ startDate: e.target.value })} aria-label={c.from} className={cn("h-9", stacked && "min-w-36 flex-1")} />
+              <Input type="date" value={period.endDate} onChange={(e) => update({ endDate: e.target.value })} aria-label={c.to} className={cn("h-9", stacked && "min-w-36 flex-1")} />
+              <Input type="number" value={period.percent} onChange={(e) => update({ percent: Number(e.target.value) || 0 })} aria-label={c.change} className={cn("h-9", stacked && "w-24")} />
               <Switch checked={period.enabled} onCheckedChange={(v) => update({ enabled: v })} aria-label={c.seasonOn} />
               <DeleteIconButton itemName={period.label || undefined} onConfirm={() => set({ seasonal: rules.seasonal.filter((_, i) => i !== index) })} />
             </div>

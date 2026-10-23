@@ -96,8 +96,6 @@ const SIGNED_OUT_COPY = {
   },
 } as const;
 
-/** Sensible billing country per interface language, so the card form is not stuck on another country. */
-const COUNTRY_BY_LOCALE = { en: "GB", fr: "FR", es: "ES", de: "DE", pt: "PT" } as const;
 
 function addDays(iso: string, days: number) {
   // Pure calendar arithmetic in UTC, so the guest's time zone never shifts the day.
@@ -354,7 +352,7 @@ function CheckoutPage() {
                   name,
                   email,
                   ...(phone ? { phone } : {}),
-                  country: COUNTRY_BY_LOCALE[locale as keyof typeof COUNTRY_BY_LOCALE] ?? "FR",
+                  country: "FR",
                 }}
               />
             ) : null}

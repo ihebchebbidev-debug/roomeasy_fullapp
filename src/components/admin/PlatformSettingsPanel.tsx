@@ -18,6 +18,53 @@ const SETTINGS_COPY = {
   pt: { "Settings unavailable.": "Definições indisponíveis.", "Could not load the current fees.": "Não foi possível carregar as taxas atuais.", "Nothing changed.": "Sem alterações.", "Settings saved.": "Definições guardadas.", "Could not save.": "Não foi possível guardar.", "Fees saved.": "Taxas guardadas.", "Social links saved.": "Ligações sociais guardadas.", "Test email sent.": "E-mail de teste enviado.", "Stripe connected.": "Stripe ligado.", "Test failed.": "O teste falhou.", "server file": "ficheiro do servidor", Yes: "Sim", No: "Não", Hide: "Ocultar", Show: "Mostrar", Copy: "Copiar", Copied: "Copiado.", Save: "Guardar", "Send a test email to": "Enviar um e-mail de teste para", "Test email": "Testar e-mail", "Test Stripe": "Testar Stripe", "Fees and pricing": "Taxas e preços", "Save fees": "Guardar taxas", "Social media": "Redes sociais", "These links appear in the site footer. Leave a field empty to hide that network.": "Estas ligações aparecem no rodapé. Deixe um campo vazio para ocultar essa rede.", "Save social links": "Guardar redes sociais", "SMTP server": "Servidor SMTP", Port: "Porta", "Secure connection (SSL)": "Ligação segura (SSL)", Username: "Utilizador", Password: "Palavra-passe", "Sender address": "Endereço de envio", "Sender name": "Nome do remetente", "Reply-to address": "Endereço de resposta", "Test mode (sends nothing)": "Modo de teste (não envia nada)", "Publishable key": "Chave pública", "Secret key": "Chave secreta", "Webhook secret": "Segredo do webhook", "Stripe Connect country": "País do Stripe Connect", "Platform commission (%)": "Comissão da plataforma (%)", "Guest service fee (%)": "Taxa de serviço do hóspede (%)", "Tax (%)": "Imposto (%)", "Weekend increase (%)": "Aumento de fim de semana (%)", "Long-stay discount (%)": "Desconto de longa duração (%)", "Last-minute discount (%)": "Desconto de última hora (%)" },
 } as const;
 
+type FeeKey = "commissionRate" | "serviceFeeRate" | "taxRate" | "weekend" | "longStay" | "lastMinute";
+
+/** One-line explanation under each fee field, matching how the booking quote uses it. */
+const FEE_HELP: Record<"en" | "fr" | "es" | "de" | "pt", Record<FeeKey, string>> = {
+  en: {
+    commissionRate: "Share of each booking total that RoomEasy keeps before paying the host. A custom rate set for a host replaces it. Each booking keeps the rate in force when it was made.",
+    serviceFeeRate: "Added to the guest's total. Calculated on the price of the nights after discounts, cleaning fee not included.",
+    taxRate: "Added to the guest's total. Calculated on the price of the nights after discounts, cleaning fee not included.",
+    weekend: "Default for hosts who haven't set their own: extra on Friday and Saturday nights. Not added to guest prices yet.",
+    longStay: "Default for hosts who haven't set their own. Guest prices currently use each listing's own long-stay discount instead.",
+    lastMinute: "Default for hosts who haven't set their own: discount on stays starting within the next 7 days.",
+  },
+  fr: {
+    commissionRate: "Part du total de chaque réservation conservée par RoomEasy avant le versement à l'hôte. Un taux personnalisé défini pour un hôte la remplace. Chaque réservation garde le taux en vigueur au moment où elle a été faite.",
+    serviceFeeRate: "Ajoutés au total du voyageur. Calculés sur le prix des nuits après remises, frais de ménage non compris.",
+    taxRate: "Ajoutée au total du voyageur. Calculée sur le prix des nuits après remises, frais de ménage non compris.",
+    weekend: "Valeur par défaut pour les hôtes qui n'ont pas défini la leur : supplément les nuits du vendredi et du samedi. Pas encore ajouté aux prix des voyageurs.",
+    longStay: "Valeur par défaut pour les hôtes qui n'ont pas défini la leur. Les prix voyageurs utilisent pour l'instant la remise long séjour propre à chaque annonce.",
+    lastMinute: "Valeur par défaut pour les hôtes qui n'ont pas défini la leur : remise sur les séjours qui commencent dans les 7 prochains jours.",
+  },
+  es: {
+    commissionRate: "Parte del total de cada reserva que RoomEasy se queda antes de pagar al anfitrión. Una tarifa personalizada para un anfitrión la sustituye. Cada reserva conserva la tarifa vigente cuando se hizo.",
+    serviceFeeRate: "Se suma al total del huésped. Se calcula sobre el precio de las noches tras los descuentos, sin incluir la limpieza.",
+    taxRate: "Se suma al total del huésped. Se calcula sobre el precio de las noches tras los descuentos, sin incluir la limpieza.",
+    weekend: "Valor por defecto para anfitriones que no han definido el suyo: recargo las noches de viernes y sábado. Aún no se suma a los precios de los huéspedes.",
+    longStay: "Valor por defecto para anfitriones que no han definido el suyo. Por ahora los precios usan el descuento por estancia larga de cada anuncio.",
+    lastMinute: "Valor por defecto para anfitriones que no han definido el suyo: descuento en estancias que empiezan en los próximos 7 días.",
+  },
+  de: {
+    commissionRate: "Anteil jeder Buchungssumme, den RoomEasy vor der Auszahlung an den Gastgeber einbehält. Ein eigener Satz für einen Gastgeber ersetzt ihn. Jede Buchung behält den Satz, der bei der Buchung galt.",
+    serviceFeeRate: "Wird zur Gesamtsumme des Gastes addiert. Berechnet auf den Preis der Nächte nach Rabatten, ohne Reinigungsgebühr.",
+    taxRate: "Wird zur Gesamtsumme des Gastes addiert. Berechnet auf den Preis der Nächte nach Rabatten, ohne Reinigungsgebühr.",
+    weekend: "Standard für Gastgeber ohne eigenen Wert: Aufschlag für Freitag- und Samstagnächte. Wird noch nicht auf Gästepreise angewendet.",
+    longStay: "Standard für Gastgeber ohne eigenen Wert. Gästepreise nutzen derzeit stattdessen den Langzeitrabatt der jeweiligen Unterkunft.",
+    lastMinute: "Standard für Gastgeber ohne eigenen Wert: Rabatt auf Aufenthalte, die in den nächsten 7 Tagen beginnen.",
+  },
+  pt: {
+    commissionRate: "Parte do total de cada reserva que a RoomEasy retém antes de pagar ao anfitrião. Uma taxa personalizada definida para um anfitrião substitui-a. Cada reserva mantém a taxa em vigor quando foi feita.",
+    serviceFeeRate: "Somada ao total do hóspede. Calculada sobre o preço das noites após descontos, sem incluir a limpeza.",
+    taxRate: "Somado ao total do hóspede. Calculado sobre o preço das noites após descontos, sem incluir a limpeza.",
+    weekend: "Valor padrão para anfitriões que não definiram o seu: acréscimo nas noites de sexta e sábado. Ainda não é somado aos preços dos hóspedes.",
+    longStay: "Valor padrão para anfitriões que não definiram o seu. Por agora, os preços usam o desconto de longa duração de cada anúncio.",
+    lastMinute: "Valor padrão para anfitriões que não definiram o seu: desconto em estadias que começam nos próximos 7 dias.",
+  },
+};
+
+
 const EMAIL_FIELDS: Field[] = [
   { key: "SMTP_HOST", label: ["Serveur SMTP", "SMTP server"], placeholder: "smtp.example.com" },
   { key: "SMTP_PORT", label: ["Port", "Port"], type: "number", placeholder: "465" },
@@ -187,10 +234,12 @@ export function PlatformSettingsPanel() {
   }
 
   const card = "rounded-lg border border-border bg-surface p-6 shadow-sm space-y-4";
-  const feeField = (key: keyof typeof fees, label: [string, string]) => (
+  const feeHelp = FEE_HELP[(locale in FEE_HELP ? locale : "en") as keyof typeof FEE_HELP];
+  const feeField = (key: FeeKey, label: [string, string]) => (
     <div key={key} className="space-y-1.5">
       <Label htmlFor={`fee-${key}`}>{L(label)}</Label>
-      <Input id={`fee-${key}`} type="number" step="0.01" min={0} value={fees[key]} onChange={(e) => setFees({ ...fees, [key]: e.target.value })} />
+      <Input id={`fee-${key}`} type="number" step="0.01" min={0} value={fees[key]} aria-describedby={`fee-${key}-help`} onChange={(e) => setFees({ ...fees, [key]: e.target.value })} />
+      <p id={`fee-${key}-help`} className="text-xs leading-relaxed text-muted-foreground">{feeHelp[key]}</p>
     </div>
   );
 

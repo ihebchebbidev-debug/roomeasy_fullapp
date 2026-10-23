@@ -198,7 +198,7 @@ export function AmenitiesPanel() {
 
 /* --------------------------------------------------------------------- cities */
 
-const emptyCity: CityInput = { name: "", country: "", active: true, featured: false, sortOrder: 0 };
+const emptyCity: CityInput = { name: "", country: "France", active: true, featured: false, sortOrder: 0 };
 
 export function CitiesPanel() {
   const T = useAdminT();
